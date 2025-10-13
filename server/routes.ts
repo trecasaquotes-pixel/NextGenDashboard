@@ -4,6 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema } from "@shared/schema";
+import { generateQuoteId } from "./utils/generateQuoteId";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -53,7 +54,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/quotations', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const validatedData = insertQuotationSchema.parse({ ...req.body, userId });
+      const quoteId = generateQuoteId();
+      const validatedData = insertQuotationSchema.parse({ ...req.body, userId, quoteId });
       const quotation = await storage.createQuotation(validatedData);
       res.status(201).json(quotation);
     } catch (error) {
