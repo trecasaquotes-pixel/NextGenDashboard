@@ -66,8 +66,20 @@ export function SignoffEditor({ quotationId, quotation }: SignoffEditorProps) {
 
   const handleMarkClientAccepted = () => {
     const now = Date.now();
-    handleUpdateSignoff("accepted", true);
-    handleUpdateSignoff("acceptedAt", now);
+    const currentSignoff = quotation.signoff || {
+      client: { name: "", signature: "", signedAt: undefined },
+      trecasa: { name: "Authorized Signatory", title: "For TRECASA DESIGN STUDIO", signature: "", signedAt: undefined },
+      accepted: false,
+      acceptedAt: undefined
+    };
+
+    updateMutation.mutate({
+      signoff: {
+        ...currentSignoff,
+        accepted: true,
+        acceptedAt: now,
+      }
+    });
   };
 
   const handleMarkTrecasaSigned = () => {

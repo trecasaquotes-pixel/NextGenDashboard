@@ -123,3 +123,43 @@ No specific user preferences were provided in the original document.
     - Save button: `button-save-terms`
     - Edit button on Print: `button-edit-terms`
   - **Testing Status**: ✅ Architect verified data model consistency, token substitution correctness, UI/UX flow, and preview accuracy
+
+- ✅ **Signature Block & Status Controls COMPLETE** (Architect Approved): Client and Trecasa signature system with status tracking
+  - **Data Model**:
+    - Added signoff JSONB field to quotations table with client/trecasa structure
+    - Client section: name, typed signature, signedAt timestamp
+    - Trecasa section: name, title, typed signature, signedAt timestamp
+    - Acceptance tracking: accepted boolean, acceptedAt timestamp
+    - Automatically initialized with default values when creating quotations
+  - **Date Formatting** (client/src/lib/utils.ts):
+    - dateFormat() helper function formats timestamps as "13 Oct 2025, 5:42 PM"
+    - Used consistently across all date displays
+  - **SignoffEditor Component** (client/src/components/signoff-editor.tsx):
+    - Two-column layout: Client (left) and Trecasa (right)
+    - Client section: name input (pre-filled from clientName), typed signature input, "Mark Client Accepted" button
+    - Trecasa section: signatory name input (default "Authorized Signatory"), title input (default "For TRECASA DESIGN STUDIO"), typed signature input, "Mark Trecasa Signed" button
+    - All fields persist immediately on blur with proper cache invalidation
+    - Buttons disabled after action, replaced with green/gray badges showing formatted dates
+    - Single atomic mutation for acceptance to prevent stale state overwrites
+  - **Estimate Page Integration**:
+    - SignoffEditor added below TermsEditor in "Sign & Status" panel
+    - Displays current acceptance and signature status
+    - Real-time updates with mutation feedback
+  - **Print Page Signatures**:
+    - Signature blocks added to both Interiors and False Ceiling PDFs below Terms & Conditions
+    - Two-column layout with break-inside-avoid for proper page breaks
+    - Client column: Shows name, typed signature (italic serif font), signed date
+    - Trecasa column: Shows title, name, typed signature, signed date
+    - Fallback to "_____________" placeholders when fields empty
+    - Professional formatting with small-caps labels and regular values
+  - **Status Shortcuts** (Print page header):
+    - Status badge with color coding: gray (draft), blue (sent), green (accepted), red (rejected)
+    - "Mark as Sent" button: updates status to "sent"
+    - "Mark as Accepted" button: updates status to "accepted" AND sets signoff.accepted=true, acceptedAt=timestamp
+    - Buttons conditionally shown based on current status
+    - Mutations show toast notifications and invalidate cache
+  - **Data Attributes**:
+    - SignoffEditor: `card-signoff-editor`, `input-client-name`, `input-client-signature`, `button-mark-client-accepted`, `badge-client-accepted`, `input-trecasa-name`, `input-trecasa-title`, `input-trecasa-signature`, `button-mark-trecasa-signed`, `badge-trecasa-signed`
+    - Print signatures: `signature-block-interiors`, `signature-block-false-ceiling`
+    - Status controls: `badge-quote-status`, `button-mark-as-sent`, `button-mark-as-accepted`
+  - **Testing Status**: ✅ Architect verified data model, atomic mutations prevent stale overwrites, signature rendering in PDFs, status badge logic, date formatting consistency
