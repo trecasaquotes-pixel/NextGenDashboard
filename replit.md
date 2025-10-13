@@ -142,6 +142,13 @@ TRECASA is a professional web application for creating and managing interior des
   - Previous issue: Sequential input changes caused SQFT to remain 0 due to query not refetching between changes
   - Solution: Use `onBlur` with uncontrolled inputs and `key` prop to force re-renders when data updates
   - Applied to both Interior items and False Ceiling items
+- ✅ **Template System Implementation**: Room auto-creation based on project category
+  - Created templates module (lib/templates.ts) with predefined room configurations for all project types
+  - Project Info page: Template modal on "Continue to Scope" with Use/Customize/Skip options
+  - Scope page: "Apply Template" button in header + "Load Template" in empty state
+  - Append/Replace logic: When items exist, user chooses to append or replace with confirmation
+  - Templates include default items with brand selections (Generic Ply, Generic Laminate, Nimmi)
+  - Fixed modal state management to prevent disabled buttons issue
 - ✅ **Branding Update Complete**: Official TRECASA identity applied across entire application
   - New AppHeader with deep green background (#013220), "TRECASA DESIGN STUDIO 🔴", gold tagline (#C9A74E)
   - New AppFooter with gold top border, copyright, contact info, and social links

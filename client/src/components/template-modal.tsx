@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -291,11 +291,22 @@ export function TemplateModal({
   };
 
   const handleClose = () => {
+    // Reset all state when closing
     setStep("preview");
     setMode(null);
+    setShowConfirmReplace(false);
     setOptionalRooms(optionalRooms.map(r => ({ ...r, checked: false })));
     onOpenChange(false);
   };
+
+  // Reset step when modal opens
+  useEffect(() => {
+    if (open) {
+      setStep("preview");
+      setMode(null);
+      setShowConfirmReplace(false);
+    }
+  }, [open]);
 
   return (
     <>
@@ -366,34 +377,32 @@ export function TemplateModal({
               <p className="text-sm text-muted-foreground">
                 This quote already has items. Choose how to apply the template:
               </p>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Button
                   variant="outline"
-                  className="w-full justify-start"
+                  size="lg"
+                  className="w-full h-auto flex-col items-start gap-1 py-3 px-4"
                   onClick={() => handleModeSelect("append")}
                   disabled={applyTemplateMutation.isPending}
                   data-testid="button-mode-append"
                 >
-                  <div className="text-left">
-                    <div className="font-medium">Append Only</div>
-                    <div className="text-xs text-muted-foreground">
-                      Add missing rooms/items; leave existing untouched
-                    </div>
-                  </div>
+                  <span className="font-medium">Append Only</span>
+                  <span className="text-xs text-muted-foreground font-normal">
+                    Add missing rooms/items; leave existing untouched
+                  </span>
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start"
+                  size="lg"
+                  className="w-full h-auto flex-col items-start gap-1 py-3 px-4"
                   onClick={() => handleModeSelect("replace")}
                   disabled={applyTemplateMutation.isPending}
                   data-testid="button-mode-replace"
                 >
-                  <div className="text-left">
-                    <div className="font-medium">Replace</div>
-                    <div className="text-xs text-muted-foreground">
-                      Clear current scope and apply fresh template
-                    </div>
-                  </div>
+                  <span className="font-medium">Replace</span>
+                  <span className="text-xs text-muted-foreground font-normal">
+                    Clear current scope and apply fresh template
+                  </span>
                 </Button>
               </div>
             </div>
