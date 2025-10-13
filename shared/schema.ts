@@ -66,6 +66,10 @@ export const quotations = pgTable("quotations", {
     updatedAt: number;
   }>(),
   
+  // Discount
+  discountType: varchar("discount_type").default("percent"), // percent or amount
+  discountValue: decimal("discount_value", { precision: 10, scale: 2 }).default("0"),
+  
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

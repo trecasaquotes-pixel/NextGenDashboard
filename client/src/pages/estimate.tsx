@@ -1,23 +1,21 @@
-// TODO (Week 2/3): Implement actual pricing calculations using interior item rates
-// TODO (Week 2/3): Add False Ceiling pricing logic with brand-based rates  
-// TODO (Week 2/3): Calculate subtotal from interior items (sum of totalPrice)
-// TODO (Week 2/3): Add discount percentage input and calculation
-// TODO (Week 2/3): Calculate GST (18%) on subtotal after discount
-// TODO (Week 2/3): Display final quote amount (subtotal - discount + GST)
-
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, ArrowRight, Percent, IndianRupee } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
-import { ROOM_TYPES } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
+import { formatINR, safeN } from "@/lib/money";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { isUnauthorizedError } from "@/lib/authUtils";
 
 export default function Estimate() {
   const [match, params] = useRoute("/quotation/:id/estimate");
@@ -59,12 +57,81 @@ export default function Estimate() {
     enabled: !!quotationId && isAuthenticated,
   });
 
+  // Local state for discount
+  const [discountType, setDiscountType] = useState<string>(quotation?.discountType || "percent");
+  const [discountValue, setDiscountValue] = useState<string>(quotation?.discountValue || "0");
+
+  // Sync local state with quotation data
+  useEffect(() => {
+    if (quotation) {
+      setDiscountType(quotation.discountType || "percent");
+      setDiscountValue(quotation.discountValue || "0");
+    }
+  }, [quotation]);
+
+  // Update discount mutation
+  const updateDiscount = useMutation({
+    mutationFn: async ({ discountType, discountValue }: { discountType: string; discountValue: string }) => {
+      await apiRequest("PATCH", `/api/quotations/${quotationId}`, { discountType, discountValue });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+      }
+    },
+  });
+
+  // Handle discount changes
+  const handleDiscountTypeChange = (newType: string) => {
+    setDiscountType(newType);
+    updateDiscount.mutate({ discountType: newType, discountValue });
+  };
+
+  const handleDiscountValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setDiscountValue(value);
+  };
+
+  const handleDiscountBlur = () => {
+    updateDiscount.mutate({ discountType, discountValue });
+  };
+
   if (!match || authLoading || !isAuthenticated) {
     return null;
   }
 
-  const interiorTotalSqft = interiorItems.reduce((sum, item) => sum + parseFloat(item.sqft || "0"), 0);
-  const falseCeilingTotalArea = falseCeilingItems.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
+  // Get totals from quotation
+  const interiorsSubtotal = safeN(quotation?.totals?.interiorsSubtotal);
+  const fcSubtotal = safeN(quotation?.totals?.fcSubtotal);
+  const grandSubtotal = safeN(quotation?.totals?.grandSubtotal);
+
+  // Calculate discount amount
+  const discountAmount = discountType === "percent" 
+    ? (grandSubtotal * safeN(discountValue)) / 100 
+    : safeN(discountValue);
+
+  // Calculate discounted amount (prevent negative)
+  const discounted = Math.max(0, grandSubtotal - discountAmount);
+
+  // Calculate GST (18%)
+  const gstAmount = discounted * 0.18;
+
+  // Calculate final total
+  const finalTotal = discounted + gstAmount;
+
+  // Extract unique room types from items
+  const interiorRoomTypes = Array.from(new Set(interiorItems.map(item => item.roomType)));
+  const fcRoomTypes = Array.from(new Set(falseCeilingItems.map(item => item.roomType)));
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -84,11 +151,11 @@ export default function Estimate() {
               <CardContent className="p-6">
                 <div className="space-y-6">
                   {/* Room breakdown */}
-                  {ROOM_TYPES.map((roomType) => {
+                  {interiorRoomTypes.map((roomType) => {
                     const roomItems = interiorItems.filter((item) => item.roomType === roomType);
                     if (roomItems.length === 0) return null;
 
-                    const roomTotal = roomItems.reduce((sum, item) => sum + parseFloat(item.sqft || "0"), 0);
+                    const roomTotal = roomItems.reduce((sum, item) => sum + safeN(item.sqft), 0);
 
                     return (
                       <div key={roomType} className="space-y-3">
@@ -119,30 +186,12 @@ export default function Estimate() {
                     </div>
                   )}
 
-                  {/* Pricing Summary */}
-                  <div className="pt-4 border-t border-border space-y-3">
+                  {/* Subtotal */}
+                  <div className="pt-4 border-t border-border">
                     <div className="flex items-center justify-between">
-                      <span className="text-foreground">Total SQFT</span>
-                      <span className="font-mono text-foreground font-semibold" data-testid="text-interior-sqft">
-                        {interiorTotalSqft.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-foreground">Subtotal</span>
-                      <span className="font-mono text-foreground" data-testid="text-interior-subtotal">₹0.00</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-foreground">Discount</span>
-                      <span className="font-mono text-foreground" data-testid="text-interior-discount">0%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-foreground">GST (18%)</span>
-                      <span className="font-mono text-foreground" data-testid="text-interior-gst">₹0.00</span>
-                    </div>
-                    <div className="flex items-center justify-between pt-3 border-t border-border">
-                      <span className="text-lg font-bold text-foreground">Final Quote</span>
-                      <span className="text-xl font-bold font-mono text-primary" data-testid="text-interior-final">
-                        ₹0.00
+                      <span className="text-lg font-semibold text-foreground">Subtotal</span>
+                      <span className="text-xl font-bold font-mono text-foreground" data-testid="text-interior-subtotal">
+                        {formatINR(interiorsSubtotal)}
                       </span>
                     </div>
                   </div>
@@ -159,11 +208,11 @@ export default function Estimate() {
               <CardContent className="p-6">
                 <div className="space-y-6">
                   {/* Room breakdown */}
-                  {ROOM_TYPES.map((roomType) => {
+                  {fcRoomTypes.map((roomType) => {
                     const roomItems = falseCeilingItems.filter((item) => item.roomType === roomType);
                     if (roomItems.length === 0) return null;
 
-                    const roomTotal = roomItems.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
+                    const roomTotal = roomItems.reduce((sum, item) => sum + safeN(item.area), 0);
 
                     return (
                       <div key={roomType} className="space-y-3">
@@ -218,30 +267,12 @@ export default function Estimate() {
                     </div>
                   )}
 
-                  {/* Pricing Summary */}
-                  <div className="pt-4 border-t border-border space-y-3">
+                  {/* Subtotal */}
+                  <div className="pt-4 border-t border-border">
                     <div className="flex items-center justify-between">
-                      <span className="text-foreground">Total Area</span>
-                      <span className="font-mono text-foreground font-semibold" data-testid="text-ceiling-sqft">
-                        {falseCeilingTotalArea.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-foreground">Subtotal</span>
-                      <span className="font-mono text-foreground" data-testid="text-ceiling-subtotal">₹0.00</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-foreground">Discount</span>
-                      <span className="font-mono text-foreground" data-testid="text-ceiling-discount">0%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-foreground">GST (18%)</span>
-                      <span className="font-mono text-foreground" data-testid="text-ceiling-gst">₹0.00</span>
-                    </div>
-                    <div className="flex items-center justify-between pt-3 border-t border-border">
-                      <span className="text-lg font-bold text-foreground">Final Quote</span>
-                      <span className="text-xl font-bold font-mono text-primary" data-testid="text-ceiling-final">
-                        ₹0.00
+                      <span className="text-lg font-semibold text-foreground">Subtotal</span>
+                      <span className="text-xl font-bold font-mono text-foreground" data-testid="text-fc-subtotal">
+                        {formatINR(fcSubtotal)}
                       </span>
                     </div>
                   </div>
@@ -249,6 +280,90 @@ export default function Estimate() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Overall Summary */}
+          <Card>
+            <CardHeader className="border-b border-card-border">
+              <CardTitle className="text-xl">Overall Summary</CardTitle>
+              <CardDescription>Final quotation with discount and GST</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4 max-w-2xl">
+                {/* Subtotal */}
+                <div className="flex items-center justify-between text-lg">
+                  <span className="text-foreground">Subtotal</span>
+                  <span className="font-mono font-semibold text-foreground" data-testid="text-grand-subtotal">
+                    {formatINR(grandSubtotal)}
+                  </span>
+                </div>
+
+                {/* Discount */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <Label htmlFor="discount-value" className="text-foreground mb-2 block">Discount</Label>
+                    <div className="flex gap-2">
+                      <Select value={discountType} onValueChange={handleDiscountTypeChange}>
+                        <SelectTrigger className="w-32" data-testid="select-discount-type">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="percent">
+                            <div className="flex items-center gap-2">
+                              <Percent className="h-4 w-4" />
+                              <span>Percent</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="amount">
+                            <div className="flex items-center gap-2">
+                              <IndianRupee className="h-4 w-4" />
+                              <span>Amount</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        id="discount-value"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={discountValue}
+                        onChange={handleDiscountValueChange}
+                        onBlur={handleDiscountBlur}
+                        className="flex-1"
+                        data-testid="input-discount-value"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-right pt-8">
+                    <span className="font-mono text-destructive" data-testid="text-discount-amount">
+                      -{formatINR(discountAmount)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* GST */}
+                <div className="flex items-center justify-between">
+                  <span className="text-foreground">GST (18%)</span>
+                  <span className="font-mono text-foreground" data-testid="text-gst-amount">
+                    {formatINR(gstAmount)}
+                  </span>
+                </div>
+
+                {/* Final Total */}
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <span className="text-2xl font-bold text-foreground">Final Total</span>
+                  <span className="text-3xl font-bold font-mono text-primary" data-testid="text-final-total">
+                    {formatINR(finalTotal)}
+                  </span>
+                </div>
+
+                {/* Disclaimer */}
+                <div className="pt-4 text-sm text-muted-foreground italic">
+                  All rates are inclusive of margin. GST extra as applicable.
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Navigation */}
           <div className="flex gap-3">
