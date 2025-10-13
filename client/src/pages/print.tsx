@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Download, Printer } from "lucide-react";
@@ -14,6 +15,7 @@ import { AppFooter } from "@/components/app-footer";
 import { formatINR, safeN } from "@/lib/money";
 import { defaultTerms, renderTerms } from "@/lib/terms";
 import { dateFormat } from "@/lib/utils";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function Print() {
   const [match, params] = useRoute("/quotation/:id/print");
@@ -54,6 +56,47 @@ export default function Print() {
   const { data: otherItems = [] } = useQuery<OtherItem[]>({
     queryKey: [`/api/quotations/${quotationId}/other-items`],
     enabled: !!quotationId && isAuthenticated,
+  });
+
+  // Status update mutations
+  const markAsSentMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("PATCH", `/api/quotations/${quotationId}`, { status: "sent" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
+      toast({
+        title: "Status Updated",
+        description: "Quote marked as sent",
+      });
+    },
+  });
+
+  const markAsAcceptedMutation = useMutation({
+    mutationFn: async () => {
+      const now = Date.now();
+      const currentSignoff = quotation?.signoff || {
+        client: { name: "", signature: "", signedAt: undefined },
+        trecasa: { name: "Authorized Signatory", title: "For TRECASA DESIGN STUDIO", signature: "", signedAt: undefined },
+        accepted: false,
+        acceptedAt: undefined
+      };
+      await apiRequest("PATCH", `/api/quotations/${quotationId}`, {
+        status: "accepted",
+        signoff: {
+          ...currentSignoff,
+          accepted: true,
+          acceptedAt: now,
+        }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
+      toast({
+        title: "Status Updated",
+        description: "Quote marked as accepted",
+      });
+    },
   });
 
   const handlePrint = (type: "interiors" | "false-ceiling") => {
@@ -134,22 +177,72 @@ export default function Print() {
       <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Screen navigation */}
-          <div className="print:hidden flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate(`/quotation/${quotationId}/estimate`)}
-              data-testid="button-back-to-estimate"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Estimate
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate(`/quotation/${quotationId}/estimate#terms`)}
-              data-testid="button-edit-terms"
-            >
-              Edit Terms & Conditions
-            </Button>
+          <div className="print:hidden flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate(`/quotation/${quotationId}/estimate`)}
+                data-testid="button-back-to-estimate"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Estimate
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate(`/quotation/${quotationId}/estimate#terms`)}
+                data-testid="button-edit-terms"
+              >
+                Edit Terms & Conditions
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Status Badge */}
+              <Badge 
+                variant={
+                  quotation.status === "accepted" ? "default" : 
+                  quotation.status === "sent" ? "secondary" :
+                  quotation.status === "rejected" ? "destructive" :
+                  "outline"
+                }
+                className={
+                  quotation.status === "accepted" ? "bg-green-600 hover:bg-green-700" :
+                  quotation.status === "sent" ? "bg-blue-600 hover:bg-blue-700" :
+                  quotation.status === "rejected" ? "" :
+                  ""
+                }
+                data-testid="badge-quote-status"
+              >
+                {quotation.status === "draft" && "Draft"}
+                {quotation.status === "sent" && "Sent"}
+                {quotation.status === "accepted" && "Accepted"}
+                {quotation.status === "rejected" && "Rejected"}
+              </Badge>
+
+              {/* Status Action Buttons */}
+              {quotation.status !== "sent" && quotation.status !== "accepted" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => markAsSentMutation.mutate()}
+                  disabled={markAsSentMutation.isPending}
+                  data-testid="button-mark-as-sent"
+                >
+                  Mark as Sent
+                </Button>
+              )}
+              {quotation.status !== "accepted" && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => markAsAcceptedMutation.mutate()}
+                  disabled={markAsAcceptedMutation.isPending}
+                  data-testid="button-mark-as-accepted"
+                >
+                  Mark as Accepted
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Tabs for screen view */}
