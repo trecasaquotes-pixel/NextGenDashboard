@@ -18,6 +18,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
+import { generateQuoteId } from "./utils/generateQuoteId";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -87,7 +88,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createQuotation(quotation: InsertQuotation): Promise<Quotation> {
-    const [newQuotation] = await db.insert(quotations).values(quotation).returning();
+    const quoteId = generateQuoteId();
+    const [newQuotation] = await db.insert(quotations).values({ ...quotation, quoteId }).returning();
     return newQuotation;
   }
 

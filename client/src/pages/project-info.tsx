@@ -189,9 +189,9 @@ export default function ProjectInfo() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}
-          <Button variant="ghost" onClick={() => navigate("/")} className="mb-6" data-testid="button-back">
+          <Button variant="ghost" onClick={() => navigate("/quotes")} className="mb-6" data-testid="button-back">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
+            Back to Quotes
           </Button>
 
           {/* Form Card */}

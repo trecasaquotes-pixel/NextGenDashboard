@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
-import Dashboard from "@/pages/dashboard";
+import QuotesList from "@/pages/quotes-list";
 import ProjectInfo from "@/pages/project-info";
 import Scope from "@/pages/scope";
 import Estimate from "@/pages/estimate";
@@ -21,7 +21,8 @@ function Router() {
         <Route path="/" component={Landing} />
       ) : (
         <>
-          <Route path="/" component={Dashboard} />
+          <Route path="/" component={() => <Redirect to="/quotes" />} />
+          <Route path="/quotes" component={QuotesList} />
           <Route path="/quotation/:id/info" component={ProjectInfo} />
           <Route path="/quotation/:id/scope" component={Scope} />
           <Route path="/quotation/:id/estimate" component={Estimate} />

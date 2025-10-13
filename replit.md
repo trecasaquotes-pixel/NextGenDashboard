@@ -12,24 +12,29 @@ TRECASA is a professional web application for creating and managing interior des
 
 ## User Flow
 1. **Login** - Users authenticate via Replit Auth (supports Google, GitHub, X, Apple, email/password)
-2. **Dashboard** - View, create, and manage multiple quotations
-3. **Project Info** - Enter client details and project information
-4. **Scope** - Define work scope with two sections:
+2. **Quotes List** - View all quotations in a table format with Quote ID, Project Name, Client Name, Category, Status, Created Date, and Actions
+3. **Create Quotation** - Click "New Quotation" to generate a draft with auto-generated Quote ID (format: TRE_QT_YYMMDD_XXXX)
+4. **Project Info** - Enter client details and project information
+5. **Scope** - Define work scope with two sections:
    - **Interiors**: Room-based line items (Kitchen, Living, Bedrooms, Bathrooms, Utility, Puja) with dimensions (L×H or L×W for SQFT), materials/finishes/hardware (defaults: BWP Ply + Laminate Matte + Nimmi)
    - **False Ceiling**: Room-based area calculations (L×W) with OTHERS section for Paint (Lumpsum), Lights (Count), Fan Hook Rods (Count)
-5. **Estimate** - View calculated summaries for interiors and false ceiling
-6. **Print** - Print-friendly view with placeholder PDF export buttons
+6. **Estimate** - View calculated summaries for interiors and false ceiling
+7. **Print** - Print-friendly view with placeholder PDF export buttons
 
 ## Features Implemented
 - User authentication with Replit Auth
-- Dashboard with quotation list (create, view, delete)
-- Project information form (client details, address)
+- Quotes List page showing all quotations in table format
+- Auto-generated Quote IDs in format: TRE_QT_YYMMDD_XXXX (e.g., TRE_QT_250113_A1B2)
+- Project information form with expanded category options (1 BHK, 2 BHK, 3 BHK, 4 BHK, Duplex, Triplex, Villa, Commercial, Other)
+- "Other" category with custom text input field
 - Scope page with tabs for Interiors and False Ceiling
 - Automatic SQFT and area calculations based on dimensions
 - Default materials configuration (BWP Ply, Laminate Matte, Nimmi)
+- Inline editing for interior and false ceiling items
 - Estimate page with separate summaries for interiors and false ceiling
 - Print-friendly view with company branding
 - Placeholder PDF export buttons (Interiors and False Ceiling PDFs)
+- Quote actions: View/Edit and Print from quotes list
 
 ## Data Model
 

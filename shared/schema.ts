@@ -44,9 +44,12 @@ export const quotations = pgTable("quotations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   
+  // Quote ID (e.g., TRE_QT_250113_A1B2)
+  quoteId: varchar("quote_id").notNull().unique(),
+  
   // Project Info
   projectName: varchar("project_name").notNull(),
-  projectType: varchar("project_type"), // 1 BHK, 2 BHK, 3 BHK
+  projectType: varchar("project_type"), // 1 BHK, 2 BHK, 3 BHK, 4 BHK, Duplex, Triplex, Villa, Commercial, Other
   clientName: varchar("client_name").notNull(),
   clientEmail: varchar("client_email"),
   clientPhone: varchar("client_phone"),

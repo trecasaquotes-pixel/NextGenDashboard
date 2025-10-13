@@ -33,7 +33,11 @@ export function QuotationHeader({ quotationId, currentStep }: QuotationHeaderPro
           <div>
             <h1 className="text-xl font-bold text-foreground">TRECASA</h1>
             {quotation && (
-              <p className="text-sm text-muted-foreground">{quotation.projectName}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">{quotation.projectName}</p>
+                <span className="text-xs text-muted-foreground">•</span>
+                <p className="text-sm font-mono text-muted-foreground">{quotation.quoteId}</p>
+              </div>
             )}
           </div>
         </div>
