@@ -236,9 +236,15 @@ export default function QuotesList() {
                       <TableCell className="font-mono text-sm" data-testid={`quote-id-${quotation.id}`}>
                         {quotation.quoteId}
                       </TableCell>
-                      <TableCell className="font-medium">{quotation.projectName}</TableCell>
-                      <TableCell>{quotation.clientName}</TableCell>
-                      <TableCell>{quotation.projectType || "—"}</TableCell>
+                      <TableCell className="font-medium" data-testid={`text-project-name-${quotation.id}`}>
+                        {quotation.projectName}
+                      </TableCell>
+                      <TableCell data-testid={`text-client-name-${quotation.id}`}>
+                        {quotation.clientName}
+                      </TableCell>
+                      <TableCell data-testid={`text-category-${quotation.id}`}>
+                        {quotation.projectType || "—"}
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={getStatusColor(quotation.status)} data-testid={`status-${quotation.id}`}>
                           {quotation.status}
@@ -247,7 +253,7 @@ export default function QuotesList() {
                       <TableCell className="text-right font-mono font-semibold" data-testid={`total-${quotation.id}`}>
                         {getQuoteTotal(quotation)}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-muted-foreground" data-testid={`text-created-${quotation.id}`}>
                         {new Date(quotation.createdAt!).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
