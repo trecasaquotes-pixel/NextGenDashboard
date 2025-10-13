@@ -19,10 +19,12 @@ No specific user preferences were provided in the original document.
 - **Frontend**: React with Wouter for routing, TanStack Query for server state, and React Hook Form with Zod for validation.
 - **Backend**: Express.js server.
 - **Database**: PostgreSQL with Drizzle ORM.
-- **Authentication**: Replit Auth (OpenID Connect).
+- **Authentication**: Replit Auth (OpenID Connect) for user sessions, HMAC-SHA256 render tokens for server-side PDF generation.
 - **Smart Rate Calculator**: Incorporates brand-based pricing for real-time calculation updates.
 - **Totals Calculation System**: Real-time computation of subtotals, discounts, and GST.
 - **Template System**: Auto-creation of room items based on project categories using predefined templates.
+- **Server-Side PDF Generation**: Puppeteer-based PDF rendering with authentication via time-limited, quotation-specific render tokens.
+- **Render Token System**: HMAC-signed tokens (5-minute expiry) enable Puppeteer to access protected pages without user sessions. Set RENDER_SECRET environment variable in production.
 
 ### Feature Specifications
 - **Quotation Management**: Create, view, edit, and manage quotations with unique auto-generated IDs (TRE_QT_YYMMDD_XXXX).

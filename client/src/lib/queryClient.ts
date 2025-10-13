@@ -7,12 +7,22 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Helper to append render token if in render mode
+function addRenderToken(url: string): string {
+  if (typeof window !== 'undefined' && (window as any).__RENDER_TOKEN__) {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}renderToken=${encodeURIComponent((window as any).__RENDER_TOKEN__)}`;
+  }
+  return url;
+}
+
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const finalUrl = addRenderToken(url);
+  const res = await fetch(finalUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
@@ -29,7 +39,10 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const url = queryKey.join("/") as string;
+    const finalUrl = addRenderToken(url);
+    
+    const res = await fetch(finalUrl, {
       credentials: "include",
     });
 

@@ -6,6 +6,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema } from "@shared/schema";
 import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles } from "./lib/backup";
+import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -35,16 +36,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/quotations/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/quotations/:id', async (req: any, res) => {
     try {
+      // Check for render token first (for Puppeteer), then fall back to session auth
+      const token = req.query.renderToken as string;
+      const isRenderMode = token && verifyRenderToken(token, req.params.id);
+      
+      if (!isRenderMode && !req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
         return res.status(404).json({ message: "Quotation not found" });
       }
-      // Ensure user owns this quotation
-      if (quotation.userId !== req.user.claims.sub) {
+      
+      // Ensure user owns this quotation (skip check in render mode)
+      if (!isRenderMode && quotation.userId !== req.user?.claims?.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
+      
       res.json(quotation);
     } catch (error) {
       console.error("Error fetching quotation:", error);
@@ -148,12 +159,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Interior items routes
-  app.get('/api/quotations/:id/interior-items', isAuthenticated, async (req: any, res) => {
+  app.get('/api/quotations/:id/interior-items', async (req: any, res) => {
     try {
+      // Check for render token first (for Puppeteer), then fall back to session auth
+      const token = req.query.renderToken as string;
+      const isRenderMode = token && verifyRenderToken(token, req.params.id);
+      
+      if (!isRenderMode && !req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       const quotation = await storage.getQuotation(req.params.id);
-      if (!quotation || quotation.userId !== req.user.claims.sub) {
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      
+      if (!isRenderMode && quotation.userId !== req.user?.claims?.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
+      
       const items = await storage.getInteriorItems(req.params.id);
       res.json(items);
     } catch (error) {
@@ -206,12 +230,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // False ceiling items routes
-  app.get('/api/quotations/:id/false-ceiling-items', isAuthenticated, async (req: any, res) => {
+  app.get('/api/quotations/:id/false-ceiling-items', async (req: any, res) => {
     try {
+      // Check for render token first (for Puppeteer), then fall back to session auth
+      const token = req.query.renderToken as string;
+      const isRenderMode = token && verifyRenderToken(token, req.params.id);
+      
+      if (!isRenderMode && !req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       const quotation = await storage.getQuotation(req.params.id);
-      if (!quotation || quotation.userId !== req.user.claims.sub) {
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      
+      if (!isRenderMode && quotation.userId !== req.user?.claims?.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
+      
       const items = await storage.getFalseCeilingItems(req.params.id);
       res.json(items);
     } catch (error) {
@@ -264,12 +301,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Other items routes
-  app.get('/api/quotations/:id/other-items', isAuthenticated, async (req: any, res) => {
+  app.get('/api/quotations/:id/other-items', async (req: any, res) => {
     try {
+      // Check for render token first (for Puppeteer), then fall back to session auth
+      const token = req.query.renderToken as string;
+      const isRenderMode = token && verifyRenderToken(token, req.params.id);
+      
+      if (!isRenderMode && !req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       const quotation = await storage.getQuotation(req.params.id);
-      if (!quotation || quotation.userId !== req.user.claims.sub) {
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      
+      if (!isRenderMode && quotation.userId !== req.user?.claims?.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
+      
       const items = await storage.getOtherItems(req.params.id);
       res.json(items);
     } catch (error) {
@@ -371,6 +421,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating full backup:", error);
       res.status(500).json({ message: "Failed to create full backup" });
+    }
+  });
+
+  // Render routes for PDF generation (token-authenticated, used by Puppeteer)
+  // These routes return the HTML content without requiring user session authentication
+  app.get('/render/quotation/:id/print', async (req: any, res) => {
+    try {
+      const token = req.query.token as string;
+      const quotationId = req.params.id;
+      
+      if (!token || !verifyRenderToken(token, quotationId)) {
+        return res.status(403).json({ message: "Invalid or expired render token" });
+      }
+      
+      const quotation = await storage.getQuotation(quotationId);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      
+      // Return minimal HTML that loads the print page content
+      // The page will load without requiring user authentication
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Print - ${quotation.quoteId}</title>
+            <script>
+              window.__RENDER_MODE__ = true;
+              window.__RENDER_TOKEN__ = '${token}';
+            </script>
+          </head>
+          <body>
+            <div id="root"></div>
+            <script type="module" src="/src/index.tsx"></script>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error("Error rendering print page:", error);
+      res.status(500).json({ message: "Failed to render page" });
+    }
+  });
+
+  app.get('/render/quotation/:id/agreement', async (req: any, res) => {
+    try {
+      const token = req.query.token as string;
+      const quotationId = req.params.id;
+      
+      if (!token || !verifyRenderToken(token, quotationId)) {
+        return res.status(403).json({ message: "Invalid or expired render token" });
+      }
+      
+      const quotation = await storage.getQuotation(quotationId);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      
+      // Return minimal HTML that loads the agreement page content
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Agreement - ${quotation.quoteId}</title>
+            <script>
+              window.__RENDER_MODE__ = true;
+              window.__RENDER_TOKEN__ = '${token}';
+            </script>
+          </head>
+          <body>
+            <div id="root"></div>
+            <script type="module" src="/src/index.tsx"></script>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error("Error rendering agreement page:", error);
+      res.status(500).json({ message: "Failed to render page" });
+    }
+  });
+
+  // API endpoint to get render token (for testing/debugging)
+  app.get('/api/quotations/:id/render-token', isAuthenticated, async (req: any, res) => {
+    try {
+      const quotation = await storage.getQuotation(req.params.id);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const token = generateRenderToken(req.params.id);
+      res.json({ token });
+    } catch (error) {
+      console.error("Error generating render token:", error);
+      res.status(500).json({ message: "Failed to generate token" });
     }
   });
 

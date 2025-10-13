@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer';
 import type { Quotation } from '@shared/schema';
+import { generateRenderToken } from './render-token';
 
 /**
  * Generate PDF for a specific quotation view
@@ -36,12 +37,15 @@ export async function generateQuotationPDF(
       deviceScaleFactor: 2,
     });
 
-    // Navigate to the appropriate page
+    // Generate render token for authentication
+    const token = generateRenderToken(quotation.id);
+    
+    // Navigate to the appropriate render page
     let url: string;
     if (type === 'agreement') {
-      url = `${baseUrl}/quotation/${quotation.id}/agreement`;
+      url = `${baseUrl}/render/quotation/${quotation.id}/agreement?token=${encodeURIComponent(token)}`;
     } else {
-      url = `${baseUrl}/quotation/${quotation.id}/print`;
+      url = `${baseUrl}/render/quotation/${quotation.id}/print?token=${encodeURIComponent(token)}`;
     }
     
     console.log(`[PDF Generator] Navigating to ${url}`);
