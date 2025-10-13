@@ -11,6 +11,7 @@ import ProjectInfo from "@/pages/project-info";
 import Scope from "@/pages/scope";
 import Estimate from "@/pages/estimate";
 import Print from "@/pages/print";
+import Agreement from "@/pages/agreement";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -29,6 +30,7 @@ function Router() {
           <Route path="/quotation/:id/scope" component={Scope} />
           <Route path="/quotation/:id/estimate" component={Estimate} />
           <Route path="/quotation/:id/print" component={Print} />
+          <Route path="/quotation/:id/agreement" component={Agreement} />
         </>
       )}
       <Route component={NotFound} />
