@@ -81,6 +81,9 @@ export const interiorItems = pgTable("interior_items", {
   roomType: varchar("room_type").notNull(), // Kitchen, Living, Bedrooms, Bathrooms, Utility, Puja
   description: text("description"),
   
+  // Calculation type (determines how SQFT/area is calculated)
+  calc: varchar("calc").notNull().default("SQFT"), // SQFT, COUNT, LSUM
+  
   // Dimensions
   length: decimal("length", { precision: 10, scale: 2 }),
   height: decimal("height", { precision: 10, scale: 2 }),

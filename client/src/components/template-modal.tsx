@@ -148,6 +148,7 @@ export function TemplateModal({
               quotationId,
               roomType: room.label,
               description: item.description,
+              calc: item.calc,
               buildType: item.buildType || "handmade",
               material: item.core || "Generic Ply",
               finish: item.finish || "Generic Laminate",
