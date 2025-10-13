@@ -1,38 +1,189 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+// Referenced from javascript_log_in_with_replit and javascript_database blueprints
+import {
+  users,
+  quotations,
+  interiorItems,
+  falseCeilingItems,
+  otherItems,
+  type User,
+  type UpsertUser,
+  type Quotation,
+  type InsertQuotation,
+  type InteriorItem,
+  type InsertInteriorItem,
+  type FalseCeilingItem,
+  type InsertFalseCeilingItem,
+  type OtherItem,
+  type InsertOtherItem,
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
+  // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
+
+  // Quotation operations
+  getQuotations(userId: string): Promise<Quotation[]>;
+  getQuotation(id: string): Promise<Quotation | undefined>;
+  createQuotation(quotation: InsertQuotation): Promise<Quotation>;
+  updateQuotation(id: string, data: Partial<InsertQuotation>): Promise<Quotation>;
+  deleteQuotation(id: string): Promise<void>;
+
+  // Interior items operations
+  getInteriorItems(quotationId: string): Promise<InteriorItem[]>;
+  createInteriorItem(item: InsertInteriorItem): Promise<InteriorItem>;
+  updateInteriorItem(id: string, data: Partial<InsertInteriorItem>): Promise<InteriorItem>;
+  deleteInteriorItem(id: string): Promise<void>;
+
+  // False ceiling items operations
+  getFalseCeilingItems(quotationId: string): Promise<FalseCeilingItem[]>;
+  createFalseCeilingItem(item: InsertFalseCeilingItem): Promise<FalseCeilingItem>;
+  updateFalseCeilingItem(id: string, data: Partial<InsertFalseCeilingItem>): Promise<FalseCeilingItem>;
+  deleteFalseCeilingItem(id: string): Promise<void>;
+
+  // Other items operations
+  getOtherItems(quotationId: string): Promise<OtherItem[]>;
+  createOtherItem(item: InsertOtherItem): Promise<OtherItem>;
+  updateOtherItem(id: string, data: Partial<InsertOtherItem>): Promise<OtherItem>;
+  deleteOtherItem(id: string): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
-  }
-
+export class DatabaseStorage implements IStorage {
+  // User operations
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  // Quotation operations
+  async getQuotations(userId: string): Promise<Quotation[]> {
+    return await db
+      .select()
+      .from(quotations)
+      .where(eq(quotations.userId, userId))
+      .orderBy(desc(quotations.createdAt));
+  }
+
+  async getQuotation(id: string): Promise<Quotation | undefined> {
+    const [quotation] = await db.select().from(quotations).where(eq(quotations.id, id));
+    return quotation;
+  }
+
+  async createQuotation(quotation: InsertQuotation): Promise<Quotation> {
+    const [newQuotation] = await db.insert(quotations).values(quotation).returning();
+    return newQuotation;
+  }
+
+  async updateQuotation(id: string, data: Partial<InsertQuotation>): Promise<Quotation> {
+    const [updated] = await db
+      .update(quotations)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(quotations.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteQuotation(id: string): Promise<void> {
+    await db.delete(quotations).where(eq(quotations.id, id));
+  }
+
+  // Interior items operations
+  async getInteriorItems(quotationId: string): Promise<InteriorItem[]> {
+    return await db
+      .select()
+      .from(interiorItems)
+      .where(eq(interiorItems.quotationId, quotationId))
+      .orderBy(interiorItems.createdAt);
+  }
+
+  async createInteriorItem(item: InsertInteriorItem): Promise<InteriorItem> {
+    const [newItem] = await db.insert(interiorItems).values(item).returning();
+    return newItem;
+  }
+
+  async updateInteriorItem(id: string, data: Partial<InsertInteriorItem>): Promise<InteriorItem> {
+    const [updated] = await db
+      .update(interiorItems)
+      .set(data)
+      .where(eq(interiorItems.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteInteriorItem(id: string): Promise<void> {
+    await db.delete(interiorItems).where(eq(interiorItems.id, id));
+  }
+
+  // False ceiling items operations
+  async getFalseCeilingItems(quotationId: string): Promise<FalseCeilingItem[]> {
+    return await db
+      .select()
+      .from(falseCeilingItems)
+      .where(eq(falseCeilingItems.quotationId, quotationId))
+      .orderBy(falseCeilingItems.createdAt);
+  }
+
+  async createFalseCeilingItem(item: InsertFalseCeilingItem): Promise<FalseCeilingItem> {
+    const [newItem] = await db.insert(falseCeilingItems).values(item).returning();
+    return newItem;
+  }
+
+  async updateFalseCeilingItem(id: string, data: Partial<InsertFalseCeilingItem>): Promise<FalseCeilingItem> {
+    const [updated] = await db
+      .update(falseCeilingItems)
+      .set(data)
+      .where(eq(falseCeilingItems.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteFalseCeilingItem(id: string): Promise<void> {
+    await db.delete(falseCeilingItems).where(eq(falseCeilingItems.id, id));
+  }
+
+  // Other items operations
+  async getOtherItems(quotationId: string): Promise<OtherItem[]> {
+    return await db
+      .select()
+      .from(otherItems)
+      .where(eq(otherItems.quotationId, quotationId))
+      .orderBy(otherItems.createdAt);
+  }
+
+  async createOtherItem(item: InsertOtherItem): Promise<OtherItem> {
+    const [newItem] = await db.insert(otherItems).values(item).returning();
+    return newItem;
+  }
+
+  async updateOtherItem(id: string, data: Partial<InsertOtherItem>): Promise<OtherItem> {
+    const [updated] = await db
+      .update(otherItems)
+      .set(data)
+      .where(eq(otherItems.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteOtherItem(id: string): Promise<void> {
+    await db.delete(otherItems).where(eq(otherItems.id, id));
+  }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
