@@ -381,7 +381,7 @@ export default function Scope() {
 
                 {/* Interiors Tab */}
                 <TabsContent value="interiors" className="space-y-6">
-                  {ROOM_TYPES.map((roomType) => {
+                  {Array.from(new Set(interiorItems.map(item => item.roomType).filter(Boolean))).sort().map((roomType) => {
                     const roomItems = interiorItems.filter((item) => item.roomType === roomType);
                     const totalSqft = roomItems.reduce((sum, item) => sum + parseFloat(item.sqft || "0"), 0);
 
@@ -601,7 +601,7 @@ export default function Scope() {
                 {/* False Ceiling Tab */}
                 <TabsContent value="false-ceiling" className="space-y-6">
                   {/* False Ceiling Items by Room */}
-                  {ROOM_TYPES.map((roomType) => {
+                  {Array.from(new Set(falseCeilingItems.map(item => item.roomType).filter(Boolean))).sort().map((roomType) => {
                     const roomItems = falseCeilingItems.filter((item) => item.roomType === roomType);
                     const totalArea = roomItems.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
 
