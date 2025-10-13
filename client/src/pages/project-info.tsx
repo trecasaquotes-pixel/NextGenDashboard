@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation } from "@shared/schema";
@@ -25,11 +26,12 @@ import {
 import { QuotationHeader } from "@/components/quotation-header";
 
 const projectInfoSchema = z.object({
-  projectName: z.string().min(1, "Project name is required"),
-  clientName: z.string().min(1, "Client name is required"),
+  projectName: z.string().min(1, "Required"),
+  projectType: z.string().min(1, "Required"),
+  clientName: z.string().min(1, "Required"),
   clientEmail: z.string().email("Invalid email").optional().or(z.literal("")),
-  clientPhone: z.string().optional(),
-  projectAddress: z.string().optional(),
+  clientPhone: z.string().min(1, "Required"),
+  projectAddress: z.string().min(1, "Required"),
 });
 
 type ProjectInfoForm = z.infer<typeof projectInfoSchema>;
@@ -62,8 +64,10 @@ export default function ProjectInfo() {
 
   const form = useForm<ProjectInfoForm>({
     resolver: zodResolver(projectInfoSchema),
+    mode: "onChange",
     defaultValues: {
       projectName: "",
+      projectType: "",
       clientName: "",
       clientEmail: "",
       clientPhone: "",
@@ -76,6 +80,7 @@ export default function ProjectInfo() {
     if (quotation) {
       form.reset({
         projectName: quotation.projectName,
+        projectType: quotation.projectType || "",
         clientName: quotation.clientName,
         clientEmail: quotation.clientEmail || "",
         clientPhone: quotation.clientPhone || "",
@@ -195,6 +200,29 @@ export default function ProjectInfo() {
 
                     <FormField
                       control={form.control}
+                      name="projectType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Project Type *</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-project-type">
+                                <SelectValue placeholder="Select project type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="1 BHK">1 BHK</SelectItem>
+                              <SelectItem value="2 BHK">2 BHK</SelectItem>
+                              <SelectItem value="3 BHK">3 BHK</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="clientName"
                       render={({ field }) => (
                         <FormItem>
@@ -226,7 +254,7 @@ export default function ProjectInfo() {
                       name="clientPhone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Client Phone</FormLabel>
+                          <FormLabel>Client Phone *</FormLabel>
                           <FormControl>
                             <Input placeholder="+1 (555) 000-0000" {...field} data-testid="input-client-phone" />
                           </FormControl>
@@ -241,7 +269,7 @@ export default function ProjectInfo() {
                     name="projectAddress"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Project Address</FormLabel>
+                        <FormLabel>Project Address *</FormLabel>
                         <FormControl>
                           <Textarea 
                             placeholder="123 Main Street, City, State, ZIP" 
@@ -269,7 +297,7 @@ export default function ProjectInfo() {
                     <Button 
                       type="button" 
                       onClick={handleContinue}
-                      disabled={updateMutation.isPending}
+                      disabled={updateMutation.isPending || !form.formState.isValid}
                       data-testid="button-continue"
                     >
                       Continue to Scope

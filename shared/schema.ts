@@ -46,6 +46,7 @@ export const quotations = pgTable("quotations", {
   
   // Project Info
   projectName: varchar("project_name").notNull(),
+  projectType: varchar("project_type"), // 1 BHK, 2 BHK, 3 BHK
   clientName: varchar("client_name").notNull(),
   clientEmail: varchar("client_email"),
   clientPhone: varchar("client_phone"),

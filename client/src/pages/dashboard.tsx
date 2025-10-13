@@ -61,7 +61,10 @@ export default function Dashboard() {
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/quotations", {
         projectName: "New Project",
+        projectType: "2 BHK",
         clientName: "Client Name",
+        clientPhone: "",
+        projectAddress: "",
         status: "draft",
       });
       const newQuotation = await response.json();
