@@ -28,10 +28,19 @@ import { QuotationHeader } from "@/components/quotation-header";
 const projectInfoSchema = z.object({
   projectName: z.string().min(1, "Required"),
   projectType: z.string().min(1, "Required"),
+  projectTypeOther: z.string().optional(),
   clientName: z.string().min(1, "Required"),
   clientEmail: z.string().email("Invalid email").optional().or(z.literal("")),
   clientPhone: z.string().min(1, "Required"),
   projectAddress: z.string().min(1, "Required"),
+}).refine((data) => {
+  if (data.projectType === "Other") {
+    return data.projectTypeOther && data.projectTypeOther.trim().length > 0;
+  }
+  return true;
+}, {
+  message: "Required",
+  path: ["projectTypeOther"],
 });
 
 type ProjectInfoForm = z.infer<typeof projectInfoSchema>;
@@ -68,6 +77,7 @@ export default function ProjectInfo() {
     defaultValues: {
       projectName: "",
       projectType: "",
+      projectTypeOther: "",
       clientName: "",
       clientEmail: "",
       clientPhone: "",
@@ -78,9 +88,14 @@ export default function ProjectInfo() {
   // Update form when quotation loads
   useEffect(() => {
     if (quotation) {
+      const standardCategories = ["1 BHK", "2 BHK", "3 BHK", "4 BHK", "Duplex", "Triplex", "Villa", "Commercial"];
+      const projectType = quotation.projectType || "";
+      const isStandardCategory = standardCategories.includes(projectType);
+      
       form.reset({
         projectName: quotation.projectName,
-        projectType: quotation.projectType || "",
+        projectType: isStandardCategory ? projectType : (projectType ? "Other" : ""),
+        projectTypeOther: isStandardCategory ? "" : projectType,
         clientName: quotation.clientName,
         clientEmail: quotation.clientEmail || "",
         clientPhone: quotation.clientPhone || "",
@@ -91,7 +106,12 @@ export default function ProjectInfo() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: ProjectInfoForm) => {
-      await apiRequest("PATCH", `/api/quotations/${quotationId}`, data);
+      const finalProjectType = data.projectType === "Other" ? data.projectTypeOther : data.projectType;
+      const { projectTypeOther, ...quotationData } = data;
+      await apiRequest("PATCH", `/api/quotations/${quotationId}`, {
+        ...quotationData,
+        projectType: finalProjectType,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
@@ -203,23 +223,45 @@ export default function ProjectInfo() {
                       name="projectType"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Project Type *</FormLabel>
+                          <FormLabel>Project Category *</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger data-testid="select-project-type">
-                                <SelectValue placeholder="Select project type" />
+                              <SelectTrigger data-testid="select-project-category">
+                                <SelectValue placeholder="Select project category" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                               <SelectItem value="1 BHK">1 BHK</SelectItem>
                               <SelectItem value="2 BHK">2 BHK</SelectItem>
                               <SelectItem value="3 BHK">3 BHK</SelectItem>
+                              <SelectItem value="4 BHK">4 BHK</SelectItem>
+                              <SelectItem value="Duplex">Duplex</SelectItem>
+                              <SelectItem value="Triplex">Triplex</SelectItem>
+                              <SelectItem value="Villa">Villa</SelectItem>
+                              <SelectItem value="Commercial">Commercial</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+
+                    {form.watch("projectType") === "Other" && (
+                      <FormField
+                        control={form.control}
+                        name="projectTypeOther"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Specify Category *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter project category" {...field} data-testid="input-project-category-other" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
 
                     <FormField
                       control={form.control}

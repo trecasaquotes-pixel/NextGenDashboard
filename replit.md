@@ -38,10 +38,11 @@ TRECASA is a professional web application for creating and managing interior des
 - Stores: id, email, firstName, lastName, profileImageUrl
 
 ### Quotations
-- Project information: name, type (1 BHK, 2 BHK, 3 BHK), client details, address, status
+- Project information: name, category (1 BHK, 2 BHK, 3 BHK, 4 BHK, Duplex, Triplex, Villa, Commercial, Other), client details, address, status
 - Belongs to a user
 - Has many interior items, false ceiling items, and other items
-- Required fields: Project Name, Project Type, Client Name, Client Phone, Project Address
+- Required fields: Project Name, Project Category, Client Name, Client Phone, Project Address
+- "Other" category allows custom text input
 
 ### Interior Items
 - Room type (Kitchen, Living, Bedrooms, Bathrooms, Utility, Puja)
