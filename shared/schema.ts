@@ -111,6 +111,10 @@ export const quotations = pgTable("quotations", {
     acceptedAt?: number;
   }>(),
   
+  // Agreement Pack Settings
+  includeAnnexureInteriors: boolean("include_annexure_interiors").default(true),
+  includeAnnexureFC: boolean("include_annexure_fc").default(true),
+  
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
