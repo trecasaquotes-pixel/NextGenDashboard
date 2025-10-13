@@ -10,9 +10,12 @@ export function AnnexureTitle({ letter, title, quoteId, clientName }: AnnexureTi
     <div className="bg-white text-black p-8 min-h-[1120px] flex flex-col items-center justify-center">
       {/* Branded Header */}
       <div className="mb-12">
-        <h1 className="text-5xl font-bold text-[#013220] text-center mb-3">
-          TRECASA DESIGN STUDIO 🔴
-        </h1>
+        <div className="flex items-center justify-center gap-3 mb-3">
+          <h1 className="text-5xl font-bold text-[#013220] text-center">
+            TRECASA DESIGN STUDIO
+          </h1>
+          <div className="w-3 h-3 rounded-full bg-red-600"></div>
+        </div>
         <p className="text-[#C9A74E] text-lg text-center">Luxury Interiors | Architecture | Build</p>
       </div>
 

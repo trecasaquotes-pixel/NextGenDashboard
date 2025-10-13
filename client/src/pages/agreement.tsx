@@ -40,6 +40,27 @@ export default function Agreement() {
   const handleDownloadPack = async () => {
     if (!quotation) return;
     
+    // Check if required print roots exist
+    const interiorsRoot = document.getElementById('print-interiors-root');
+    const fcRoot = document.getElementById('print-fc-root');
+    
+    const missingRoots = [];
+    if (quotation.includeAnnexureInteriors && !interiorsRoot) {
+      missingRoots.push("Interiors");
+    }
+    if (quotation.includeAnnexureFC && !fcRoot) {
+      missingRoots.push("False Ceiling");
+    }
+    
+    if (missingRoots.length > 0) {
+      toast({
+        title: "Cannot Generate Agreement Pack",
+        description: `Please visit the Print page first to load ${missingRoots.join(" and ")} quotation content.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsGenerating(true);
     toast({
       title: "Generating Agreement Pack...",
@@ -51,10 +72,12 @@ export default function Agreement() {
 
       // 1. Capture Agreement
       const agreementRoot = document.getElementById('print-agreement-root');
-      if (agreementRoot) {
-        const agreementPdf = await htmlToPdfBytes(agreementRoot);
-        pdfs.push(agreementPdf);
+      if (!agreementRoot) {
+        throw new Error("Agreement content not found");
       }
+      
+      const agreementPdf = await htmlToPdfBytes(agreementRoot);
+      pdfs.push(agreementPdf);
 
       // 2. Capture Annexure A (Interiors) if included
       if (quotation.includeAnnexureInteriors) {
@@ -84,11 +107,9 @@ export default function Agreement() {
         document.body.removeChild(annexureADiv);
 
         // Capture Interiors PDF
-        const interiorsRoot = document.getElementById('print-interiors-root');
-        if (interiorsRoot) {
-          const interiorsPdf = await htmlToPdfBytes(interiorsRoot);
-          pdfs.push(interiorsPdf);
-        }
+        const interiorsRoot = document.getElementById('print-interiors-root')!;
+        const interiorsPdf = await htmlToPdfBytes(interiorsRoot);
+        pdfs.push(interiorsPdf);
       }
 
       // 3. Capture Annexure B (False Ceiling) if included
@@ -119,11 +140,9 @@ export default function Agreement() {
         document.body.removeChild(annexureBDiv);
 
         // Capture False Ceiling PDF
-        const fcRoot = document.getElementById('print-fc-root');
-        if (fcRoot) {
-          const fcPdf = await htmlToPdfBytes(fcRoot);
-          pdfs.push(fcPdf);
-        }
+        const fcRoot = document.getElementById('print-fc-root')!;
+        const fcPdf = await htmlToPdfBytes(fcRoot);
+        pdfs.push(fcPdf);
       }
 
       // 4. Merge all PDFs
