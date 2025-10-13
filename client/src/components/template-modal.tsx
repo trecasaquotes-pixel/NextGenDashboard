@@ -81,8 +81,8 @@ export function TemplateModal({
       .filter(r => r.tab === "FC" && r.fcLine)
       .map(r => r.label);
     return {
-      interiors: [...new Set(interiorRooms)],
-      fc: [...new Set(fcRooms)],
+      interiors: Array.from(new Set(interiorRooms)),
+      fc: Array.from(new Set(fcRooms)),
     };
   };
 

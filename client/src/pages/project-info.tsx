@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,7 @@ import {
 import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
+import { TemplateModal } from "@/components/template-modal";
 
 const projectInfoSchema = z.object({
   projectName: z.string().min(1, "Required"),
@@ -53,6 +54,7 @@ export default function ProjectInfo() {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -151,7 +153,16 @@ export default function ProjectInfo() {
     form.handleSubmit((data) => {
       updateMutation.mutate(data, {
         onSuccess: () => {
-          navigate(`/quotation/${quotationId}/scope`);
+          // Show template modal if category is set (and not "Other")
+          const finalProjectType = data.projectType === "Other" ? data.projectTypeOther : data.projectType;
+          const standardCategories = ["1 BHK", "2 BHK", "3 BHK", "4 BHK", "Duplex", "Triplex", "Villa", "Commercial"];
+          
+          if (finalProjectType && standardCategories.includes(finalProjectType)) {
+            setShowTemplateModal(true);
+          } else {
+            // Skip template modal for "Other" category or if no category
+            navigate(`/quotation/${quotationId}/scope`);
+          }
         },
       });
     })();
@@ -357,6 +368,15 @@ export default function ProjectInfo() {
       </main>
 
       <AppFooter />
+      
+      <TemplateModal
+        open={showTemplateModal}
+        onOpenChange={setShowTemplateModal}
+        quotationId={quotationId!}
+        category={quotation?.projectType || ""}
+        hasExistingItems={false}
+        onSuccess={() => navigate(`/quotation/${quotationId}/scope`)}
+      />
     </div>
   );
 }
