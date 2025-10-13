@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, ArrowRight, Plus, Trash2, Save } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, Trash2, FileText, Sparkles } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
 import { ROOM_TYPES, OTHER_ITEM_TYPES } from "@shared/schema";
@@ -15,6 +15,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
+import { TemplateModal } from "@/components/template-modal";
 import {
   Select,
   SelectContent,
@@ -78,6 +79,7 @@ export default function Scope() {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -329,16 +331,53 @@ export default function Scope() {
           </Button>
 
           <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Scope of Work</CardTitle>
-              <CardDescription>Define interior items and false ceiling details</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div className="space-y-1">
+                <CardTitle className="text-2xl">Scope of Work</CardTitle>
+                <CardDescription>Define interior items and false ceiling details</CardDescription>
+              </div>
+              {quotation?.projectType && !["Other", ""].includes(quotation.projectType) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowTemplateModal(true)}
+                  data-testid="button-apply-template"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Apply Template
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="interiors" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="interiors" data-testid="tab-interiors">Interiors</TabsTrigger>
-                  <TabsTrigger value="false-ceiling" data-testid="tab-false-ceiling">False Ceiling</TabsTrigger>
-                </TabsList>
+              {/* Empty state when no items */}
+              {interiorItems.length === 0 && falseCeilingItems.length === 0 && otherItems.length === 0 && !loadingInterior && !loadingFalseCeiling && !loadingOther && (
+                <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                  <FileText className="h-12 w-12 text-muted-foreground" />
+                  <div className="text-center space-y-2">
+                    <h3 className="text-lg font-medium">No items added yet</h3>
+                    <p className="text-sm text-muted-foreground max-w-sm">
+                      Get started by applying a template based on your project category, or manually add items using the tabs below.
+                    </p>
+                  </div>
+                  {quotation?.projectType && !["Other", ""].includes(quotation.projectType) && (
+                    <Button
+                      onClick={() => setShowTemplateModal(true)}
+                      data-testid="button-load-template-empty"
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Load Template
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* Show tabs when there are items or loading */}
+              {(interiorItems.length > 0 || falseCeilingItems.length > 0 || otherItems.length > 0 || loadingInterior || loadingFalseCeiling || loadingOther) && (
+                <Tabs defaultValue="interiors" className="space-y-6">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="interiors" data-testid="tab-interiors">Interiors</TabsTrigger>
+                    <TabsTrigger value="false-ceiling" data-testid="tab-false-ceiling">False Ceiling</TabsTrigger>
+                  </TabsList>
 
                 {/* Interiors Tab */}
                 <TabsContent value="interiors" className="space-y-6">
@@ -771,7 +810,8 @@ export default function Scope() {
                     )}
                   </div>
                 </TabsContent>
-              </Tabs>
+                </Tabs>
+              )}
 
               <div className="flex gap-3 pt-6 border-t border-border mt-8">
                 <Button 
@@ -796,6 +836,17 @@ export default function Scope() {
       </main>
 
       <AppFooter />
+      
+      <TemplateModal
+        open={showTemplateModal}
+        onOpenChange={setShowTemplateModal}
+        quotationId={quotationId!}
+        category={quotation?.projectType || ""}
+        hasExistingItems={interiorItems.length > 0 || falseCeilingItems.length > 0 || otherItems.length > 0}
+        onSuccess={() => {
+          // Refresh the page or just close the modal - items will auto-refresh via query invalidation
+        }}
+      />
     </div>
   );
 }
