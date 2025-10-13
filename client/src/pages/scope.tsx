@@ -606,10 +606,10 @@ export default function Scope() {
                 <Button 
                   variant="outline" 
                   onClick={() => navigate(`/quotation/${quotationId}/info`)}
-                  data-testid="button-previous"
+                  data-testid="button-back-to-info"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Previous
+                  Back to Project Info
                 </Button>
                 <Button 
                   onClick={() => navigate(`/quotation/${quotationId}/estimate`)}
