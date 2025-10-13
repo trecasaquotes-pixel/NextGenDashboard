@@ -62,21 +62,18 @@ export default function Estimate() {
       <QuotationHeader quotationId={quotationId!} currentStep="estimate" />
 
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate(`/quotation/${quotationId}/scope`)} className="mb-6" data-testid="button-back">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Scope
-          </Button>
-
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Summary Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Interiors Estimate */}
+            {/* Interiors Summary */}
             <Card>
               <CardHeader className="border-b border-card-border">
-                <CardTitle className="text-xl">Interiors Estimate</CardTitle>
-                <CardDescription>Summary of interior work</CardDescription>
+                <CardTitle className="text-xl">Interiors Summary</CardTitle>
+                <CardDescription>Interior work estimate</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-6">
+                  {/* Room breakdown */}
                   {ROOM_TYPES.map((roomType) => {
                     const roomItems = interiorItems.filter((item) => item.roomType === roomType);
                     if (roomItems.length === 0) return null;
@@ -112,28 +109,46 @@ export default function Estimate() {
                     </div>
                   )}
 
-                  {interiorItems.length > 0 && (
-                    <div className="pt-4 border-t border-border">
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-foreground">Total Interior SQFT</span>
-                        <span className="text-xl font-bold font-mono text-primary" data-testid="text-interior-total">
-                          {interiorTotalSqft.toFixed(2)}
-                        </span>
-                      </div>
+                  {/* Pricing Summary */}
+                  <div className="pt-4 border-t border-border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-foreground">Total SQFT</span>
+                      <span className="font-mono text-foreground font-semibold" data-testid="text-interior-sqft">
+                        {interiorTotalSqft.toFixed(2)}
+                      </span>
                     </div>
-                  )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-foreground">Subtotal</span>
+                      <span className="font-mono text-foreground" data-testid="text-interior-subtotal">₹0.00</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-foreground">Discount</span>
+                      <span className="font-mono text-foreground" data-testid="text-interior-discount">0%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-foreground">GST (18%)</span>
+                      <span className="font-mono text-foreground" data-testid="text-interior-gst">₹0.00</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-3 border-t border-border">
+                      <span className="text-lg font-bold text-foreground">Final Quote</span>
+                      <span className="text-xl font-bold font-mono text-primary" data-testid="text-interior-final">
+                        ₹0.00
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* False Ceiling Estimate */}
+            {/* False Ceiling Summary */}
             <Card>
               <CardHeader className="border-b border-card-border">
-                <CardTitle className="text-xl">False Ceiling Estimate</CardTitle>
-                <CardDescription>Summary of false ceiling work</CardDescription>
+                <CardTitle className="text-xl">False Ceiling Summary</CardTitle>
+                <CardDescription>False ceiling work estimate</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-6">
+                  {/* Room breakdown */}
                   {ROOM_TYPES.map((roomType) => {
                     const roomItems = falseCeilingItems.filter((item) => item.roomType === roomType);
                     if (roomItems.length === 0) return null;
@@ -193,23 +208,40 @@ export default function Estimate() {
                     </div>
                   )}
 
-                  {falseCeilingItems.length > 0 && (
-                    <div className="pt-4 border-t border-border">
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-foreground">Total Ceiling Area</span>
-                        <span className="text-xl font-bold font-mono text-primary" data-testid="text-ceiling-total">
-                          {falseCeilingTotalArea.toFixed(2)}
-                        </span>
-                      </div>
+                  {/* Pricing Summary */}
+                  <div className="pt-4 border-t border-border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-foreground">Total Area</span>
+                      <span className="font-mono text-foreground font-semibold" data-testid="text-ceiling-sqft">
+                        {falseCeilingTotalArea.toFixed(2)}
+                      </span>
                     </div>
-                  )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-foreground">Subtotal</span>
+                      <span className="font-mono text-foreground" data-testid="text-ceiling-subtotal">₹0.00</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-foreground">Discount</span>
+                      <span className="font-mono text-foreground" data-testid="text-ceiling-discount">0%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-foreground">GST (18%)</span>
+                      <span className="font-mono text-foreground" data-testid="text-ceiling-gst">₹0.00</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-3 border-t border-border">
+                      <span className="text-lg font-bold text-foreground">Final Quote</span>
+                      <span className="text-xl font-bold font-mono text-primary" data-testid="text-ceiling-final">
+                        ₹0.00
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Navigation */}
-          <div className="flex gap-3 mt-6">
+          <div className="flex gap-3">
             <Button 
               variant="outline" 
               onClick={() => navigate(`/quotation/${quotationId}/scope`)}
