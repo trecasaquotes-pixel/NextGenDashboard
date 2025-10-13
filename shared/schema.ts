@@ -94,6 +94,23 @@ export const quotations = pgTable("quotations", {
     };
   }>(),
   
+  // Signature & Acceptance
+  signoff: jsonb("signoff").$type<{
+    client: {
+      name?: string;
+      signature?: string;
+      signedAt?: number;
+    };
+    trecasa: {
+      name?: string;
+      title?: string;
+      signature?: string;
+      signedAt?: number;
+    };
+    accepted: boolean;
+    acceptedAt?: number;
+  }>(),
+  
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

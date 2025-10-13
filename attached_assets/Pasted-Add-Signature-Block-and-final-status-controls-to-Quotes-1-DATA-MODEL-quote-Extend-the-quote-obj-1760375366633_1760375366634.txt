@@ -1,0 +1,73 @@
+Add Signature Block and final status controls to Quotes.
+
+1) DATA MODEL (quote)
+Extend the quote object with:
+signoff: {
+  client: { name?: string; signedAt?: number; signatureUrl?: string };
+  trecasa: { name?: string; title?: string; signedAt?: number; signatureUrl?: string };
+  accepted: boolean; // marks client acceptance
+  acceptedAt?: number;
+}
+
+Defaults:
+- trecasa.name = "Authorized Signatory"
+- trecasa.title = "For TRECASA DESIGN STUDIO"
+- accepted = false
+
+2) ESTIMATE PAGE — Sign & Status Panel
+At the bottom of Estimate, add a new panel "Sign & Status":
+- Left column (Client):
+  • Client Name (read-only from Project Info, but allow edit override here)
+  • Button: [Mark Client Accepted] → sets signoff.accepted=true and signoff.acceptedAt=Date.now()
+  • When accepted, show a green badge “Accepted on {date}” and disable the button.
+- Right column (Trecasa):
+  • Signatory Name (default "Authorized Signatory", editable)
+  • Title (default "For TRECASA DESIGN STUDIO", editable)
+  • Button: [Mark Trecasa Signed] → sets trecasa.signedAt=Date.now()
+  • When signed, show “Signed on {date}”.
+
+Optional fields (text-only for now; no uploads on free plan):
+- Client Signature (text field; acts like a typed signature)
+- Trecasa Signature (text field; typed)
+
+Persist all fields immediately on change.
+
+3) PRINT — Interiors & False Ceiling PDFs
+Below the Terms & Conditions section, add a "Signatures" block with two columns:
+
+Left (Client):
+- "Client"
+- Name: {client name from signoff or project}
+- Signature: (render typed signature if provided; else show a line "_____________")
+- Date: {client.signedAt | blank line if not signed}
+
+Right (Trecasa):
+- "{trecasa.title}" (e.g., For TRECASA DESIGN STUDIO)
+- Name: {trecasa.name}
+- Signature: (typed sig if provided; else "_____________")
+- Date: {trecasa.signedAt | blank}
+
+Layout/Styles:
+- Use a bordered container with padding.
+- Two equal columns on desktop; stack on mobile.
+- Labels small caps; values regular.
+- Keep print CSS so header/footer remain fixed; avoid page-break inside each signature column (use `break-inside: avoid`).
+
+4) STATUS SHORTCUTS (optional but useful)
+On the Print screen (top-right), add buttons:
+- [Mark as Sent] → sets quote.status="sent"
+- [Mark as Accepted] → sets quote.status="accepted" and signoff.accepted=true, acceptedAt=Date.now()
+Show colored status badge near Quote ID:
+- draft (gray), sent (blue), accepted (green), rejected (red)
+
+5) DATE FORMATTING
+Create a helper dateFormat(d:number): string (e.g., "13 Oct 2025, 5:42 PM").
+Use it for signedAt/acceptedAt.
+
+6) QA CHECKS
+- Editing names/typed signatures updates live and persists.
+- Buttons update state and badges immediately.
+- PDFs show the same names/dates as Estimate panel.
+- No console errors; header/footer still fixed; signatures don’t split across pages.
+
+Implement across BOTH PDFs (Interiors & False Ceiling).
