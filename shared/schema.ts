@@ -87,14 +87,17 @@ export const interiorItems = pgTable("interior_items", {
   width: decimal("width", { precision: 10, scale: 2 }),
   sqft: decimal("sqft", { precision: 10, scale: 2 }), // Calculated: L×H or L×W
   
+  // Build Type (Work-on-Site = handmade, Factory Finish = factory)
+  buildType: varchar("build_type").notNull().default("handmade"), // handmade, factory
+  
   // Materials/Finishes/Hardware (with defaults)
-  material: varchar("material").notNull().default("BWP Ply"),
-  finish: varchar("finish").notNull().default("Laminate (Matte)"),
+  material: varchar("material").notNull().default("Generic Ply"),
+  finish: varchar("finish").notNull().default("Generic Laminate"),
   hardware: varchar("hardware").notNull().default("Nimmi"),
   
-  // Pricing (optional for future)
-  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
-  totalPrice: decimal("total_price", { precision: 10, scale: 2 }),
+  // Pricing (brand-based calculation)
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }), // Rate per sqft
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }), // Amount = Rate × Area
   
   createdAt: timestamp("created_at").defaultNow(),
 });
