@@ -255,7 +255,7 @@ export default function Agreement() {
           </Card>
 
           {/* Agreement Document */}
-          <div id="print-agreement-root" className="bg-white text-black">
+          <div id="print-agreement-root" className="bg-white text-black" data-pdf-ready="true">
             {/* Branded Header */}
             <div className="bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
               <div className="flex items-start justify-between">

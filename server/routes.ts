@@ -332,7 +332,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden" });
       }
       
-      const zipBuffer = await createQuoteBackupZip(req.params.id);
+      // Determine base URL from request
+      const protocol = req.protocol;
+      const host = req.get('host');
+      const baseUrl = `${protocol}://${host}`;
+      
+      console.log(`[Backup] Creating backup for ${quotation.quoteId} with baseUrl: ${baseUrl}`);
+      const zipBuffer = await createQuoteBackupZip(req.params.id, baseUrl);
       
       res.setHeader('Content-Type', 'application/zip');
       res.setHeader('Content-Disposition', `attachment; filename="TRECASA_${quotation.quoteId}_backup.zip"`);
@@ -347,11 +353,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
+      // Determine base URL from request
+      const protocol = req.protocol;
+      const host = req.get('host');
+      const baseUrl = `${protocol}://${host}`;
+      
       // First, backup current database data to JSON files
       await backupDatabaseToFiles(userId);
       
-      // Then create ZIP from those files
-      const zipBuffer = await createAllDataBackupZip();
+      // Then create ZIP from those files with PDFs
+      console.log(`[Backup] Creating global backup with baseUrl: ${baseUrl}`);
+      const zipBuffer = await createAllDataBackupZip(userId, baseUrl);
       
       res.setHeader('Content-Type', 'application/zip');
       res.setHeader('Content-Disposition', `attachment; filename="TRECASA_AllData_${Date.now()}.zip"`);

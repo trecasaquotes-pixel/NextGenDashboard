@@ -284,7 +284,7 @@ export default function Print() {
               </div>
 
               {/* Print Content */}
-              <div id="print-interiors-root" className="print-content bg-white text-black">
+              <div id="print-interiors-root" className="print-content bg-white text-black" data-pdf-ready="true">
                 {/* Branded Header */}
                 <div className="print-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="flex items-start justify-between">
@@ -502,7 +502,7 @@ export default function Print() {
               </div>
 
               {/* Print Content */}
-              <div id="print-fc-root" className="print-content bg-white text-black">
+              <div id="print-fc-root" className="print-content bg-white text-black" data-pdf-ready="true">
                 {/* Branded Header */}
                 <div className="print-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="flex items-start justify-between">
