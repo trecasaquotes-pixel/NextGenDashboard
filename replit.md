@@ -18,8 +18,8 @@ TRECASA is a professional web application for creating and managing interior des
 5. **Scope** - Define work scope with two sections:
    - **Interiors**: Room-based line items (Kitchen, Living, Bedrooms, Bathrooms, Utility, Puja) with dimensions (L×H or L×W for SQFT), materials/finishes/hardware (defaults: BWP Ply + Laminate Matte + Nimmi)
    - **False Ceiling**: Room-based area calculations (L×W) with OTHERS section for Paint (Lumpsum), Lights (Count), Fan Hook Rods (Count)
-6. **Estimate** - View calculated summaries for interiors and false ceiling
-7. **Print** - Print-friendly view with placeholder PDF export buttons
+6. **Estimate** - View calculated summaries with room breakdowns and placeholder pricing (Subtotal, Discount 0%, GST 18%, Final Quote all showing ₹0.00)
+7. **Print** - PDF export page with two preview panels (Interiors and False Ceiling) showing TRECASA branding placeholders and disabled download buttons
 
 ## Features Implemented
 - User authentication with Replit Auth
@@ -122,10 +122,18 @@ TRECASA is a professional web application for creating and managing interior des
 - PATCH /api/quotations/:id/other-items/:itemId - Update item
 - DELETE /api/quotations/:id/other-items/:itemId - Delete item
 
-## Recent Changes
-- Initial setup with complete data schema
-- Implemented all frontend pages with exceptional visual design
-- Ready for backend implementation and integration
+## Recent Changes (January 13, 2025)
+- ✅ **Week 1 Milestone Complete**: Full quotation flow working end-to-end
+- Implemented Estimate page with two summary cards (Interiors and False Ceiling) showing:
+  - Room-based breakdowns with SQFT/Area totals
+  - Placeholder pricing: Subtotal ₹0.00, Discount 0%, GST (18%) ₹0.00, Final Quote ₹0.00
+  - Navigation: Back to Scope + Continue to Print
+- Implemented Print page with two PDF preview panels showing:
+  - TRECASA branding placeholders in preview boxes
+  - Disabled download buttons (Interiors PDF and False Ceiling PDF)
+  - Navigation: Back to Estimate
+- Full navigation flow tested: Login → Quotes List → Create → Project Info → Scope → Estimate → Print
+- All data persistence working with PostgreSQL database
 
 ## Next Steps (Future Enhancements)
 - Implement actual PDF generation with branded templates
