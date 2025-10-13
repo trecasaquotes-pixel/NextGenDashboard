@@ -1,0 +1,63 @@
+Build branded PRINT views (PDF-ready) for Interiors and False Ceiling.
+
+1) ROUTES
+- /quotation/[id]/print → show two tabs: Interiors | False Ceiling
+  Each tab shows a print preview and a [Download PDF] button.
+
+2) BRAND HEADER & FOOTER (freeze on all pages)
+- Header (fixed): 
+  TRECASA DESIGN STUDIO 🔴  (white text on deep green #013220)
+  Tagline below: “Luxury Interiors | Architecture | Build” (light gold #C9A74E)
+  Include small company details (left): Client Name, Project Name, Quote ID, Date.
+- Footer (fixed):
+  “© 2025 TRECASA DESIGN STUDIO 🔴 | www.trecasadesignstudio.com | @trecasa.designstudio”
+  Light gray text (#999). Thin gold top border (#C9A74E).
+- Ensure header/footer repeat on every PDF page (CSS @page + fixed positioned header/footer).
+
+3) INTERIORS PDF CONTENT
+- Title: “INTERIORS QUOTATION”
+- Section A: Project Summary (client name, address, category, bedrooms)
+- Section B: Room-wise Breakdown (tables)
+  Columns: Description | L | H | W | SQFT | Rate (₹/sft) | Amount (₹)
+  Group by room (Kitchen, Living, Bedrooms, etc.). Show Room Subtotal at end of each room.
+- Section C: Summary
+  Interiors Subtotal
+  Discount (value + type)
+  GST (18%)
+  Final Interiors Quote
+- Section D: Notes/Terms (simple placeholder text; 3–5 bullet points)
+
+4) FALSE CEILING PDF CONTENT
+- Title: “FALSE CEILING QUOTATION”
+- Section A: Project Summary
+- Section B: Room-wise False Ceiling Breakdown
+  Columns: Room | Type | L | W | Area (SQFT) | Rate (₹/sft) | Amount (₹)
+  Show room subtotals.
+- Section C: OTHERS
+  - Wall Painting – {PackageName}  ₹Amount
+    * list inclusions as bullets from painting package
+    * note: “Calculated for {Bedrooms}-Bedroom baseline (±10% from 3BHK)”
+    * only include if includeWallPainting === true
+  - False Ceiling – Painting ({Brand})  ₹Amount
+  - FC Lights  Qty × Rate = Amount
+  - Fan Hook Rods  Qty × Rate = Amount
+- Section D: Summary
+  FC Subtotal
+  Discount (if used)
+  GST (18%)
+  Final False Ceiling Quote
+
+5) UX / STYLING
+- Use Indian currency formatting everywhere.
+- Compact, minimal tables; zebra row styling; page breaks between large room sections with `break-inside: avoid;`.
+- Ensure long descriptions wrap neatly; avoid column overflow.
+- Provide [Download Interiors PDF] and [Download False Ceiling PDF] buttons that export the current tab using client-side print-to-PDF (window.print on a print-only page) or a lightweight PDF library. Keep simple for now.
+
+6) DATA
+- Read all values from the stored quote (totals already computed).
+- If a section has no rows, hide it gracefully.
+
+7) QA
+- No console errors.
+- Header and footer stay fixed on every page in the PDF.
+- Amounts and totals match the Estimate page.

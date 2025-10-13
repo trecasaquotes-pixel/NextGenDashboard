@@ -354,3 +354,87 @@
     height: 38px;
   }
 }
+
+/* Print Styles for PDF Export */
+@media print {
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 1.5cm 1cm;
+  }
+
+  /* Hide screen-only elements */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Show only the active tab content */
+  body {
+    background: white;
+  }
+
+  /* Print content styling */
+  .print-content {
+    page-break-after: auto;
+  }
+
+  /* Fixed header on every page */
+  .print-header {
+    position: running(header);
+    border-radius: 0 !important;
+  }
+
+  /* Fixed footer on every page */
+  .print-footer {
+    position: running(footer);
+    border-radius: 0 !important;
+  }
+
+  /* Prevent page breaks inside elements */
+  .break-inside-avoid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Tables */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  /* Zebra table styling */
+  .zebra-table tbody tr:nth-child(odd) {
+    background-color: #f9fafb !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .zebra-table tbody tr:nth-child(even) {
+    background-color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ensure colors print correctly */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Remove rounded corners in print */
+  .print\:rounded-none {
+    border-radius: 0 !important;
+  }
+}

@@ -1,22 +1,17 @@
-// TODO (Week 2/3): Implement PDF generation with TRECASA branded templates
-// TODO (Week 2/3): Add PDF generation library (e.g., jsPDF or React-PDF)
-// TODO (Week 2/3): Create Interiors PDF with quote details, items, and pricing
-// TODO (Week 2/3): Create False Ceiling PDF with area calculations and pricing
-// TODO (Week 2/3): Enable download buttons when PDF generation is ready
-// TODO (Week 2/3): Add email/share functionality to send PDFs to clients
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Download } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, Download, Printer } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
-import type { Quotation } from "@shared/schema";
+import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
+import { formatINR, safeN } from "@/lib/money";
 
 export default function Print() {
   const [match, params] = useRoute("/quotation/:id/print");
@@ -24,6 +19,7 @@ export default function Print() {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const [activeTab, setActiveTab] = useState<"interiors" | "false-ceiling">("interiors");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -43,94 +39,80 @@ export default function Print() {
     enabled: !!quotationId && isAuthenticated,
   });
 
-  if (!match || authLoading || !isAuthenticated) {
+  const { data: interiorItems = [] } = useQuery<InteriorItem[]>({
+    queryKey: [`/api/quotations/${quotationId}/interior-items`],
+    enabled: !!quotationId && isAuthenticated,
+  });
+
+  const { data: falseCeilingItems = [] } = useQuery<FalseCeilingItem[]>({
+    queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`],
+    enabled: !!quotationId && isAuthenticated,
+  });
+
+  const { data: otherItems = [] } = useQuery<OtherItem[]>({
+    queryKey: [`/api/quotations/${quotationId}/other-items`],
+    enabled: !!quotationId && isAuthenticated,
+  });
+
+  const handlePrint = (type: "interiors" | "false-ceiling") => {
+    setActiveTab(type);
+    // Small delay to ensure tab content is rendered
+    setTimeout(() => {
+      window.print();
+    }, 100);
+  };
+
+  if (!match || authLoading || !isAuthenticated || !quotation) {
     return null;
   }
 
+  // Calculate totals
+  const interiorsSubtotal = safeN(quotation.totals?.interiorsSubtotal);
+  const fcSubtotal = safeN(quotation.totals?.fcSubtotal);
+  const grandSubtotal = safeN(quotation.totals?.grandSubtotal);
+  
+  const discountValue = safeN(quotation.discountValue);
+  const discountAmount = quotation.discountType === 'percent' 
+    ? (grandSubtotal * discountValue) / 100 
+    : discountValue;
+  
+  const discounted = Math.max(0, grandSubtotal - discountAmount);
+  const gst = discounted * 0.18;
+  const finalTotal = discounted + gst;
+
+  // Group items by room
+  const interiorsByRoom = interiorItems.reduce((acc, item) => {
+    const room = item.roomType || "Other";
+    if (!acc[room]) acc[room] = [];
+    acc[room].push(item);
+    return acc;
+  }, {} as Record<string, InteriorItem[]>);
+
+  const falseCeilingByRoom = falseCeilingItems.reduce((acc, item) => {
+    const room = item.roomType || "Other";
+    if (!acc[room]) acc[room] = [];
+    acc[room].push(item);
+    return acc;
+  }, {} as Record<string, FalseCeilingItem[]>);
+
+  const currentDate = new Date().toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <AppHeader />
-      <QuotationHeader quotationId={quotationId!} currentStep="print" />
+      {/* Screen view with navigation */}
+      <div className="print:hidden">
+        <AppHeader />
+        <QuotationHeader quotationId={quotationId!} currentStep="print" />
+      </div>
 
       <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-7xl mx-auto space-y-6">
-          {/* PDF Preview Panels */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Interiors PDF Preview */}
-            <Card>
-              <CardHeader className="border-b border-card-border">
-                <CardTitle className="text-xl">Interiors PDF</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {/* Preview Box */}
-                  <div 
-                    className="bg-muted rounded-lg border-2 border-dashed border-muted-foreground/25 p-12 min-h-[400px] flex items-center justify-center"
-                    data-testid="preview-interiors-pdf"
-                  >
-                    <div className="text-center space-y-2">
-                      <div className="w-16 h-16 rounded-md bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                        <span className="text-primary font-bold text-2xl">T</span>
-                      </div>
-                      <p className="text-muted-foreground font-medium">PDF Preview</p>
-                      <p className="text-sm text-muted-foreground max-w-xs">
-                        Header &amp; Footer with TRECASA logo • Content will render later
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Download Button */}
-                  <Button 
-                    className="w-full" 
-                    disabled
-                    data-testid="button-download-interiors-pdf"
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download Interiors PDF
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* False Ceiling PDF Preview */}
-            <Card>
-              <CardHeader className="border-b border-card-border">
-                <CardTitle className="text-xl">False Ceiling PDF</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {/* Preview Box */}
-                  <div 
-                    className="bg-muted rounded-lg border-2 border-dashed border-muted-foreground/25 p-12 min-h-[400px] flex items-center justify-center"
-                    data-testid="preview-ceiling-pdf"
-                  >
-                    <div className="text-center space-y-2">
-                      <div className="w-16 h-16 rounded-md bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                        <span className="text-primary font-bold text-2xl">T</span>
-                      </div>
-                      <p className="text-muted-foreground font-medium">PDF Preview</p>
-                      <p className="text-sm text-muted-foreground max-w-xs">
-                        Header &amp; Footer with TRECASA logo • Content will render later
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Download Button */}
-                  <Button 
-                    className="w-full" 
-                    disabled
-                    data-testid="button-download-ceiling-pdf"
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download False Ceiling PDF
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Navigation */}
-          <div className="flex gap-3">
+          {/* Screen navigation */}
+          <div className="print:hidden">
             <Button 
               variant="outline" 
               onClick={() => navigate(`/quotation/${quotationId}/estimate`)}
@@ -140,10 +122,335 @@ export default function Print() {
               Back to Estimate
             </Button>
           </div>
+
+          {/* Tabs for screen view */}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2 print:hidden">
+              <TabsTrigger value="interiors" data-testid="tab-print-interiors">Interiors</TabsTrigger>
+              <TabsTrigger value="false-ceiling" data-testid="tab-print-false-ceiling">False Ceiling</TabsTrigger>
+            </TabsList>
+
+            {/* Interiors Tab */}
+            <TabsContent value="interiors" className="space-y-6">
+              {/* Download Button - Screen only */}
+              <div className="print:hidden">
+                <Button 
+                  onClick={() => handlePrint("interiors")}
+                  size="lg"
+                  data-testid="button-download-interiors-pdf"
+                >
+                  <Printer className="mr-2 h-5 w-5" />
+                  Download Interiors PDF
+                </Button>
+              </div>
+
+              {/* Print Content */}
+              <div className="print-content bg-white text-black">
+                {/* Branded Header */}
+                <div className="print-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h1 className="text-3xl font-bold mb-2">TRECASA DESIGN STUDIO 🔴</h1>
+                      <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
+                    </div>
+                    <div className="text-right text-sm space-y-1">
+                      <p><strong>Client:</strong> {quotation.clientName || "N/A"}</p>
+                      <p><strong>Quote ID:</strong> {quotation.quoteId}</p>
+                      <p><strong>Date:</strong> {currentDate}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-8 space-y-8">
+                  {/* Title */}
+                  <div className="text-center border-b-2 border-[#C9A74E] pb-4">
+                    <h2 className="text-2xl font-bold text-[#013220]">INTERIORS QUOTATION</h2>
+                  </div>
+
+                  {/* Section A: Project Summary */}
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
+                        <p><strong>Project Category:</strong> {quotation.projectType || "N/A"}</p>
+                      </div>
+                      <div>
+                        <p><strong>Address:</strong> {quotation.projectAddress || "N/A"}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section B: Room-wise Breakdown */}
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM-WISE BREAKDOWN</h3>
+                    
+                    {Object.entries(interiorsByRoom).map(([room, items]) => {
+                      const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
+                      
+                      return (
+                        <div key={room} className="break-inside-avoid">
+                          <h4 className="font-semibold text-[#013220] mb-2">{room}</h4>
+                          <table className="w-full text-sm border-collapse zebra-table">
+                            <thead>
+                              <tr className="bg-gray-100">
+                                <th className="border border-gray-300 px-2 py-1 text-left">Description</th>
+                                <th className="border border-gray-300 px-2 py-1 text-center w-16">L</th>
+                                <th className="border border-gray-300 px-2 py-1 text-center w-16">H</th>
+                                <th className="border border-gray-300 px-2 py-1 text-center w-16">W</th>
+                                <th className="border border-gray-300 px-2 py-1 text-center w-20">SQFT</th>
+                                <th className="border border-gray-300 px-2 py-1 text-right w-24">Rate (₹/sft)</th>
+                                <th className="border border-gray-300 px-2 py-1 text-right w-28">Amount (₹)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {items.map((item, idx) => (
+                                <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                  <td className="border border-gray-300 px-2 py-1">{item.description || "N/A"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono">{item.length || "-"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono">{item.height || "-"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono">{item.width || "-"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono font-semibold">{item.sqft || "0.00"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-right font-mono">₹{item.unitPrice || "0"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-right font-mono font-semibold">₹{item.totalPrice || "0"}</td>
+                                </tr>
+                              ))}
+                              <tr className="bg-[#013220] text-white font-semibold">
+                                <td colSpan={6} className="border border-gray-300 px-2 py-2 text-right">Room Subtotal:</td>
+                                <td className="border border-gray-300 px-2 py-2 text-right font-mono">{formatINR(roomTotal)}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Section C: Summary */}
+                  <div className="space-y-3 break-inside-avoid">
+                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">SUMMARY</h3>
+                    <table className="w-full max-w-md ml-auto text-sm">
+                      <tbody>
+                        <tr>
+                          <td className="py-1 text-right pr-4">Interiors Subtotal:</td>
+                          <td className="py-1 text-right font-mono font-semibold">{formatINR(interiorsSubtotal)}</td>
+                        </tr>
+                        {discountAmount > 0 && (
+                          <tr>
+                            <td className="py-1 text-right pr-4">
+                              Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
+                            </td>
+                            <td className="py-1 text-right font-mono text-red-600">-{formatINR(discountAmount)}</td>
+                          </tr>
+                        )}
+                        <tr>
+                          <td className="py-1 text-right pr-4">GST (18%):</td>
+                          <td className="py-1 text-right font-mono">{formatINR(gst)}</td>
+                        </tr>
+                        <tr className="border-t-2 border-[#C9A74E]">
+                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#013220]">Final Interiors Quote:</td>
+                          <td className="py-2 text-right font-mono text-lg font-bold text-[#013220]">{formatINR(finalTotal)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Section D: Notes/Terms */}
+                  <div className="space-y-3 break-inside-avoid">
+                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">TERMS & CONDITIONS</h3>
+                    <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
+                      <li>All rates are inclusive of margin. GST extra as applicable.</li>
+                      <li>50% advance payment required to commence work.</li>
+                      <li>Balance payment upon completion and handover.</li>
+                      <li>Prices valid for 30 days from the date of quotation.</li>
+                      <li>Any changes to the scope of work will be charged separately.</li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Branded Footer */}
+                <div className="print-footer bg-gray-100 p-4 text-center text-sm text-gray-600 border-t-2 border-[#C9A74E] rounded-b-lg print:rounded-none">
+                  <p>© 2025 TRECASA DESIGN STUDIO 🔴 | www.trecasadesignstudio.com | @trecasa.designstudio</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* False Ceiling Tab */}
+            <TabsContent value="false-ceiling" className="space-y-6">
+              {/* Download Button - Screen only */}
+              <div className="print:hidden">
+                <Button 
+                  onClick={() => handlePrint("false-ceiling")}
+                  size="lg"
+                  data-testid="button-download-fc-pdf"
+                >
+                  <Printer className="mr-2 h-5 w-5" />
+                  Download False Ceiling PDF
+                </Button>
+              </div>
+
+              {/* Print Content */}
+              <div className="print-content bg-white text-black">
+                {/* Branded Header */}
+                <div className="print-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h1 className="text-3xl font-bold mb-2">TRECASA DESIGN STUDIO 🔴</h1>
+                      <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
+                    </div>
+                    <div className="text-right text-sm space-y-1">
+                      <p><strong>Client:</strong> {quotation.clientName || "N/A"}</p>
+                      <p><strong>Quote ID:</strong> {quotation.quoteId}</p>
+                      <p><strong>Date:</strong> {currentDate}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-8 space-y-8">
+                  {/* Title */}
+                  <div className="text-center border-b-2 border-[#C9A74E] pb-4">
+                    <h2 className="text-2xl font-bold text-[#013220]">FALSE CEILING QUOTATION</h2>
+                  </div>
+
+                  {/* Section A: Project Summary */}
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
+                        <p><strong>Project Category:</strong> {quotation.projectType || "N/A"}</p>
+                      </div>
+                      <div>
+                        <p><strong>Address:</strong> {quotation.projectAddress || "N/A"}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section B: Room-wise False Ceiling Breakdown */}
+                  {falseCeilingItems.length > 0 && (
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
+                      
+                      {Object.entries(falseCeilingByRoom).map(([room, items]) => {
+                        const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
+                        
+                        return (
+                          <div key={room} className="break-inside-avoid">
+                            <h4 className="font-semibold text-[#013220] mb-2">{room}</h4>
+                            <table className="w-full text-sm border-collapse zebra-table">
+                              <thead>
+                                <tr className="bg-gray-100">
+                                  <th className="border border-gray-300 px-2 py-1 text-left">Description</th>
+                                  <th className="border border-gray-300 px-2 py-1 text-center w-20">L (ft)</th>
+                                  <th className="border border-gray-300 px-2 py-1 text-center w-20">W (ft)</th>
+                                  <th className="border border-gray-300 px-2 py-1 text-center w-24">Area (SQFT)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {items.map((item, idx) => (
+                                  <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                    <td className="border border-gray-300 px-2 py-1">{item.description || "N/A"}</td>
+                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono">{item.length || "-"}</td>
+                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono">{item.width || "-"}</td>
+                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono font-semibold">{item.area || "0.00"}</td>
+                                  </tr>
+                                ))}
+                                <tr className="bg-[#013220] text-white font-semibold">
+                                  <td colSpan={3} className="border border-gray-300 px-2 py-2 text-right">Room Area:</td>
+                                  <td className="border border-gray-300 px-2 py-2 text-center font-mono">{roomArea.toFixed(2)} SQFT</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Section C: OTHERS */}
+                  {otherItems.length > 0 && (
+                    <div className="space-y-4 break-inside-avoid">
+                      <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">OTHERS</h3>
+                      <table className="w-full text-sm border-collapse zebra-table">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="border border-gray-300 px-2 py-1 text-left">Item Type</th>
+                            <th className="border border-gray-300 px-2 py-1 text-left">Description</th>
+                            <th className="border border-gray-300 px-2 py-1 text-center w-28">Type</th>
+                            <th className="border border-gray-300 px-2 py-1 text-right w-32">Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {otherItems.map((item, idx) => (
+                            <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              <td className="border border-gray-300 px-2 py-1 font-semibold">{item.itemType || "N/A"}</td>
+                              <td className="border border-gray-300 px-2 py-1">{item.description || "N/A"}</td>
+                              <td className="border border-gray-300 px-2 py-1 text-center capitalize">{item.valueType || "lumpsum"}</td>
+                              <td className="border border-gray-300 px-2 py-1 text-right font-mono">{item.value || "0"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Section D: Summary */}
+                  <div className="space-y-3 break-inside-avoid">
+                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">SUMMARY</h3>
+                    <table className="w-full max-w-md ml-auto text-sm">
+                      <tbody>
+                        <tr>
+                          <td className="py-1 text-right pr-4">False Ceiling Subtotal:</td>
+                          <td className="py-1 text-right font-mono font-semibold">{formatINR(fcSubtotal)}</td>
+                        </tr>
+                        {discountAmount > 0 && (
+                          <tr>
+                            <td className="py-1 text-right pr-4">
+                              Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
+                            </td>
+                            <td className="py-1 text-right font-mono text-red-600">-{formatINR(discountAmount)}</td>
+                          </tr>
+                        )}
+                        <tr>
+                          <td className="py-1 text-right pr-4">GST (18%):</td>
+                          <td className="py-1 text-right font-mono">{formatINR(gst)}</td>
+                        </tr>
+                        <tr className="border-t-2 border-[#C9A74E]">
+                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#013220]">Final False Ceiling Quote:</td>
+                          <td className="py-2 text-right font-mono text-lg font-bold text-[#013220]">{formatINR(finalTotal)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Notes/Terms */}
+                  <div className="space-y-3 break-inside-avoid">
+                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">TERMS & CONDITIONS</h3>
+                    <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
+                      <li>All rates are inclusive of margin. GST extra as applicable.</li>
+                      <li>50% advance payment required to commence work.</li>
+                      <li>Balance payment upon completion and handover.</li>
+                      <li>Prices valid for 30 days from the date of quotation.</li>
+                      <li>Any changes to the scope of work will be charged separately.</li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Branded Footer */}
+                <div className="print-footer bg-gray-100 p-4 text-center text-sm text-gray-600 border-t-2 border-[#C9A74E] rounded-b-lg print:rounded-none">
+                  <p>© 2025 TRECASA DESIGN STUDIO 🔴 | www.trecasadesignstudio.com | @trecasa.designstudio</p>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
 
-      <AppFooter />
+      <div className="print:hidden">
+        <AppFooter />
+      </div>
     </div>
   );
 }
