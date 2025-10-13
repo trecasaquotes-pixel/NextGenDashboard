@@ -30,6 +30,47 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { calculateRate, calculateAmount, type BuildType, type CoreMaterial, type FinishMaterial, type HardwareBrand } from "@/lib/rates";
+
+// Brand options for dropdowns
+const CORE_MATERIALS: CoreMaterial[] = [
+  "Generic Ply",
+  "Century Ply",
+  "Green Ply",
+  "Kitply",
+  "HDHMR",
+  "BWP",
+  "MDF",
+  "HDF",
+];
+
+const FINISH_MATERIALS: FinishMaterial[] = [
+  "Generic Laminate",
+  "Greenlam",
+  "Merino",
+  "Century Laminate",
+  "Duco",
+  "PU",
+  "Acrylic",
+  "Veneer",
+  "Fluted Panel",
+  "Back Painted Glass",
+  "CNC Finish",
+];
+
+const HARDWARE_BRANDS: HardwareBrand[] = [
+  "Nimmi",
+  "Ebco",
+  "Hettich",
+  "Hafele",
+  "Sleek",
+  "Blum",
+];
+
+const BUILD_TYPES: { value: BuildType; label: string }[] = [
+  { value: "handmade", label: "Work-on-Site" },
+  { value: "factory", label: "Factory Finish" },
+];
 
 export default function Scope() {
   const [match, params] = useRoute("/quotation/:id/scope");
@@ -208,12 +249,35 @@ export default function Scope() {
     const normalizedValue = value === "" ? null : value;
     const updatedData: any = { [field]: normalizedValue };
 
+    // Get updated values for all fields
+    const newLength = field === "length" ? normalizedValue : item.length;
+    const newHeight = field === "height" ? normalizedValue : item.height;
+    const newWidth = field === "width" ? normalizedValue : item.width;
+    const newBuildType = (field === "buildType" ? normalizedValue : item.buildType) || "handmade";
+    const newMaterial = (field === "material" ? normalizedValue : item.material) || "Generic Ply";
+    const newFinish = (field === "finish" ? normalizedValue : item.finish) || "Generic Laminate";
+    const newHardware = (field === "hardware" ? normalizedValue : item.hardware) || "Nimmi";
+
     // Recalculate sqft if dimensions change
     if (field === "length" || field === "height" || field === "width") {
-      const newLength = field === "length" ? normalizedValue : item.length;
-      const newHeight = field === "height" ? normalizedValue : item.height;
-      const newWidth = field === "width" ? normalizedValue : item.width;
       updatedData.sqft = calculateSqft(newLength, newHeight, newWidth);
+    }
+
+    // Recalculate rate and amount if brand fields or sqft change
+    const sqft = field === "length" || field === "height" || field === "width" 
+      ? parseFloat(updatedData.sqft || "0")
+      : parseFloat(item.sqft || "0");
+    
+    if (field === "buildType" || field === "material" || field === "finish" || field === "hardware" || 
+        field === "length" || field === "height" || field === "width") {
+      const rate = calculateRate(
+        newBuildType as BuildType,
+        newMaterial as CoreMaterial,
+        newFinish as FinishMaterial,
+        newHardware as HardwareBrand
+      );
+      updatedData.unitPrice = rate.toString();
+      updatedData.totalPrice = calculateAmount(rate, sqft).toString();
     }
 
     updateInteriorItem.mutate({ id, data: updatedData });
@@ -286,8 +350,9 @@ export default function Scope() {
                             onClick={() => addInteriorItem.mutate({
                               quotationId: quotationId!,
                               roomType,
-                              material: "BWP Ply",
-                              finish: "Laminate (Matte)",
+                              buildType: "handmade",
+                              material: "Generic Ply",
+                              finish: "Generic Laminate",
                               hardware: "Nimmi",
                             })}
                             data-testid={`button-add-interior-${roomType.toLowerCase()}`}
@@ -302,14 +367,17 @@ export default function Scope() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead className="w-[200px]">Description</TableHead>
-                                  <TableHead className="w-[80px]">L (ft)</TableHead>
-                                  <TableHead className="w-[80px]">H (ft)</TableHead>
-                                  <TableHead className="w-[80px]">W (ft)</TableHead>
-                                  <TableHead className="w-[100px]">SQFT</TableHead>
-                                  <TableHead className="w-[140px]">Material</TableHead>
+                                  <TableHead className="w-[180px]">Description</TableHead>
+                                  <TableHead className="w-[70px]">L (ft)</TableHead>
+                                  <TableHead className="w-[70px]">H (ft)</TableHead>
+                                  <TableHead className="w-[70px]">W (ft)</TableHead>
+                                  <TableHead className="w-[90px]">SQFT</TableHead>
+                                  <TableHead className="w-[150px]">Build Type</TableHead>
+                                  <TableHead className="w-[140px]">Core Material</TableHead>
                                   <TableHead className="w-[160px]">Finish</TableHead>
                                   <TableHead className="w-[120px]">Hardware</TableHead>
+                                  <TableHead className="w-[100px]">Rate (₹/sft)</TableHead>
+                                  <TableHead className="w-[120px]">Amount (₹)</TableHead>
                                   <TableHead className="w-[60px]"></TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -361,28 +429,82 @@ export default function Scope() {
                                       </span>
                                     </TableCell>
                                     <TableCell>
-                                      <Input
-                                        value={item.material || ""}
-                                        onChange={(e) => handleInteriorFieldChange(item.id, "material", e.target.value)}
-                                        className="h-8"
-                                        data-testid={`input-material-${item.id}`}
-                                      />
+                                      <Select
+                                        value={item.buildType || "handmade"}
+                                        onValueChange={(value) => handleInteriorFieldChange(item.id, "buildType", value)}
+                                      >
+                                        <SelectTrigger className="h-8" data-testid={`select-buildtype-${item.id}`}>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {BUILD_TYPES.map((type) => (
+                                            <SelectItem key={type.value} value={type.value}>
+                                              {type.label}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
                                     </TableCell>
                                     <TableCell>
-                                      <Input
-                                        value={item.finish || ""}
-                                        onChange={(e) => handleInteriorFieldChange(item.id, "finish", e.target.value)}
-                                        className="h-8"
-                                        data-testid={`input-finish-${item.id}`}
-                                      />
+                                      <Select
+                                        value={item.material || "Generic Ply"}
+                                        onValueChange={(value) => handleInteriorFieldChange(item.id, "material", value)}
+                                      >
+                                        <SelectTrigger className="h-8" data-testid={`select-material-${item.id}`}>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {CORE_MATERIALS.map((material) => (
+                                            <SelectItem key={material} value={material}>
+                                              {material}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
                                     </TableCell>
                                     <TableCell>
-                                      <Input
-                                        value={item.hardware || ""}
-                                        onChange={(e) => handleInteriorFieldChange(item.id, "hardware", e.target.value)}
-                                        className="h-8"
-                                        data-testid={`input-hardware-${item.id}`}
-                                      />
+                                      <Select
+                                        value={item.finish || "Generic Laminate"}
+                                        onValueChange={(value) => handleInteriorFieldChange(item.id, "finish", value)}
+                                      >
+                                        <SelectTrigger className="h-8" data-testid={`select-finish-${item.id}`}>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {FINISH_MATERIALS.map((finish) => (
+                                            <SelectItem key={finish} value={finish}>
+                                              {finish}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Select
+                                        value={item.hardware || "Nimmi"}
+                                        onValueChange={(value) => handleInteriorFieldChange(item.id, "hardware", value)}
+                                      >
+                                        <SelectTrigger className="h-8" data-testid={`select-hardware-${item.id}`}>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {HARDWARE_BRANDS.map((hardware) => (
+                                            <SelectItem key={hardware} value={hardware}>
+                                              {hardware}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </TableCell>
+                                    <TableCell>
+                                      <span className="font-mono text-sm font-semibold" data-testid={`text-rate-${item.id}`}>
+                                        ₹{item.unitPrice || "0"}
+                                      </span>
+                                    </TableCell>
+                                    <TableCell>
+                                      <span className="font-mono text-sm font-semibold" data-testid={`text-amount-${item.id}`}>
+                                        ₹{item.totalPrice || "0"}
+                                      </span>
                                     </TableCell>
                                     <TableCell>
                                       <Button
