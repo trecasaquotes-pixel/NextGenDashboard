@@ -59,11 +59,12 @@ export default function Dashboard() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const newQuotation = await apiRequest("POST", "/api/quotations", {
+      const response = await apiRequest("POST", "/api/quotations", {
         projectName: "New Project",
         clientName: "Client Name",
         status: "draft",
       });
+      const newQuotation = await response.json();
       return newQuotation;
     },
     onSuccess: (data: any) => {

@@ -202,13 +202,15 @@ export default function Scope() {
     const item = interiorItems.find((i) => i.id === id);
     if (!item) return;
 
-    const updatedData: any = { [field]: value };
+    // Convert empty strings to null for numeric fields
+    const normalizedValue = value === "" ? null : value;
+    const updatedData: any = { [field]: normalizedValue };
 
     // Recalculate sqft if dimensions change
     if (field === "length" || field === "height" || field === "width") {
-      const newLength = field === "length" ? value : item.length;
-      const newHeight = field === "height" ? value : item.height;
-      const newWidth = field === "width" ? value : item.width;
+      const newLength = field === "length" ? normalizedValue : item.length;
+      const newHeight = field === "height" ? normalizedValue : item.height;
+      const newWidth = field === "width" ? normalizedValue : item.width;
       updatedData.sqft = calculateSqft(newLength, newHeight, newWidth);
     }
 
@@ -219,12 +221,14 @@ export default function Scope() {
     const item = falseCeilingItems.find((i) => i.id === id);
     if (!item) return;
 
-    const updatedData: any = { [field]: value };
+    // Convert empty strings to null for numeric fields
+    const normalizedValue = value === "" ? null : value;
+    const updatedData: any = { [field]: normalizedValue };
 
     // Recalculate area if dimensions change
     if (field === "length" || field === "width") {
-      const newLength = field === "length" ? value : item.length;
-      const newWidth = field === "width" ? value : item.width;
+      const newLength = field === "length" ? normalizedValue : item.length;
+      const newWidth = field === "width" ? normalizedValue : item.width;
       updatedData.area = calculateArea(newLength, newWidth);
     }
 
