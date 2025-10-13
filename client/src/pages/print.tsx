@@ -12,6 +12,7 @@ import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { formatINR, safeN } from "@/lib/money";
+import { defaultTerms, renderTerms } from "@/lib/terms";
 
 export default function Print() {
   const [match, params] = useRoute("/quotation/:id/print");
@@ -132,7 +133,7 @@ export default function Print() {
       <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Screen navigation */}
-          <div className="print:hidden">
+          <div className="print:hidden flex items-center gap-3">
             <Button 
               variant="outline" 
               onClick={() => navigate(`/quotation/${quotationId}/estimate`)}
@@ -140,6 +141,13 @@ export default function Print() {
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Estimate
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate(`/quotation/${quotationId}/estimate#terms`)}
+              data-testid="button-edit-terms"
+            >
+              Edit Terms & Conditions
             </Button>
           </div>
 
@@ -280,11 +288,18 @@ export default function Print() {
                   <div className="space-y-3 break-inside-avoid">
                     <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">TERMS & CONDITIONS</h3>
                     <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
-                      <li>All rates are inclusive of margin. GST extra as applicable.</li>
-                      <li>50% advance payment required to commence work.</li>
-                      <li>Balance payment upon completion and handover.</li>
-                      <li>Prices valid for 30 days from the date of quotation.</li>
-                      <li>Any changes to the scope of work will be charged separately.</li>
+                      {(() => {
+                        const terms = quotation.terms?.interiors;
+                        const lines = terms?.useDefault
+                          ? renderTerms(defaultTerms.default_interiors, {
+                              clientName: quotation.clientName,
+                              projectName: quotation.projectName,
+                              quoteId: quotation.quoteId,
+                              ...terms.vars
+                            })
+                          : (terms?.customText || "").split('\n').filter(line => line.trim());
+                        return lines.map((line, idx) => <li key={idx}>{line}</li>);
+                      })()}
                     </ul>
                   </div>
                 </div>
@@ -449,11 +464,18 @@ export default function Print() {
                   <div className="space-y-3 break-inside-avoid">
                     <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">TERMS & CONDITIONS</h3>
                     <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
-                      <li>All rates are inclusive of margin. GST extra as applicable.</li>
-                      <li>50% advance payment required to commence work.</li>
-                      <li>Balance payment upon completion and handover.</li>
-                      <li>Prices valid for 30 days from the date of quotation.</li>
-                      <li>Any changes to the scope of work will be charged separately.</li>
+                      {(() => {
+                        const terms = quotation.terms?.falseCeiling;
+                        const lines = terms?.useDefault
+                          ? renderTerms(defaultTerms.default_false_ceiling, {
+                              clientName: quotation.clientName,
+                              projectName: quotation.projectName,
+                              quoteId: quotation.quoteId,
+                              ...terms.vars
+                            })
+                          : (terms?.customText || "").split('\n').filter(line => line.trim());
+                        return lines.map((line, idx) => <li key={idx}>{line}</li>);
+                      })()}
                     </ul>
                   </div>
                 </div>
