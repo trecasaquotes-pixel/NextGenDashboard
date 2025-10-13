@@ -142,6 +142,28 @@ TRECASA is a professional web application for creating and managing interior des
   - Previous issue: Sequential input changes caused SQFT to remain 0 due to query not refetching between changes
   - Solution: Use `onBlur` with uncontrolled inputs and `key` prop to force re-renders when data updates
   - Applied to both Interior items and False Ceiling items
+- ✅ **Totals Calculation System COMPLETE** (Architect Approved): Real-time subtotal computation and persistence
+  - **New Utilities**: 
+    - `lib/money.ts`: formatINR for Indian currency display, safeN for safe numeric coercion
+    - `lib/calculateTotals.ts`: calculateQuoteTotals utility for computing all subtotals
+  - **Schema Updates**:
+    - Added `totals` jsonb field to quotations: { interiorsSubtotal, fcSubtotal, grandSubtotal, updatedAt }
+  - **Calculation Logic**:
+    - Interiors subtotal: Sum of all interior item totalPrice values
+    - FC subtotal: Sum of false ceiling item totalPrice + other item totalPrice values
+    - Grand subtotal: interiorsSubtotal + fcSubtotal
+  - **Auto-Recalculation**:
+    - useEffect on Scope page triggers totals update whenever items change
+    - Mutation updates quote.totals via PATCH /api/quotations/:id
+    - Only updates database when totals actually change (prevents unnecessary writes)
+  - **UI Feedback**:
+    - "Updated just now" indicator in Scope footer (data-testid="text-totals-updated")
+    - Real-time subtotal display: "Subtotal: ₹XX,XXX.XX"
+    - Timestamp tracking for last update
+  - **Bug Fixes**:
+    - Fixed critical issue where FC/other items were ignored (hardcoded to 0)
+    - Now properly aggregates all line items with pricing across all categories
+  - **Testing Status**: ✅ Architect verified calculation accuracy and performance
 - ✅ **Template System COMPLETE** (Architect Approved): Room auto-creation based on project category
   - **New Components**: TemplateModal component (components/template-modal.tsx) with preview, customization, and application workflows
   - **New Module**: Templates definitions (lib/templates.ts) with predefined configurations for all project types
