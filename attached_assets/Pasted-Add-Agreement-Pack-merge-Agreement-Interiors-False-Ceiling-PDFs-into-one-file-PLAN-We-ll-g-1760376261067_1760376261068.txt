@@ -1,0 +1,74 @@
+Add “Agreement Pack” — merge Agreement + Interiors + False Ceiling PDFs into one file.
+
+PLAN
+We’ll generate each section as a PDF (Agreement, Interiors, False Ceiling), then merge them on the client using pdf-lib.
+
+1) DEPENDENCIES
+- Add: pdf-lib (for merging)
+- Add: html2pdf.js (for HTML→PDF capture if not already using a PDF lib)
+Package.json:
+  "pdf-lib": "^1.17.1",
+  "html2pdf.js": "^0.10.1"
+
+2) LIB HELPERS (lib/pdf.ts)
+Create lib/pdf.ts with:
+- async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array>
+   • Use html2pdf.js with A4 portrait, margin ~10–12mm, print CSS.
+   • Return Uint8Array of the generated PDF.
+- async function mergePdfBytes(docs: Uint8Array[]): Promise<Uint8Array>
+   • Use PDFDocument from 'pdf-lib' to create a new doc.
+   • For each input, load as PDFDocument and copy all pages into the merged doc.
+   • Return merged.save().
+
+- async function downloadBytesAs(filename: string, bytes: Uint8Array)
+   • Create a Blob and trigger a download.
+
+3) PRINT VIEWS — CAPTURE HOOKS
+Ensure the three print views (Agreement, Interiors, False Ceiling) each render inside a specific container with fixed IDs:
+- Agreement:  <div id="print-agreement-root">...</div>
+- Interiors:  <div id="print-interiors-root">...</div>
+- FC:         <div id="print-fc-root">...</div>
+
+Each view must be renderable headlessly (no dialogs). Keep header/footer fixed via print CSS.
+
+4) AGREEMENT PAGE — NEW BUTTON
+On /quotes/[id]/agreement add a primary button:
+   [Download Agreement Pack (Agreement + Annexures)]
+Click flow:
+   - Render Agreement preview to ensure DOM is ready.
+   - Get bytesA = htmlToPdfBytes( document.getElementById('print-agreement-root')! )
+   - If agreement.includeAnnexureInteriors === true:
+        bytesB = htmlToPdfBytes( document.getElementById('print-interiors-root')! )
+     else bytesB = null
+   - If agreement.includeAnnexureFC === true:
+        bytesC = htmlToPdfBytes( document.getElementById('print-fc-root')! )
+     else bytesC = null
+   - Merge in order: [Agreement, Interiors?, FC?] (skip nulls)
+       const merged = await mergePdfBytes([bytesA, bytesB, bytesC].filter(Boolean) as Uint8Array[]);
+   - downloadBytesAs(`TRECASA_AgreementPack_${quoteId}.pdf`, merged)
+
+5) ANNEXURE TITLES / DIVIDERS
+Before merging, insert a simple cover page for each annexure so the pack is readable:
+- After Agreement pages, insert a one-page section title:
+   “Annexure A — Interiors Quotation”
+- After Interiors pages, insert:
+   “Annexure B — False Ceiling Quotation”
+Implementation:
+- Create small HTML sections for Annexure A and Annexure B titles (A4 centered, brand header).
+- Convert each title section with htmlToPdfBytes and include those between merges:
+   merged order = [Agreement, Annexure A title (if interiors), Interiors, Annexure B title (if FC), FC]
+
+6) PAGE NUMBERS (optional but nice)
+Add a print-only CSS footer element inside each print root that shows “Page X of Y” using counters.
+If complex, skip dynamic X/Y and at least show “Page: {auto page counter}”. Keep the existing branded footer intact.
+
+7) PERFORMANCE / UX
+- Show a small toast “Generating Agreement Pack…” while running.
+- If a section DOM is not mounted, mount it silently in a hidden container before capture.
+- After download, show “Agreement Pack downloaded.”
+
+8) QA
+- Toggle Annexure checkboxes on Agreement page and ensure the pack includes/excludes them accordingly.
+- Large quotes (many pages) should still merge without errors.
+- Header & footer remain fixed; no overlapping content.
+- File name uses Quote ID.
