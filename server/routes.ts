@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema } from "@shared/schema";
 import { generateQuoteId } from "./utils/generateQuoteId";
+import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles } from "./lib/backup";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -317,6 +318,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting other item:", error);
       res.status(500).json({ message: "Failed to delete other item" });
+    }
+  });
+
+  // Backup routes
+  app.get('/api/quotations/:id/backup/download', isAuthenticated, async (req: any, res) => {
+    try {
+      const quotation = await storage.getQuotation(req.params.id);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const zipBuffer = await createQuoteBackupZip(req.params.id);
+      
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="TRECASA_${quotation.quoteId}_backup.zip"`);
+      res.send(zipBuffer);
+    } catch (error) {
+      console.error("Error creating quote backup:", error);
+      res.status(500).json({ message: "Failed to create backup" });
+    }
+  });
+
+  app.get('/api/backup/all-data', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // First, backup current database data to JSON files
+      await backupDatabaseToFiles(userId);
+      
+      // Then create ZIP from those files
+      const zipBuffer = await createAllDataBackupZip();
+      
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="TRECASA_AllData_${Date.now()}.zip"`);
+      res.send(zipBuffer);
+    } catch (error) {
+      console.error("Error creating full backup:", error);
+      res.status(500).json({ message: "Failed to create full backup" });
     }
   });
 

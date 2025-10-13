@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Download, Printer } from "lucide-react";
+import { ArrowLeft, Download, Printer, Archive } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
@@ -200,6 +200,16 @@ export default function Print() {
                 data-testid="button-view-agreement"
               >
                 View Agreement
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  window.location.href = `/api/quotations/${quotationId}/backup/download`;
+                }}
+                data-testid="button-download-backup-zip"
+              >
+                <Archive className="mr-2 h-4 w-4" />
+                Download Backup ZIP
               </Button>
             </div>
 

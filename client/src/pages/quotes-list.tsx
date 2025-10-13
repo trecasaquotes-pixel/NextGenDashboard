@@ -6,7 +6,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut } from "lucide-react";
+import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -195,14 +195,26 @@ export default function QuotesList() {
               <h2 className="text-3xl font-bold text-foreground">Quotations</h2>
               <p className="text-muted-foreground mt-1">Manage your interior design quotations</p>
             </div>
-            <Button
-              onClick={() => createMutation.mutate()}
-              disabled={createMutation.isPending}
-              data-testid="button-new-quotation"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              New Quotation
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  window.location.href = '/api/backup/all-data';
+                }}
+                data-testid="button-download-all-data"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download All Data
+              </Button>
+              <Button
+                onClick={() => createMutation.mutate()}
+                disabled={createMutation.isPending}
+                data-testid="button-new-quotation"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                New Quotation
+              </Button>
+            </div>
           </div>
 
           {isLoading ? (
@@ -293,6 +305,16 @@ export default function QuotesList() {
                             >
                               <Printer className="mr-2 h-4 w-4" />
                               Print
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                window.location.href = `/api/quotations/${quotation.id}/backup/download`;
+                              }}
+                              data-testid={`action-backup-${quotation.id}`}
+                            >
+                              <Archive className="mr-2 h-4 w-4" />
+                              Download Backup ZIP
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
