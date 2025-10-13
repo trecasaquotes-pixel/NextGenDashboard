@@ -80,11 +80,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
       
+      // Initialize default signoff
+      const defaultSignoff = {
+        client: {
+          name: req.body.clientName || "",
+          signature: "",
+          signedAt: undefined
+        },
+        trecasa: {
+          name: "Authorized Signatory",
+          title: "For TRECASA DESIGN STUDIO",
+          signature: "",
+          signedAt: undefined
+        },
+        accepted: false,
+        acceptedAt: undefined
+      };
+      
       const validatedData = insertQuotationSchema.parse({ 
         ...req.body, 
         userId, 
         quoteId,
-        terms: defaultTerms
+        terms: defaultTerms,
+        signoff: defaultSignoff
       });
       const quotation = await storage.createQuotation(validatedData);
       res.status(201).json(quotation);
