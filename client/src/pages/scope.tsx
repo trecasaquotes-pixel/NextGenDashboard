@@ -409,6 +409,7 @@ export default function Scope() {
                                         step="0.01"
                                         value={item.length || ""}
                                         onChange={(e) => handleInteriorFieldChange(item.id, "length", e.target.value)}
+                                        onWheel={(e) => e.currentTarget.blur()}
                                         className="h-8 font-mono"
                                         data-testid={`input-length-${item.id}`}
                                       />
@@ -419,6 +420,7 @@ export default function Scope() {
                                         step="0.01"
                                         value={item.height || ""}
                                         onChange={(e) => handleInteriorFieldChange(item.id, "height", e.target.value)}
+                                        onWheel={(e) => e.currentTarget.blur()}
                                         className="h-8 font-mono"
                                         data-testid={`input-height-${item.id}`}
                                       />
@@ -429,6 +431,7 @@ export default function Scope() {
                                         step="0.01"
                                         value={item.width || ""}
                                         onChange={(e) => handleInteriorFieldChange(item.id, "width", e.target.value)}
+                                        onWheel={(e) => e.currentTarget.blur()}
                                         className="h-8 font-mono"
                                         data-testid={`input-width-${item.id}`}
                                       />
@@ -597,6 +600,7 @@ export default function Scope() {
                                         step="0.01"
                                         value={item.length || ""}
                                         onChange={(e) => handleFalseCeilingFieldChange(item.id, "length", e.target.value)}
+                                        onWheel={(e) => e.currentTarget.blur()}
                                         className="h-8 font-mono"
                                         data-testid={`input-ceiling-length-${item.id}`}
                                       />
@@ -607,6 +611,7 @@ export default function Scope() {
                                         step="0.01"
                                         value={item.width || ""}
                                         onChange={(e) => handleFalseCeilingFieldChange(item.id, "width", e.target.value)}
+                                        onWheel={(e) => e.currentTarget.blur()}
                                         className="h-8 font-mono"
                                         data-testid={`input-ceiling-width-${item.id}`}
                                       />
