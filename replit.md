@@ -93,3 +93,33 @@ No specific user preferences were provided in the original document.
     - Interiors tab: Length, Height, Width inputs for all room items
     - False Ceiling tab: Length, Width inputs for all ceiling items
   - **Testing Status**: ✅ Architect verified sanitization logic handles all edge cases correctly, CSS implementation follows best practices
+
+- ✅ **Dynamic Terms & Conditions COMPLETE** (Architect Approved): Template-based T&C system with per-quote overrides
+  - **Terms Library** (client/src/lib/terms.ts):
+    - Default templates for Interiors and False Ceiling with token placeholders
+    - renderTerms() function for token substitution: {validDays}, {warrantyMonths}, {paymentSchedule}, {clientName}, {projectName}, {quoteId}
+    - Default configuration: 15 days validity, 12 months warranty, "50% booking, 40% mid, 10% handover" payment schedule
+  - **Data Model**:
+    - Added terms JSONB field to quotations table with interiors/falseCeiling structure
+    - Each section has: useDefault boolean, templateId, customText (newline-separated), vars object
+    - Automatically initialized with default terms when creating new quotations
+  - **UI Component** (TermsEditor):
+    - Tabs for Interiors Terms and False Ceiling Terms
+    - Toggle: "Use default template" vs. custom text
+    - Default mode: inputs for validDays, warrantyMonths, paymentSchedule with live preview
+    - Custom mode: textarea for custom terms (one per line) with live preview
+    - Save button updates quotation via PATCH API with cache invalidation
+    - Preview shows rendered terms with token substitution
+  - **Integration**:
+    - TermsEditor added to Estimate page below Overall Summary card
+    - Print page uses dynamic terms via renderTerms() for both Interiors and False Ceiling PDFs
+    - "Edit Terms & Conditions" button on Print page navigates to Estimate page
+  - **Data Attributes**:
+    - Terms editor card: `card-terms-editor`
+    - Tab triggers: `tab-interiors-terms`, `tab-fc-terms`
+    - Toggle switches: `switch-interiors-use-default`, `switch-fc-use-default`
+    - Variable inputs: `input-interiors-valid-days`, `input-interiors-warranty`, `input-interiors-payment`
+    - Custom textareas: `textarea-interiors-custom`, `textarea-fc-custom`
+    - Save button: `button-save-terms`
+    - Edit button on Print: `button-edit-terms`
+  - **Testing Status**: ✅ Architect verified data model consistency, token substitution correctness, UI/UX flow, and preview accuracy
