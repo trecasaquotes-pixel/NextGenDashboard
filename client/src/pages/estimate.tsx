@@ -213,10 +213,10 @@ export default function Estimate() {
             <Button 
               variant="outline" 
               onClick={() => navigate(`/quotation/${quotationId}/scope`)}
-              data-testid="button-previous"
+              data-testid="button-back-to-scope"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Previous
+              Back to Scope
             </Button>
             <Button 
               onClick={() => navigate(`/quotation/${quotationId}/print`)}
