@@ -1,0 +1,195 @@
+import { sql } from 'drizzle-orm';
+import {
+  index,
+  jsonb,
+  pgTable,
+  timestamp,
+  varchar,
+  text,
+  integer,
+  decimal,
+  boolean,
+} from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table for Replit Auth
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type UpsertUser = typeof users.$inferInsert;
+export type User = typeof users.$inferSelect;
+
+// Quotations table
+export const quotations = pgTable("quotations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  // Project Info
+  projectName: varchar("project_name").notNull(),
+  clientName: varchar("client_name").notNull(),
+  clientEmail: varchar("client_email"),
+  clientPhone: varchar("client_phone"),
+  projectAddress: text("project_address"),
+  
+  // Status
+  status: varchar("status").notNull().default("draft"), // draft, in_progress, completed
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const quotationsRelations = relations(quotations, ({ one, many }) => ({
+  user: one(users, {
+    fields: [quotations.userId],
+    references: [users.id],
+  }),
+  interiorItems: many(interiorItems),
+  falseCeilingItems: many(falseCeilingItems),
+  otherItems: many(otherItems),
+}));
+
+// Interior line items (Kitchen, Living, Bedrooms, etc.)
+export const interiorItems = pgTable("interior_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
+  
+  roomType: varchar("room_type").notNull(), // Kitchen, Living, Bedrooms, Bathrooms, Utility, Puja
+  description: text("description"),
+  
+  // Dimensions
+  length: decimal("length", { precision: 10, scale: 2 }),
+  height: decimal("height", { precision: 10, scale: 2 }),
+  width: decimal("width", { precision: 10, scale: 2 }),
+  sqft: decimal("sqft", { precision: 10, scale: 2 }), // Calculated: L×H or L×W
+  
+  // Materials/Finishes/Hardware (with defaults)
+  material: varchar("material").notNull().default("BWP Ply"),
+  finish: varchar("finish").notNull().default("Laminate (Matte)"),
+  hardware: varchar("hardware").notNull().default("Nimmi"),
+  
+  // Pricing (optional for future)
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const interiorItemsRelations = relations(interiorItems, ({ one }) => ({
+  quotation: one(quotations, {
+    fields: [interiorItems.quotationId],
+    references: [quotations.id],
+  }),
+}));
+
+// False ceiling items (per room, AREA calculation L×W)
+export const falseCeilingItems = pgTable("false_ceiling_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
+  
+  roomType: varchar("room_type").notNull(), // Kitchen, Living, Bedrooms, Bathrooms, Utility, Puja
+  description: text("description"),
+  
+  // Dimensions for AREA (L×W)
+  length: decimal("length", { precision: 10, scale: 2 }),
+  width: decimal("width", { precision: 10, scale: 2 }),
+  area: decimal("area", { precision: 10, scale: 2 }), // Calculated: L×W
+  
+  // Pricing (optional for future)
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const falseCeilingItemsRelations = relations(falseCeilingItems, ({ one }) => ({
+  quotation: one(quotations, {
+    fields: [falseCeilingItems.quotationId],
+    references: [quotations.id],
+  }),
+}));
+
+// Other items (Paint, Lights, Fan Hook Rods)
+export const otherItems = pgTable("other_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
+  
+  itemType: varchar("item_type").notNull(), // Paint, Lights, Fan Hook Rods
+  description: text("description"),
+  
+  // Value type (lumpsum or count)
+  valueType: varchar("value_type").notNull(), // lumpsum, count
+  value: varchar("value"), // Store as string for flexibility (can be number or lumpsum amount)
+  
+  // Pricing (optional for future)
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const otherItemsRelations = relations(otherItems, ({ one }) => ({
+  quotation: one(quotations, {
+    fields: [otherItems.quotationId],
+    references: [quotations.id],
+  }),
+}));
+
+// Zod schemas for validation
+export const insertQuotationSchema = createInsertSchema(quotations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertInteriorItemSchema = createInsertSchema(interiorItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertFalseCeilingItemSchema = createInsertSchema(falseCeilingItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertOtherItemSchema = createInsertSchema(otherItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+// TypeScript types
+export type InsertQuotation = z.infer<typeof insertQuotationSchema>;
+export type Quotation = typeof quotations.$inferSelect;
+
+export type InsertInteriorItem = z.infer<typeof insertInteriorItemSchema>;
+export type InteriorItem = typeof interiorItems.$inferSelect;
+
+export type InsertFalseCeilingItem = z.infer<typeof insertFalseCeilingItemSchema>;
+export type FalseCeilingItem = typeof falseCeilingItems.$inferSelect;
+
+export type InsertOtherItem = z.infer<typeof insertOtherItemSchema>;
+export type OtherItem = typeof otherItems.$inferSelect;
+
+// Room types constant
+export const ROOM_TYPES = ["Kitchen", "Living", "Bedrooms", "Bathrooms", "Utility", "Puja"] as const;
+export const OTHER_ITEM_TYPES = ["Paint", "Lights", "Fan Hook Rods"] as const;
