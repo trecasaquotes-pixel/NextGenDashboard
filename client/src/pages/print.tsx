@@ -194,6 +194,13 @@ export default function Print() {
               >
                 Edit Terms & Conditions
               </Button>
+              <Button 
+                variant="default" 
+                onClick={() => navigate(`/quotation/${quotationId}/agreement`)}
+                data-testid="button-view-agreement"
+              >
+                View Agreement
+              </Button>
             </div>
 
             <div className="flex items-center gap-3">
