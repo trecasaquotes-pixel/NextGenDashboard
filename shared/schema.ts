@@ -58,6 +58,14 @@ export const quotations = pgTable("quotations", {
   // Status
   status: varchar("status").notNull().default("draft"), // draft, in_progress, completed
   
+  // Totals (calculated subtotals)
+  totals: jsonb("totals").$type<{
+    interiorsSubtotal: number;
+    fcSubtotal: number;
+    grandSubtotal: number;
+    updatedAt: number;
+  }>(),
+  
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
