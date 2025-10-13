@@ -70,6 +70,30 @@ export const quotations = pgTable("quotations", {
   discountType: varchar("discount_type").default("percent"), // percent or amount
   discountValue: decimal("discount_value", { precision: 10, scale: 2 }).default("0"),
   
+  // Terms & Conditions
+  terms: jsonb("terms").$type<{
+    interiors: {
+      useDefault: boolean;
+      templateId: string;
+      customText?: string;
+      vars: {
+        validDays?: number;
+        warrantyMonths?: number;
+        paymentSchedule?: string;
+      };
+    };
+    falseCeiling: {
+      useDefault: boolean;
+      templateId: string;
+      customText?: string;
+      vars: {
+        validDays?: number;
+        warrantyMonths?: number;
+        paymentSchedule?: string;
+      };
+    };
+  }>(),
+  
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

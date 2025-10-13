@@ -55,7 +55,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const quoteId = generateQuoteId();
-      const validatedData = insertQuotationSchema.parse({ ...req.body, userId, quoteId });
+      
+      // Initialize default terms
+      const defaultTerms = {
+        interiors: {
+          useDefault: true,
+          templateId: "default_interiors",
+          customText: "",
+          vars: {
+            validDays: 15,
+            warrantyMonths: 12,
+            paymentSchedule: "50% booking, 40% mid, 10% handover"
+          }
+        },
+        falseCeiling: {
+          useDefault: true,
+          templateId: "default_false_ceiling",
+          customText: "",
+          vars: {
+            validDays: 15,
+            warrantyMonths: 12,
+            paymentSchedule: "50% booking, 40% mid, 10% handover"
+          }
+        }
+      };
+      
+      const validatedData = insertQuotationSchema.parse({ 
+        ...req.body, 
+        userId, 
+        quoteId,
+        terms: defaultTerms
+      });
       const quotation = await storage.createQuotation(validatedData);
       res.status(201).json(quotation);
     } catch (error) {
