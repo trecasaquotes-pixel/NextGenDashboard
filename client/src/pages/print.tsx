@@ -279,7 +279,10 @@ export default function Print() {
                 <div className="print-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h1 className="text-3xl font-bold mb-2">TRECASA DESIGN STUDIO 🔴</h1>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h1 className="text-3xl font-bold">TRECASA DESIGN STUDIO</h1>
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-600"></div>
+                      </div>
                       <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
                     </div>
                     <div className="text-right text-sm space-y-1">
@@ -465,7 +468,11 @@ export default function Print() {
 
                 {/* Branded Footer */}
                 <div className="print-footer bg-gray-100 p-4 text-center text-sm text-gray-600 border-t-2 border-[#C9A74E] rounded-b-lg print:rounded-none">
-                  <p>© 2025 TRECASA DESIGN STUDIO 🔴 | www.trecasadesignstudio.com | @trecasa.designstudio</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <span>© 2025 TRECASA DESIGN STUDIO</span>
+                    <div className="w-2 h-2 rounded-full bg-red-600"></div>
+                    <span>| www.trecasadesignstudio.com | @trecasa.designstudio</span>
+                  </div>
                 </div>
               </div>
             </TabsContent>
@@ -490,7 +497,10 @@ export default function Print() {
                 <div className="print-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h1 className="text-3xl font-bold mb-2">TRECASA DESIGN STUDIO 🔴</h1>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h1 className="text-3xl font-bold">TRECASA DESIGN STUDIO</h1>
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-600"></div>
+                      </div>
                       <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
                     </div>
                     <div className="text-right text-sm space-y-1">
@@ -699,7 +709,11 @@ export default function Print() {
 
                 {/* Branded Footer */}
                 <div className="print-footer bg-gray-100 p-4 text-center text-sm text-gray-600 border-t-2 border-[#C9A74E] rounded-b-lg print:rounded-none">
-                  <p>© 2025 TRECASA DESIGN STUDIO 🔴 | www.trecasadesignstudio.com | @trecasa.designstudio</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <span>© 2025 TRECASA DESIGN STUDIO</span>
+                    <div className="w-2 h-2 rounded-full bg-red-600"></div>
+                    <span>| www.trecasadesignstudio.com | @trecasa.designstudio</span>
+                  </div>
                 </div>
               </div>
             </TabsContent>

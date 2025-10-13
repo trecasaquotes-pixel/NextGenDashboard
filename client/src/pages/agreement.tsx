@@ -68,19 +68,23 @@ export default function Agreement() {
     });
 
     try {
+      console.log('[Agreement Pack] Starting PDF generation...');
       const pdfs: Uint8Array[] = [];
 
       // 1. Capture Agreement
+      console.log('[Agreement Pack] Capturing Agreement PDF...');
       const agreementRoot = document.getElementById('print-agreement-root');
       if (!agreementRoot) {
         throw new Error("Agreement content not found");
       }
       
       const agreementPdf = await htmlToPdfBytes(agreementRoot);
+      console.log('[Agreement Pack] Agreement PDF captured, size:', agreementPdf.length);
       pdfs.push(agreementPdf);
 
       // 2. Capture Annexure A (Interiors) if included
       if (quotation.includeAnnexureInteriors) {
+        console.log('[Agreement Pack] Adding Annexure A (Interiors)...');
         // Create Annexure A title page
         const annexureADiv = document.createElement('div');
         annexureADiv.id = 'temp-annexure-a';
@@ -107,13 +111,16 @@ export default function Agreement() {
         document.body.removeChild(annexureADiv);
 
         // Capture Interiors PDF
+        console.log('[Agreement Pack] Capturing Interiors PDF...');
         const interiorsRoot = document.getElementById('print-interiors-root')!;
         const interiorsPdf = await htmlToPdfBytes(interiorsRoot);
+        console.log('[Agreement Pack] Interiors PDF captured, size:', interiorsPdf.length);
         pdfs.push(interiorsPdf);
       }
 
       // 3. Capture Annexure B (False Ceiling) if included
       if (quotation.includeAnnexureFC) {
+        console.log('[Agreement Pack] Adding Annexure B (False Ceiling)...');
         // Create Annexure B title page
         const annexureBDiv = document.createElement('div');
         annexureBDiv.id = 'temp-annexure-b';
@@ -140,26 +147,33 @@ export default function Agreement() {
         document.body.removeChild(annexureBDiv);
 
         // Capture False Ceiling PDF
+        console.log('[Agreement Pack] Capturing False Ceiling PDF...');
         const fcRoot = document.getElementById('print-fc-root')!;
         const fcPdf = await htmlToPdfBytes(fcRoot);
+        console.log('[Agreement Pack] False Ceiling PDF captured, size:', fcPdf.length);
         pdfs.push(fcPdf);
       }
 
       // 4. Merge all PDFs
+      console.log('[Agreement Pack] Merging', pdfs.length, 'PDFs...');
       const mergedPdf = await mergePdfBytes(pdfs);
+      console.log('[Agreement Pack] Merged PDF size:', mergedPdf.length);
 
       // 5. Download
-      await downloadBytesAs(`TRECASA_AgreementPack_${quotation.quoteId}.pdf`, mergedPdf);
+      const filename = `TRECASA_AgreementPack_${quotation.quoteId}.pdf`;
+      console.log('[Agreement Pack] Downloading as:', filename);
+      await downloadBytesAs(filename, mergedPdf);
+      console.log('[Agreement Pack] Download triggered successfully');
 
       toast({
-        title: "Success!",
-        description: "Agreement Pack downloaded successfully.",
+        title: "Agreement Pack Downloaded",
+        description: "Your PDF has been successfully generated.",
       });
     } catch (error) {
-      console.error('Error generating Agreement Pack:', error);
+      console.error("[Agreement Pack] Error:", error);
       toast({
         title: "Error",
-        description: "Failed to generate Agreement Pack. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to generate Agreement Pack. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -246,7 +260,10 @@ export default function Agreement() {
             <div className="bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold mb-2">TRECASA DESIGN STUDIO 🔴</h1>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-3xl font-bold">TRECASA DESIGN STUDIO</h1>
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-600"></div>
+                  </div>
                   <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
                 </div>
                 <div className="text-right text-sm space-y-1">
@@ -420,7 +437,11 @@ export default function Agreement() {
 
             {/* Branded Footer */}
             <div className="bg-gray-100 p-4 text-center text-sm text-gray-600 border-t-2 border-[#C9A74E] rounded-b-lg print:rounded-none">
-              <p>© 2025 TRECASA DESIGN STUDIO 🔴 | www.trecasadesignstudio.com | @trecasa.designstudio</p>
+              <div className="flex items-center justify-center gap-2">
+                <span>© 2025 TRECASA DESIGN STUDIO</span>
+                <div className="w-2 h-2 rounded-full bg-red-600"></div>
+                <span>| www.trecasadesignstudio.com | @trecasa.designstudio</span>
+              </div>
             </div>
           </div>
 

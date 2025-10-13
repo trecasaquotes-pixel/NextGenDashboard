@@ -42,7 +42,11 @@ export function AnnexureTitle({ letter, title, quoteId, clientName }: AnnexureTi
 
       {/* Footer */}
       <div className="mt-12 text-center text-sm text-gray-600">
-        <p>© 2025 TRECASA DESIGN STUDIO 🔴 | www.trecasadesignstudio.com | @trecasa.designstudio</p>
+        <div className="flex items-center justify-center gap-2">
+          <span>© 2025 TRECASA DESIGN STUDIO</span>
+          <div className="w-2 h-2 rounded-full bg-red-600"></div>
+          <span>| www.trecasadesignstudio.com | @trecasa.designstudio</span>
+        </div>
       </div>
     </div>
   );
