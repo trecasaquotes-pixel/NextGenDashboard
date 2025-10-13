@@ -138,6 +138,10 @@ TRECASA is a professional web application for creating and managing interior des
 
 ## Recent Changes (January 13, 2025)
 - ✅ **Week 1 Milestone Complete**: Full quotation flow working end-to-end
+- ✅ **Critical Bug Fix**: Fixed SQFT/Area calculation race condition by switching from `onChange` to `onBlur` for dimension inputs
+  - Previous issue: Sequential input changes caused SQFT to remain 0 due to query not refetching between changes
+  - Solution: Use `onBlur` with uncontrolled inputs and `key` prop to force re-renders when data updates
+  - Applied to both Interior items and False Ceiling items
 - ✅ **Branding Update Complete**: Official TRECASA identity applied across entire application
   - New AppHeader with deep green background (#013220), "TRECASA DESIGN STUDIO 🔴", gold tagline (#C9A74E)
   - New AppFooter with gold top border, copyright, contact info, and social links
