@@ -9,11 +9,11 @@ No specific user preferences were provided in the original document.
 ## System Architecture
 
 ### UI/UX Decisions
-- **Branding**: TRECASA DESIGN STUDIO with a luxury aesthetic.
+- **Branding**: TRECASA DESIGN STUDIO with a luxury aesthetic (no emojis).
 - **Color Scheme**: Deep green header, gold accents, red dot for branding, and deep teal primary color.
 - **Typography**: Inter for UI elements and JetBrains Mono for data.
 - **Components**: Shadcn UI with custom theming and Tailwind CSS for responsiveness.
-- **Header/Footer**: Consistent branding with "TRECASA DESIGN STUDIO 🔴", tagline "Luxury Interiors | Architecture | Build", and a footer with copyright and contact information.
+- **Header/Footer**: Consistent branding with "TRECASA DESIGN STUDIO", tagline "Luxury Interiors | Architecture | Build", and a footer with copyright and contact information.
 
 ### Technical Implementations
 - **Frontend**: React with Wouter for routing, TanStack Query for server state, and React Hook Form with Zod for validation.
@@ -36,6 +36,7 @@ No specific user preferences were provided in the original document.
 - **Dynamic Terms & Conditions**: Template-based T&C system with per-quote overrides and token substitution.
 - **Signature Block & Status Controls**: Client and Trecasa signature system with typed signatures, timestamps, and status tracking (draft, sent, accepted, rejected).
 - **Agreement Pack — PDF Merging**: Functionality to merge the service agreement, annexure title pages, and quotation PDFs into a single downloadable document.
+- **Backup & Export System**: ZIP file generation for individual quotations (includes PDFs for Interiors, False Ceiling, Agreement, plus JSON data) and global data export (all quotations with JSON metadata). Accessible via Print page and Quotes list page.
 
 ## External Dependencies
 - **Replit Auth**: User authentication and authorization.
@@ -48,3 +49,4 @@ No specific user preferences were provided in the original document.
 - **Drizzle ORM**: ORM for PostgreSQL.
 - **pdf-lib**: For PDF manipulation (merging).
 - **html2pdf.js**: For converting HTML to PDF.
+- **JSZip**: For creating ZIP archives containing quotation backups.
