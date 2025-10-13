@@ -258,18 +258,24 @@ export default function Scope() {
     const newFinish = (field === "finish" ? normalizedValue : item.finish) || "Generic Laminate";
     const newHardware = (field === "hardware" ? normalizedValue : item.hardware) || "Nimmi";
 
-    // Recalculate sqft if dimensions change
+    // Always recalculate sqft when dimensions change
     if (field === "length" || field === "height" || field === "width") {
-      updatedData.sqft = calculateSqft(newLength, newHeight, newWidth);
-    }
-
-    // Recalculate rate and amount if brand fields or sqft change
-    const sqft = field === "length" || field === "height" || field === "width" 
-      ? parseFloat(updatedData.sqft || "0")
-      : parseFloat(item.sqft || "0");
-    
-    if (field === "buildType" || field === "material" || field === "finish" || field === "hardware" || 
-        field === "length" || field === "height" || field === "width") {
+      const calculatedSqft = calculateSqft(newLength, newHeight, newWidth);
+      updatedData.sqft = calculatedSqft;
+      
+      // Also recalculate rate and amount
+      const sqftValue = parseFloat(calculatedSqft);
+      const rate = calculateRate(
+        newBuildType as BuildType,
+        newMaterial as CoreMaterial,
+        newFinish as FinishMaterial,
+        newHardware as HardwareBrand
+      );
+      updatedData.unitPrice = rate.toString();
+      updatedData.totalPrice = calculateAmount(rate, sqftValue).toString();
+    } else if (field === "buildType" || field === "material" || field === "finish" || field === "hardware") {
+      // Recalculate rate and amount when brand fields change
+      const sqft = parseFloat(item.sqft || "0");
       const rate = calculateRate(
         newBuildType as BuildType,
         newMaterial as CoreMaterial,
