@@ -163,9 +163,30 @@ TRECASA is a professional web application for creating and managing interior des
 - Full navigation flow tested: Login → Quotes List → Create → Project Info → Scope → Estimate → Print
 - All data persistence working with PostgreSQL database
 
-## Next Steps (Future Enhancements)
-- Implement actual PDF generation with branded templates
-- Add pricing/costing logic with material rates and labor calculations
-- Create quotation templates for faster quote generation
+## Week 1 Status: ✅ STABLE
+- Full navigation flow working: Login → Dashboard → Quotes → Project Info → Scope → Estimate → Print
+- All forms validate and save properly
+- Numeric inputs prevent scroll-to-change behavior
+- Empty states show friendly messages
+- No console errors, page refresh works correctly
+- Routes: /dashboard and /quotations redirect to /quotes for consistency
+
+## Next Steps (Week 2/3 Features)
+### Pricing & Calculations
+- Implement actual pricing calculations using interior item rates (sum totalPrice)
+- Add False Ceiling pricing logic with brand-based rates
+- Calculate subtotal, discount (%), GST (18%), and final quote amount
+- Add labor cost calculations separate from material costs
+
+### PDF Generation
+- Implement PDF generation with TRECASA branded templates
+- Add PDF generation library (jsPDF or React-PDF)
+- Create Interiors PDF with quote details, items, and pricing
+- Create False Ceiling PDF with area calculations and pricing
+- Enable download buttons when PDF generation is ready
+- Add email/share functionality to send PDFs to clients
+
+### Advanced Features
+- Create quotation templates with preset brand configurations
 - Add quotation versioning and revision history
 - Implement quotation sharing via link or email

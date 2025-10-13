@@ -1,3 +1,10 @@
+// TODO (Week 2/3): Implement PDF generation with TRECASA branded templates
+// TODO (Week 2/3): Add PDF generation library (e.g., jsPDF or React-PDF)
+// TODO (Week 2/3): Create Interiors PDF with quote details, items, and pricing
+// TODO (Week 2/3): Create False Ceiling PDF with area calculations and pricing
+// TODO (Week 2/3): Enable download buttons when PDF generation is ready
+// TODO (Week 2/3): Add email/share functionality to send PDFs to clients
+
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";

@@ -22,6 +22,8 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={() => <Redirect to="/quotes" />} />
+          <Route path="/dashboard" component={() => <Redirect to="/quotes" />} />
+          <Route path="/quotations" component={() => <Redirect to="/quotes" />} />
           <Route path="/quotes" component={QuotesList} />
           <Route path="/quotation/:id/info" component={ProjectInfo} />
           <Route path="/quotation/:id/scope" component={Scope} />

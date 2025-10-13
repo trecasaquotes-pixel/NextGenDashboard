@@ -1,3 +1,10 @@
+// TODO (Week 2/3): Implement actual pricing calculations using interior item rates
+// TODO (Week 2/3): Add False Ceiling pricing logic with brand-based rates  
+// TODO (Week 2/3): Calculate subtotal from interior items (sum of totalPrice)
+// TODO (Week 2/3): Add discount percentage input and calculation
+// TODO (Week 2/3): Calculate GST (18%) on subtotal after discount
+// TODO (Week 2/3): Display final quote amount (subtotal - discount + GST)
+
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";

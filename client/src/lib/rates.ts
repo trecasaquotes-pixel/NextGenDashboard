@@ -1,3 +1,8 @@
+// TODO (Week 2/3): Add pricing logic for False Ceiling items with brand-based rates
+// TODO (Week 2/3): Add labor cost calculations separate from material costs
+// TODO (Week 2/3): Add discount and tax calculation options
+// TODO (Week 2/3): Add quotation templates with preset brand configurations
+
 export const baseRates = {
   handmade: 1300,
   factory: 1500,
