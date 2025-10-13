@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight, Plus, Trash2, FileText, Sparkles } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
@@ -415,18 +416,26 @@ export default function Scope() {
                   </TabsList>
 
                 {/* Interiors Tab */}
-                <TabsContent value="interiors" className="space-y-6">
+                <TabsContent value="interiors" className="space-y-6 pb-24">
                   {Array.from(new Set(interiorItems.map(item => item.roomType).filter(Boolean))).sort().map((roomType) => {
                     const roomItems = interiorItems.filter((item) => item.roomType === roomType);
                     const totalSqft = roomItems.reduce((sum, item) => sum + parseFloat(item.sqft || "0"), 0);
+                    const roomTotal = roomItems.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
 
                     return (
                       <div key={roomType} className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-lg font-semibold text-foreground">{roomType}</h3>
-                            {totalSqft > 0 && (
-                              <p className="text-sm text-muted-foreground font-mono">Total: {totalSqft.toFixed(2)} SQFT</p>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <h3 className="text-lg font-semibold text-foreground">{roomType}</h3>
+                              {totalSqft > 0 && (
+                                <p className="text-sm text-muted-foreground font-mono">Total: {totalSqft.toFixed(2)} SQFT</p>
+                              )}
+                            </div>
+                            {roomTotal > 0 && (
+                              <Badge variant="secondary" className="font-mono" data-testid={`badge-room-total-${roomType.toLowerCase()}`}>
+                                Room Total: {formatINR(roomTotal)}
+                              </Badge>
                             )}
                           </div>
                           <Button
@@ -631,10 +640,30 @@ export default function Scope() {
                       </div>
                     );
                   })}
+                  
+                  {/* Sticky Footer for Interiors Tab */}
+                  <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-10">
+                    <div className="container mx-auto px-4 py-4">
+                      <div className="max-w-7xl mx-auto flex items-center justify-between">
+                        <div className="text-sm font-semibold">
+                          Interiors Subtotal: <span className="font-mono text-lg ml-2" data-testid="text-interiors-subtotal">
+                            {formatINR(quotation?.totals?.interiorsSubtotal || 0)}
+                          </span>
+                        </div>
+                        <Button 
+                          onClick={() => navigate(`/quotation/${quotationId}/estimate`)}
+                          data-testid="button-next-estimate-interiors"
+                        >
+                          Next → Estimate
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </TabsContent>
 
                 {/* False Ceiling Tab */}
-                <TabsContent value="false-ceiling" className="space-y-6">
+                <TabsContent value="false-ceiling" className="space-y-6 pb-24">
                   {/* False Ceiling Items by Room */}
                   {Array.from(new Set(falseCeilingItems.map(item => item.roomType).filter(Boolean))).sort().map((roomType) => {
                     const roomItems = falseCeilingItems.filter((item) => item.roomType === roomType);
@@ -642,11 +671,18 @@ export default function Scope() {
 
                     return (
                       <div key={roomType} className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-lg font-semibold text-foreground">{roomType}</h3>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <h3 className="text-lg font-semibold text-foreground">{roomType}</h3>
+                              {totalArea > 0 && (
+                                <p className="text-sm text-muted-foreground font-mono">Total: {totalArea.toFixed(2)} SQFT</p>
+                              )}
+                            </div>
                             {totalArea > 0 && (
-                              <p className="text-sm text-muted-foreground font-mono">Total: {totalArea.toFixed(2)} SQFT</p>
+                              <Badge variant="secondary" className="font-mono" data-testid={`badge-fc-room-area-${roomType.toLowerCase()}`}>
+                                Room Area: {totalArea.toFixed(2)} SQFT
+                              </Badge>
                             )}
                           </div>
                           <Button
@@ -843,6 +879,26 @@ export default function Scope() {
                         </Table>
                       </div>
                     )}
+                  </div>
+                  
+                  {/* Sticky Footer for False Ceiling Tab */}
+                  <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-10">
+                    <div className="container mx-auto px-4 py-4">
+                      <div className="max-w-7xl mx-auto flex items-center justify-between">
+                        <div className="text-sm font-semibold">
+                          False Ceiling Subtotal: <span className="font-mono text-lg ml-2" data-testid="text-fc-subtotal">
+                            {formatINR(quotation?.totals?.fcSubtotal || 0)}
+                          </span>
+                        </div>
+                        <Button 
+                          onClick={() => navigate(`/quotation/${quotationId}/estimate`)}
+                          data-testid="button-next-estimate-fc"
+                        >
+                          Next → Estimate
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </TabsContent>
                 </Tabs>

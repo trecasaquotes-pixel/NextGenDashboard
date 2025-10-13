@@ -43,3 +43,26 @@ No specific user preferences were provided in the original document.
 - **Tailwind CSS**: For utility-first styling and responsive design.
 - **Shadcn UI**: A collection of re-usable UI components.
 - **Drizzle ORM**: An ORM for interacting with the PostgreSQL database.
+- ✅ **Scope UX Enhancements COMPLETE** (Architect Approved): Inline room totals and sticky footer bars
+  - **Inline Room Total Badges**:
+    - Interiors rooms: Display "Room Total: ₹X" badge when roomTotal > 0
+    - False Ceiling rooms: Display "Room Area: X SQFT" badge when totalArea > 0
+    - Right-aligned badges using Shadcn Badge component with secondary variant
+    - All monetary values formatted with formatINR()
+    - Conditional rendering prevents showing ₹0.00 badges for empty rooms
+  - **Sticky Footer Bars per Tab**:
+    - Interiors tab: Fixed bottom footer showing "Interiors Subtotal: ₹X" with "Next → Estimate" button
+    - False Ceiling tab: Fixed bottom footer showing "False Ceiling Subtotal: ₹X" with "Next → Estimate" button
+    - Both footers read from quotation.totals (interiorsSubtotal/fcSubtotal)
+    - Proper z-index and shadow for visual hierarchy
+    - TabsContent has pb-24 padding to prevent content overlap with sticky footer
+  - **Data Attributes**:
+    - Room total badges: `badge-room-total-{roomType}` (Interiors)
+    - FC area badges: `badge-fc-room-area-{roomType}` (False Ceiling)
+    - Subtotal displays: `text-interiors-subtotal`, `text-fc-subtotal`
+    - Navigation buttons: `button-next-estimate-interiors`, `button-next-estimate-fc`
+  - **UX Improvements**:
+    - Real-time visibility of room-level totals without scrolling to footer
+    - Persistent access to subtotals and navigation while working on items
+    - Visual separation between room groups with inline financial feedback
+  - **Testing Status**: ✅ Architect verified implementation, conditional rendering, layout, and formatting
