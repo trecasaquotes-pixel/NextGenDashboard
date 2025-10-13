@@ -32,6 +32,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { calculateRate, calculateAmount, type BuildType, type CoreMaterial, type FinishMaterial, type HardwareBrand } from "@/lib/rates";
+import { calculateQuoteTotals } from "@/lib/calculateTotals";
+import { formatINR } from "@/lib/money";
 
 // Brand options for dropdowns
 const CORE_MATERIALS: CoreMaterial[] = [
@@ -80,6 +82,7 @@ export default function Scope() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [totalsUpdatedAt, setTotalsUpdatedAt] = useState<number | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -207,6 +210,38 @@ export default function Scope() {
     },
     onError: handleMutationError,
   });
+
+  // Totals update mutation
+  const updateQuoteTotals = useMutation({
+    mutationFn: async (totals: { interiorsSubtotal: number; fcSubtotal: number; grandSubtotal: number; updatedAt: number }) => {
+      await apiRequest("PATCH", `/api/quotations/${quotationId}`, { totals });
+    },
+    onSuccess: (_, totals) => {
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
+      setTotalsUpdatedAt(totals.updatedAt);
+    },
+    onError: handleMutationError,
+  });
+
+  // Recalculate totals whenever items change
+  useEffect(() => {
+    if (interiorItems.length === 0 && falseCeilingItems.length === 0 && otherItems.length === 0) {
+      return; // Skip if no items
+    }
+
+    const totals = calculateQuoteTotals(interiorItems, falseCeilingItems, otherItems);
+    
+    // Only update if totals have changed
+    const currentTotals = quotation?.totals;
+    if (
+      !currentTotals ||
+      currentTotals.interiorsSubtotal !== totals.interiorsSubtotal ||
+      currentTotals.fcSubtotal !== totals.fcSubtotal ||
+      currentTotals.grandSubtotal !== totals.grandSubtotal
+    ) {
+      updateQuoteTotals.mutate(totals);
+    }
+  }, [interiorItems, falseCeilingItems, otherItems]);
 
   function handleMutationError(error: Error) {
     if (isUnauthorizedError(error)) {
@@ -813,22 +848,35 @@ export default function Scope() {
                 </Tabs>
               )}
 
-              <div className="flex gap-3 pt-6 border-t border-border mt-8">
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate(`/quotation/${quotationId}/info`)}
-                  data-testid="button-back-to-info"
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Project Info
-                </Button>
-                <Button 
-                  onClick={() => navigate(`/quotation/${quotationId}/estimate`)}
-                  data-testid="button-continue-estimate"
-                >
-                  Continue to Estimate
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+              <div className="flex items-center justify-between gap-3 pt-6 border-t border-border mt-8">
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate(`/quotation/${quotationId}/info`)}
+                    data-testid="button-back-to-info"
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Project Info
+                  </Button>
+                  <Button 
+                    onClick={() => navigate(`/quotation/${quotationId}/estimate`)}
+                    data-testid="button-continue-estimate"
+                  >
+                    Continue to Estimate
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {totalsUpdatedAt && quotation?.totals && (
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="text-xs">
+                      Subtotal: <span className="font-mono font-semibold text-foreground">{formatINR(quotation.totals.grandSubtotal)}</span>
+                    </span>
+                    <span className="text-xs" data-testid="text-totals-updated">
+                      Updated just now
+                    </span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
