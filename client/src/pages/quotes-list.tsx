@@ -27,6 +27,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AppHeader } from "@/components/app-header";
+import { AppFooter } from "@/components/app-footer";
 
 export default function QuotesList() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -115,16 +117,12 @@ export default function QuotesList() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-md bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">T</span>
-            </div>
-            <h1 className="text-2xl font-bold text-foreground">TRECASA</h1>
-          </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      <AppHeader />
+
+      {/* Navigation Bar with User Menu */}
+      <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="button-user-menu">
@@ -153,10 +151,10 @@ export default function QuotesList() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </header>
+      </nav>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -262,6 +260,8 @@ export default function QuotesList() {
           )}
         </div>
       </main>
+
+      <AppFooter />
     </div>
   );
 }

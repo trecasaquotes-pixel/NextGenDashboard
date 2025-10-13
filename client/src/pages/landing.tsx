@@ -1,27 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, FileText, Calculator, Download } from "lucide-react";
+import { AppHeader } from "@/components/app-header";
+import { AppFooter } from "@/components/app-footer";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-md bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">T</span>
-            </div>
-            <h1 className="text-2xl font-bold text-foreground">TRECASA</h1>
-          </div>
-          <Button 
-            onClick={() => window.location.href = '/api/login'} 
-            data-testid="button-login"
-          >
-            Sign In <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background flex flex-col">
+      <AppHeader />
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 md:py-32">
@@ -83,14 +69,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border mt-20">
-        <div className="container mx-auto px-4 py-8">
-          <p className="text-center text-muted-foreground">
-            © 2025 TRECASA. Professional Interior Design Quotations.
-          </p>
-        </div>
-      </footer>
+      <AppFooter />
     </div>
   );
 }

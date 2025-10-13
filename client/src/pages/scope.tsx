@@ -13,6 +13,8 @@ import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shar
 import { ROOM_TYPES, OTHER_ITEM_TYPES } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { QuotationHeader } from "@/components/quotation-header";
+import { AppHeader } from "@/components/app-header";
+import { AppFooter } from "@/components/app-footer";
 import {
   Select,
   SelectContent,
@@ -240,10 +242,11 @@ export default function Scope() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
+      <AppHeader />
       <QuotationHeader quotationId={quotationId!} currentStep="scope" />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-7xl mx-auto">
           <Button variant="ghost" onClick={() => navigate(`/quotation/${quotationId}/info`)} className="mb-6" data-testid="button-back">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -623,6 +626,8 @@ export default function Scope() {
           </Card>
         </div>
       </main>
+
+      <AppFooter />
     </div>
   );
 }

@@ -24,6 +24,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { QuotationHeader } from "@/components/quotation-header";
+import { AppHeader } from "@/components/app-header";
+import { AppFooter } from "@/components/app-footer";
 
 const projectInfoSchema = z.object({
   projectName: z.string().min(1, "Required"),
@@ -183,10 +185,11 @@ export default function ProjectInfo() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
+      <AppHeader />
       <QuotationHeader quotationId={quotationId!} currentStep="info" />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}
           <Button variant="ghost" onClick={() => navigate("/quotes")} className="mb-6" data-testid="button-back">
@@ -352,6 +355,8 @@ export default function ProjectInfo() {
           </Card>
         </div>
       </main>
+
+      <AppFooter />
     </div>
   );
 }

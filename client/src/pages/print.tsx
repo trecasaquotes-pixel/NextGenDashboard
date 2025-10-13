@@ -8,6 +8,8 @@ import { ArrowLeft, Download } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
+import { AppHeader } from "@/components/app-header";
+import { AppFooter } from "@/components/app-footer";
 
 export default function Print() {
   const [match, params] = useRoute("/quotation/:id/print");
@@ -39,10 +41,11 @@ export default function Print() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
+      <AppHeader />
       <QuotationHeader quotationId={quotationId!} currentStep="print" />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* PDF Preview Panels */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -132,6 +135,8 @@ export default function Print() {
           </div>
         </div>
       </main>
+
+      <AppFooter />
     </div>
   );
 }

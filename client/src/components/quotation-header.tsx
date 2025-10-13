@@ -26,21 +26,13 @@ export function QuotationHeader({ quotationId, currentStep }: QuotationHeaderPro
   return (
     <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-md bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">T</span>
+        {quotation && (
+          <div className="flex items-center gap-2 mb-3">
+            <p className="text-sm text-muted-foreground">{quotation.projectName}</p>
+            <span className="text-xs text-muted-foreground">•</span>
+            <p className="text-sm font-mono text-muted-foreground">{quotation.quoteId}</p>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-foreground">TRECASA</h1>
-            {quotation && (
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-muted-foreground">{quotation.projectName}</p>
-                <span className="text-xs text-muted-foreground">•</span>
-                <p className="text-sm font-mono text-muted-foreground">{quotation.quoteId}</p>
-              </div>
-            )}
-          </div>
-        </div>
+        )}
 
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 flex-wrap">

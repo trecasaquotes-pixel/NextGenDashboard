@@ -6,7 +6,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, FileText, Trash2, LogOut, User } from "lucide-react";
+import { Plus, FileText, Trash2, LogOut } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AppHeader } from "@/components/app-header";
+import { AppFooter } from "@/components/app-footer";
 
 export default function Dashboard() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -38,7 +40,6 @@ export default function Dashboard() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [quotationToDelete, setQuotationToDelete] = useState<string | null>(null);
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
@@ -153,16 +154,12 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-md bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">T</span>
-            </div>
-            <h1 className="text-2xl font-bold text-foreground">TRECASA</h1>
-          </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      <AppHeader />
+
+      {/* Navigation Bar with User Menu */}
+      <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="button-user-menu">
@@ -189,10 +186,10 @@ export default function Dashboard() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </header>
+      </nav>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
           <div className="flex items-center justify-between mb-8">
@@ -300,6 +297,8 @@ export default function Dashboard() {
           )}
         </div>
       </main>
+
+      <AppFooter />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

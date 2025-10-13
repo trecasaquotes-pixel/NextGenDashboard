@@ -9,6 +9,8 @@ import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
 import { ROOM_TYPES } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
+import { AppHeader } from "@/components/app-header";
+import { AppFooter } from "@/components/app-footer";
 
 export default function Estimate() {
   const [match, params] = useRoute("/quotation/:id/estimate");
@@ -58,10 +60,11 @@ export default function Estimate() {
   const falseCeilingTotalArea = falseCeilingItems.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
+      <AppHeader />
       <QuotationHeader quotationId={quotationId!} currentStep="estimate" />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Summary Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -260,6 +263,8 @@ export default function Estimate() {
           </div>
         </div>
       </main>
+
+      <AppFooter />
     </div>
   );
 }
