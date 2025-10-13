@@ -230,6 +230,8 @@ export default function Scope() {
     const h = parseFloat(height || "0");
     const w = parseFloat(width || "0");
     
+    // Use L×H for vertical surfaces (cabinets, walls) - height takes precedence
+    // Use L×W for horizontal surfaces (countertops, floors) - when only width is provided
     if (l > 0 && h > 0) return (l * h).toFixed(2);
     if (l > 0 && w > 0) return (l * w).toFixed(2);
     return "0.00";
@@ -271,8 +273,9 @@ export default function Scope() {
         newFinish as FinishMaterial,
         newHardware as HardwareBrand
       );
-      updatedData.unitPrice = rate.toString();
-      updatedData.totalPrice = calculateAmount(rate, sqftValue).toString();
+      // Send as numbers, not strings
+      updatedData.unitPrice = rate;
+      updatedData.totalPrice = calculateAmount(rate, sqftValue);
     } else if (field === "buildType" || field === "material" || field === "finish" || field === "hardware") {
       // Recalculate rate and amount when brand fields change
       const sqft = parseFloat(item.sqft || "0");
@@ -282,8 +285,9 @@ export default function Scope() {
         newFinish as FinishMaterial,
         newHardware as HardwareBrand
       );
-      updatedData.unitPrice = rate.toString();
-      updatedData.totalPrice = calculateAmount(rate, sqft).toString();
+      // Send as numbers, not strings
+      updatedData.unitPrice = rate;
+      updatedData.totalPrice = calculateAmount(rate, sqft);
     }
 
     updateInteriorItem.mutate({ id, data: updatedData });

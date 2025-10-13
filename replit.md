@@ -29,8 +29,15 @@ TRECASA is a professional web application for creating and managing interior des
 - "Other" category with custom text input field
 - Scope page with tabs for Interiors and False Ceiling
 - Automatic SQFT and area calculations based on dimensions
-- Default materials configuration (BWP Ply, Laminate Matte, Nimmi)
-- Inline editing for interior and false ceiling items
+- **Smart Rate Calculator** with brand-based pricing
+  - Build Type selection: Work-on-Site (₹1300/sqft) or Factory Finish (₹1500/sqft)
+  - Core Material brands with price adjustments: Generic Ply, Century Ply, Green Ply, Kitply, HDHMR, BWP, MDF, HDF
+  - Finish Material brands with price adjustments: Generic Laminate, Greenlam, Merino, Century Laminate, Duco, PU, Acrylic, Fluted Panel, Back Painted Glass, CNC Finish, Veneer
+  - Hardware brands with price adjustments: Nimmi, Ebco, Hettich, Hafele, Sleek, Blum
+  - Auto-calculation: Rate = Base Rate + Material Adjustments, Amount = Rate × SQFT
+  - Live updates when dimensions or brand selections change
+- Default materials configuration (Generic Ply, Generic Laminate, Nimmi for Work-on-Site)
+- Inline editing for interior and false ceiling items with real-time calculations
 - Estimate page with separate summaries for interiors and false ceiling
 - Print-friendly view with company branding
 - Placeholder PDF export buttons (Interiors and False Ceiling PDFs)
@@ -137,6 +144,14 @@ TRECASA is a professional web application for creating and managing interior des
   - All pages updated: Landing, Dashboard, Quotes List, Project Info, Scope, Estimate, Print
   - QuotationHeader simplified to work with new branding
   - Consistent luxury aesthetic throughout the application
+- ✅ **Smart Rate Calculator Implemented**: Brand-based pricing with auto-calculation
+  - Created lib/rates.ts with base rates (Work-on-Site: ₹1300/sqft, Factory Finish: ₹1500/sqft) and brand adjustment tables
+  - Updated schema to include buildType field for interior items
+  - Converted material/finish/hardware inputs to dropdowns with brand options (Generic Ply, Century Ply, Greenlam, Merino, Hettich, Hafele, etc.)
+  - Implemented auto-calculation logic: Rate = Base Rate + Material Adjustments, Amount = Rate × SQFT
+  - Fixed critical bug where SQFT and pricing weren't recalculating when dimensions changed
+  - Fixed data type bug where unitPrice and totalPrice were being sent as strings instead of numbers
+  - Rate and Amount columns now display live calculations (₹/sft and ₹) on the Scope page
 - Implemented Estimate page with two summary cards (Interiors and False Ceiling) showing:
   - Room-based breakdowns with SQFT/Area totals
   - Placeholder pricing: Subtotal ₹0.00, Discount 0%, GST (18%) ₹0.00, Final Quote ₹0.00
