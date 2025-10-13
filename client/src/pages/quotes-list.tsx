@@ -6,7 +6,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Eye, Printer, LogOut, User } from "lucide-react";
+import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/table";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
+import { formatINR, safeN } from "@/lib/money";
 
 export default function QuotesList() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -93,13 +94,46 @@ export default function QuotesList() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
-        return "bg-chart-2/10 text-chart-2 border-chart-2/20";
-      case "in_progress":
-        return "bg-primary/10 text-primary border-primary/20";
+      case "draft":
+        return "bg-muted text-muted-foreground border-muted-foreground/20";
+      case "sent":
+        return "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20";
+      case "accepted":
+        return "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20";
+      case "rejected":
+        return "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20";
       default:
         return "bg-muted text-muted-foreground border-muted-foreground/20";
     }
+  };
+
+  const calculateFinalTotal = (quotation: Quotation): number => {
+    const grandSubtotal = safeN(quotation.totals?.grandSubtotal);
+    const discountValue = safeN(quotation.discountValue);
+    const discountType = quotation.discountType || "percent";
+
+    // Calculate discount amount
+    const discountAmount = discountType === "percent" 
+      ? (grandSubtotal * discountValue) / 100 
+      : discountValue;
+
+    // Calculate discounted amount (prevent negative)
+    const discounted = Math.max(0, grandSubtotal - discountAmount);
+
+    // Calculate GST (18%)
+    const gstAmount = discounted * 0.18;
+
+    // Calculate final total
+    return discounted + gstAmount;
+  };
+
+  const getQuoteTotal = (quotation: Quotation): string => {
+    // If discount is applied, show final total with GST
+    if (quotation.discountValue && safeN(quotation.discountValue) > 0) {
+      return formatINR(calculateFinalTotal(quotation));
+    }
+    // Otherwise show grand subtotal
+    return formatINR(safeN(quotation.totals?.grandSubtotal));
   };
 
   const getUserInitials = () => {
@@ -191,6 +225,7 @@ export default function QuotesList() {
                     <TableHead>Client Name</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Total (₹)</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -205,34 +240,56 @@ export default function QuotesList() {
                       <TableCell>{quotation.clientName}</TableCell>
                       <TableCell>{quotation.projectType || "—"}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={getStatusColor(quotation.status)}>
+                        <Badge variant="outline" className={getStatusColor(quotation.status)} data-testid={`status-${quotation.id}`}>
                           {quotation.status}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-semibold" data-testid={`total-${quotation.id}`}>
+                        {getQuoteTotal(quotation)}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {new Date(quotation.createdAt!).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/quotation/${quotation.id}/info`)}
-                            data-testid={`button-edit-${quotation.id}`}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View/Edit
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/quotation/${quotation.id}/print`)}
-                            data-testid={`button-print-${quotation.id}`}
-                          >
-                            <Printer className="h-4 w-4 mr-1" />
-                            Print
-                          </Button>
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" data-testid={`button-actions-${quotation.id}`}>
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => navigate(`/quotation/${quotation.id}/info`)}
+                              data-testid={`action-edit-${quotation.id}`}
+                            >
+                              <FileText className="mr-2 h-4 w-4" />
+                              View/Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => navigate(`/quotation/${quotation.id}/scope`)}
+                              data-testid={`action-scope-${quotation.id}`}
+                            >
+                              <Layers className="mr-2 h-4 w-4" />
+                              Scope
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => navigate(`/quotation/${quotation.id}/estimate`)}
+                              data-testid={`action-estimate-${quotation.id}`}
+                            >
+                              <Calculator className="mr-2 h-4 w-4" />
+                              Estimate
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => navigate(`/quotation/${quotation.id}/print`)}
+                              data-testid={`action-print-${quotation.id}`}
+                            >
+                              <Printer className="mr-2 h-4 w-4" />
+                              Print
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}

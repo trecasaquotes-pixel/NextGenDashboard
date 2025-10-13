@@ -56,7 +56,7 @@ export const quotations = pgTable("quotations", {
   projectAddress: text("project_address"),
   
   // Status
-  status: varchar("status").notNull().default("draft"), // draft, in_progress, completed
+  status: varchar("status").notNull().default("draft"), // draft, sent, accepted, rejected
   
   // Totals (calculated subtotals)
   totals: jsonb("totals").$type<{
