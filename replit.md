@@ -142,13 +142,22 @@ TRECASA is a professional web application for creating and managing interior des
   - Previous issue: Sequential input changes caused SQFT to remain 0 due to query not refetching between changes
   - Solution: Use `onBlur` with uncontrolled inputs and `key` prop to force re-renders when data updates
   - Applied to both Interior items and False Ceiling items
-- ✅ **Template System Implementation**: Room auto-creation based on project category
-  - Created templates module (lib/templates.ts) with predefined room configurations for all project types
-  - Project Info page: Template modal on "Continue to Scope" with Use/Customize/Skip options
-  - Scope page: "Apply Template" button in header + "Load Template" in empty state
-  - Append/Replace logic: When items exist, user chooses to append or replace with confirmation
-  - Templates include default items with brand selections (Generic Ply, Generic Laminate, Nimmi)
-  - Fixed modal state management to prevent disabled buttons issue
+- ✅ **Template System COMPLETE** (Architect Approved): Room auto-creation based on project category
+  - **New Components**: TemplateModal component (components/template-modal.tsx) with preview, customization, and application workflows
+  - **New Module**: Templates definitions (lib/templates.ts) with predefined configurations for all project types
+  - **Integration Points**:
+    - Project Info page: Template modal on "Continue to Scope" with Use/Customize/Skip options
+    - Scope page: "Apply Template" button in header + "Load Template" in empty state
+  - **Features**:
+    - Append/Replace logic with confirmation dialogs and room de-duplication
+    - Optional room selection (Foyer, Utility, Puja, Study, Balcony, Other)
+    - Modal state management with useEffect reset to prevent disabled buttons
+  - **Critical Fixes**:
+    - Added `calc` field to interior_items schema (SQFT/COUNT/LSUM) for proper calculations
+    - Dynamic room rendering: Replaced hardcoded ROOM_TYPES with actual data extraction from items
+    - Supports ANY room type (Kitchen, Reception, Work Area, Conference, etc.)
+  - **Testing Results**: ✅ All template flows verified (Use, Customize, Skip, Append, Replace)
+  - **Templates Included**: 1-4 BHK, Duplex, Triplex, Villa, Commercial with default items and material selections
 - ✅ **Branding Update Complete**: Official TRECASA identity applied across entire application
   - New AppHeader with deep green background (#013220), "TRECASA DESIGN STUDIO 🔴", gold tagline (#C9A74E)
   - New AppFooter with gold top border, copyright, contact info, and social links
