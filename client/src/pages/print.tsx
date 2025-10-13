@@ -13,6 +13,7 @@ import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { formatINR, safeN } from "@/lib/money";
 import { defaultTerms, renderTerms } from "@/lib/terms";
+import { dateFormat } from "@/lib/utils";
 
 export default function Print() {
   const [match, params] = useRoute("/quotation/:id/print");
@@ -302,6 +303,64 @@ export default function Print() {
                       })()}
                     </ul>
                   </div>
+
+                  {/* Signatures */}
+                  <div className="mt-8 border border-gray-300 rounded-lg p-6 space-y-4 break-inside-avoid" data-testid="signature-block-interiors">
+                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">SIGNATURES</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Client Signature */}
+                      <div className="space-y-3 break-inside-avoid">
+                        <p className="text-xs font-semibold uppercase text-gray-600 tracking-wide">Client</p>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-gray-500">Name:</p>
+                            <p className="text-sm font-medium">{quotation.signoff?.client?.name || quotation.clientName || "_____________"}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Signature:</p>
+                            {quotation.signoff?.client?.signature ? (
+                              <p className="text-lg font-serif italic text-gray-800">{quotation.signoff.client.signature}</p>
+                            ) : (
+                              <p className="text-sm text-gray-400">_____________</p>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Date:</p>
+                            <p className="text-sm">
+                              {quotation.signoff?.client?.signedAt ? dateFormat(quotation.signoff.client.signedAt) : "_____________"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Trecasa Signature */}
+                      <div className="space-y-3 break-inside-avoid">
+                        <p className="text-xs font-semibold uppercase text-gray-600 tracking-wide">
+                          {quotation.signoff?.trecasa?.title || "For TRECASA DESIGN STUDIO"}
+                        </p>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-gray-500">Name:</p>
+                            <p className="text-sm font-medium">{quotation.signoff?.trecasa?.name || "Authorized Signatory"}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Signature:</p>
+                            {quotation.signoff?.trecasa?.signature ? (
+                              <p className="text-lg font-serif italic text-gray-800">{quotation.signoff.trecasa.signature}</p>
+                            ) : (
+                              <p className="text-sm text-gray-400">_____________</p>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Date:</p>
+                            <p className="text-sm">
+                              {quotation.signoff?.trecasa?.signedAt ? dateFormat(quotation.signoff.trecasa.signedAt) : "_____________"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Branded Footer */}
@@ -477,6 +536,64 @@ export default function Print() {
                         return lines.map((line, idx) => <li key={idx}>{line}</li>);
                       })()}
                     </ul>
+                  </div>
+
+                  {/* Signatures */}
+                  <div className="mt-8 border border-gray-300 rounded-lg p-6 space-y-4 break-inside-avoid" data-testid="signature-block-false-ceiling">
+                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">SIGNATURES</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Client Signature */}
+                      <div className="space-y-3 break-inside-avoid">
+                        <p className="text-xs font-semibold uppercase text-gray-600 tracking-wide">Client</p>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-gray-500">Name:</p>
+                            <p className="text-sm font-medium">{quotation.signoff?.client?.name || quotation.clientName || "_____________"}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Signature:</p>
+                            {quotation.signoff?.client?.signature ? (
+                              <p className="text-lg font-serif italic text-gray-800">{quotation.signoff.client.signature}</p>
+                            ) : (
+                              <p className="text-sm text-gray-400">_____________</p>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Date:</p>
+                            <p className="text-sm">
+                              {quotation.signoff?.client?.signedAt ? dateFormat(quotation.signoff.client.signedAt) : "_____________"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Trecasa Signature */}
+                      <div className="space-y-3 break-inside-avoid">
+                        <p className="text-xs font-semibold uppercase text-gray-600 tracking-wide">
+                          {quotation.signoff?.trecasa?.title || "For TRECASA DESIGN STUDIO"}
+                        </p>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-gray-500">Name:</p>
+                            <p className="text-sm font-medium">{quotation.signoff?.trecasa?.name || "Authorized Signatory"}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Signature:</p>
+                            {quotation.signoff?.trecasa?.signature ? (
+                              <p className="text-lg font-serif italic text-gray-800">{quotation.signoff.trecasa.signature}</p>
+                            ) : (
+                              <p className="text-sm text-gray-400">_____________</p>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Date:</p>
+                            <p className="text-sm">
+                              {quotation.signoff?.trecasa?.signedAt ? dateFormat(quotation.signoff.trecasa.signedAt) : "_____________"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
