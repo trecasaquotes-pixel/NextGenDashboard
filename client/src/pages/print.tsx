@@ -66,19 +66,39 @@ export default function Print() {
     return null;
   }
 
-  // Calculate totals
+  // Calculate totals for each PDF separately
   const interiorsSubtotal = safeN(quotation.totals?.interiorsSubtotal);
   const fcSubtotal = safeN(quotation.totals?.fcSubtotal);
   const grandSubtotal = safeN(quotation.totals?.grandSubtotal);
-  
   const discountValue = safeN(quotation.discountValue);
-  const discountAmount = quotation.discountType === 'percent' 
-    ? (grandSubtotal * discountValue) / 100 
-    : discountValue;
   
-  const discounted = Math.max(0, grandSubtotal - discountAmount);
-  const gst = discounted * 0.18;
-  const finalTotal = discounted + gst;
+  // Calculate discount allocation for each tab
+  let interiorsDiscountAmount = 0;
+  let fcDiscountAmount = 0;
+  
+  if (quotation.discountType === 'percent') {
+    // Percentage discount: apply same percentage to each tab
+    interiorsDiscountAmount = (interiorsSubtotal * discountValue) / 100;
+    fcDiscountAmount = (fcSubtotal * discountValue) / 100;
+  } else {
+    // Fixed discount: allocate proportionally based on each tab's share of grand total
+    if (grandSubtotal > 0) {
+      const interiorsShare = interiorsSubtotal / grandSubtotal;
+      const fcShare = fcSubtotal / grandSubtotal;
+      interiorsDiscountAmount = discountValue * interiorsShare;
+      fcDiscountAmount = discountValue * fcShare;
+    }
+  }
+  
+  // Interiors PDF calculations
+  const interiorsDiscounted = Math.max(0, interiorsSubtotal - interiorsDiscountAmount);
+  const interiorsGst = interiorsDiscounted * 0.18;
+  const interiorsFinalTotal = interiorsDiscounted + interiorsGst;
+  
+  // False Ceiling PDF calculations
+  const fcDiscounted = Math.max(0, fcSubtotal - fcDiscountAmount);
+  const fcGst = fcDiscounted * 0.18;
+  const fcFinalTotal = fcDiscounted + fcGst;
 
   // Group items by room
   const interiorsByRoom = interiorItems.reduce((acc, item) => {
@@ -236,21 +256,21 @@ export default function Print() {
                           <td className="py-1 text-right pr-4">Interiors Subtotal:</td>
                           <td className="py-1 text-right font-mono font-semibold">{formatINR(interiorsSubtotal)}</td>
                         </tr>
-                        {discountAmount > 0 && (
+                        {interiorsDiscountAmount > 0 && (
                           <tr>
                             <td className="py-1 text-right pr-4">
                               Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
                             </td>
-                            <td className="py-1 text-right font-mono text-red-600">-{formatINR(discountAmount)}</td>
+                            <td className="py-1 text-right font-mono text-red-600">-{formatINR(interiorsDiscountAmount)}</td>
                           </tr>
                         )}
                         <tr>
                           <td className="py-1 text-right pr-4">GST (18%):</td>
-                          <td className="py-1 text-right font-mono">{formatINR(gst)}</td>
+                          <td className="py-1 text-right font-mono">{formatINR(interiorsGst)}</td>
                         </tr>
                         <tr className="border-t-2 border-[#C9A74E]">
                           <td className="py-2 text-right pr-4 text-lg font-bold text-[#013220]">Final Interiors Quote:</td>
-                          <td className="py-2 text-right font-mono text-lg font-bold text-[#013220]">{formatINR(finalTotal)}</td>
+                          <td className="py-2 text-right font-mono text-lg font-bold text-[#013220]">{formatINR(interiorsFinalTotal)}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -405,21 +425,21 @@ export default function Print() {
                           <td className="py-1 text-right pr-4">False Ceiling Subtotal:</td>
                           <td className="py-1 text-right font-mono font-semibold">{formatINR(fcSubtotal)}</td>
                         </tr>
-                        {discountAmount > 0 && (
+                        {fcDiscountAmount > 0 && (
                           <tr>
                             <td className="py-1 text-right pr-4">
                               Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
                             </td>
-                            <td className="py-1 text-right font-mono text-red-600">-{formatINR(discountAmount)}</td>
+                            <td className="py-1 text-right font-mono text-red-600">-{formatINR(fcDiscountAmount)}</td>
                           </tr>
                         )}
                         <tr>
                           <td className="py-1 text-right pr-4">GST (18%):</td>
-                          <td className="py-1 text-right font-mono">{formatINR(gst)}</td>
+                          <td className="py-1 text-right font-mono">{formatINR(fcGst)}</td>
                         </tr>
                         <tr className="border-t-2 border-[#C9A74E]">
                           <td className="py-2 text-right pr-4 text-lg font-bold text-[#013220]">Final False Ceiling Quote:</td>
-                          <td className="py-2 text-right font-mono text-lg font-bold text-[#013220]">{formatINR(finalTotal)}</td>
+                          <td className="py-2 text-right font-mono text-lg font-bold text-[#013220]">{formatINR(fcFinalTotal)}</td>
                         </tr>
                       </tbody>
                     </table>
