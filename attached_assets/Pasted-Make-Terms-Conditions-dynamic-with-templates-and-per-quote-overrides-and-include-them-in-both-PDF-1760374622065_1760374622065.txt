@@ -1,0 +1,118 @@
+Make Terms & Conditions dynamic with templates and per-quote overrides, and include them in both PDFs.
+
+1) LIB: default templates and token engine
+- Create lib/terms.ts:
+
+export type TermsTemplateId = "default_interiors" | "default_false_ceiling";
+export type TermsVars = {
+  clientName?: string;
+  projectName?: string;
+  quoteId?: string;
+  validDays?: number;
+  warrantyMonths?: number;
+  paymentSchedule?: string; // e.g., "50% booking, 40% mid, 10% handover"
+};
+
+export const defaultTerms: Record<TermsTemplateId, string[]> = {
+  default_interiors: [
+    "Prices are inclusive of margin; GST will be charged extra as applicable.",
+    "Quote validity: {validDays} days from the date of issue.",
+    "Payment terms: {paymentSchedule}.",
+    "Standard warranty: {warrantyMonths} months on modular components against manufacturing defects.",
+    "Any civil, electrical, and plumbing works are excluded unless specifically mentioned.",
+    "Material brands are as selected; equivalents may be used upon client approval in case of unavailability.",
+    "Site access, power, and water to be provided by client."
+  ],
+  default_false_ceiling: [
+    "Rates include framework, boards/grids, and standard jointing compound as per brand selection.",
+    "Painting items, lights, and fan hook rods are billed separately under 'OTHERS'.",
+    "Quote validity: {validDays} days from the date of issue.",
+    "Warranty: {warrantyMonths} months against sagging and cracks under normal usage.",
+    "Hidden services (electrical/AC/Fire) routing is not included unless specified.",
+    "Scaffolding and safety to be provided where necessary."
+  ],
+};
+
+export function renderTerms(lines: string[], vars: TermsVars = {}): string[] {
+  const v = {
+    validDays: 15,
+    warrantyMonths: 12,
+    paymentSchedule: "50% booking, 40% mid, 10% handover",
+    ...vars
+  };
+  return lines.map(l =>
+    l
+      .replaceAll("{clientName}", v.clientName ?? "")
+      .replaceAll("{projectName}", v.projectName ?? "")
+      .replaceAll("{quoteId}", v.quoteId ?? "")
+      .replaceAll("{validDays}", String(v.validDays))
+      .replaceAll("{warrantyMonths}", String(v.warrantyMonths))
+      .replaceAll("{paymentSchedule}", v.paymentSchedule)
+  );
+}
+
+2) DATA MODEL: per-quote T&C
+- Extend quote object:
+
+terms: {
+  interiors: {
+    useDefault: boolean;      // default true
+    templateId: TermsTemplateId; // "default_interiors"
+    customText?: string;      // newline-separated bullets when useDefault=false
+    vars: {
+      validDays?: number;
+      warrantyMonths?: number;
+      paymentSchedule?: string;
+    };
+  };
+  falseCeiling: {
+    useDefault: boolean;      // default true
+    templateId: TermsTemplateId; // "default_false_ceiling"
+    customText?: string;
+    vars: {
+      validDays?: number;
+      warrantyMonths?: number;
+      paymentSchedule?: string;
+    };
+  };
+}
+
+- Initialize these when a quote is created.
+
+3) UI: T&C editor (shared component)
+- Add a “Terms & Conditions” panel on the Estimate page (below the summaries) with tabs:
+   [Interiors Terms] [False Ceiling Terms]
+  For each tab:
+   - Toggle: “Use default template” (ON by default).
+   - If ON:
+       • Show dropdown Template (fixed to the default for now, but allow change later)
+       • Show small inputs for variables:
+           Validity (days), Warranty (months), Payment Schedule (text)
+       • Show Preview (read-only list) rendered via renderTerms(...)
+   - If OFF:
+       • Show a multi-line textarea “Custom Terms (one per line)”
+       • Live Preview underneath (split by newline).
+   - Save changes to quote. Show a toast “Terms updated”.
+
+- Add a mini link “Edit Terms” on the Print page that navigates back to Estimate#terms.
+
+4) PRINT INTEGRATION
+- Interiors PDF:
+   - Add a section at the end titled “Terms & Conditions”.
+   - If interiors.useDefault → renderTerms(defaultTerms['default_interiors'], vars) as bullet list.
+     Else → split customText by newline and render bullets.
+- False Ceiling PDF:
+   - Same, but use defaultTerms['default_false_ceiling'] or the custom text.
+
+- Ensure header/footer remain fixed and T&C section paginates cleanly (use `break-inside: avoid;` on each bullet list container).
+
+5) ADMIN (optional but useful)
+- Add a simple Settings page (Admin → Settings → Terms) that displays the current default templates (both arrays) with textareas to edit and a “Restore Defaults” button.
+- Store admin-edited defaults in a JSON (e.g., data/terms.defaults.json) or in local storage if filesystem not available in this setup.
+- When admin defaults exist, load them instead of the hardcoded defaults.
+
+6) QA
+- Changing Validity/Warranty/Payment Schedule updates the Preview immediately.
+- Switching Use Default ON/OFF preserves what the user typed (don’t discard unless explicitly changing).
+- PDFs show exactly the same lines as the Preview.
+- No console errors.
