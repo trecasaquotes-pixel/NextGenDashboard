@@ -84,10 +84,17 @@ TRECASA is a professional web application for creating and managing interior des
 - **Storage**: DatabaseStorage implementing IStorage interface
 
 ### Design System
-- **Colors**: Deep teal primary (15 75% 25%), professional palette
+- **Branding**: TRECASA DESIGN STUDIO with luxury aesthetic
+- **Colors**: 
+  - Deep green header (#013220)
+  - Gold accents (#C9A74E) for tagline and borders
+  - Red dot (#C62828) as brand accent
+  - Deep teal primary (15 75% 25%), professional palette
 - **Typography**: Inter for UI, JetBrains Mono for data/numbers
 - **Components**: Shadcn UI with custom theming
 - **Responsive**: Mobile-first with Tailwind breakpoints
+- **Header**: "TRECASA DESIGN STUDIO 🔴" with tagline "Luxury Interiors | Architecture | Build"
+- **Footer**: Copyright, contact info, and social links with gold top border
 
 ## API Endpoints
 
@@ -124,6 +131,12 @@ TRECASA is a professional web application for creating and managing interior des
 
 ## Recent Changes (January 13, 2025)
 - ✅ **Week 1 Milestone Complete**: Full quotation flow working end-to-end
+- ✅ **Branding Update Complete**: Official TRECASA identity applied across entire application
+  - New AppHeader with deep green background (#013220), "TRECASA DESIGN STUDIO 🔴", gold tagline (#C9A74E)
+  - New AppFooter with gold top border, copyright, contact info, and social links
+  - All pages updated: Landing, Dashboard, Quotes List, Project Info, Scope, Estimate, Print
+  - QuotationHeader simplified to work with new branding
+  - Consistent luxury aesthetic throughout the application
 - Implemented Estimate page with two summary cards (Interiors and False Ceiling) showing:
   - Room-based breakdowns with SQFT/Area totals
   - Placeholder pricing: Subtotal ₹0.00, Discount 0%, GST (18%) ₹0.00, Final Quote ₹0.00
