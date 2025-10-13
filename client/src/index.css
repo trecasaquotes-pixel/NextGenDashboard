@@ -326,3 +326,31 @@
     inset: -1px;
   }
 }
+
+/* Dimension Input Styling */
+.dimInput {
+  width: 130px;
+  height: 40px;
+  font-size: 15px;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+/* Remove spinner arrows */
+.dimInput::-webkit-outer-spin-button,
+.dimInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.dimInput[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Mobile: let them shrink gracefully */
+@media (max-width: 640px) {
+  .dimInput {
+    width: 96px;
+    height: 38px;
+  }
+}

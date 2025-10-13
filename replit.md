@@ -66,3 +66,30 @@ No specific user preferences were provided in the original document.
     - Persistent access to subtotals and navigation while working on items
     - Visual separation between room groups with inline financial feedback
   - **Testing Status**: ✅ Architect verified implementation, conditional rendering, layout, and formatting
+
+- ✅ **Dimension Input Enhancements COMPLETE** (Architect Approved): Enhanced L/H/W inputs with improved sizing and validation
+  - **CSS Styling** (`.dimInput` class in index.css):
+    - Width: 130px desktop (96px mobile)
+    - Height: 40px desktop (38px mobile)
+    - Font-size: 15px with padding 8px 10px
+    - Border-radius: 8px for modern appearance
+    - Spinner arrows removed via CSS for cleaner UI
+  - **Input Behavior**:
+    - Type: text (not number) with inputMode="decimal" for better mobile keyboards
+    - Pattern: `^\d*(\.\d{0,2})?$` for validation
+    - Placeholder: "0.00" to indicate expected format
+    - onWheel: Prevents accidental mouse-wheel changes by blurring
+    - onKeyDown: Blocks ArrowUp/ArrowDown to prevent unintended increments
+  - **Sanitization Logic** (`sanitizeDecimalInput` function):
+    - Removes all non-numeric characters except decimal point
+    - Ensures only ONE decimal point (keeps first, removes rest)
+    - Clamps fractional part to exactly 2 decimal places
+    - Edge cases handled: "1.2.345"→"1.23", ".99."→".99", "12..45"→"12.45", "abc12.3x45"→"12.34"
+  - **Column Width Adjustments**:
+    - L/H/W columns: w-[140px] (increased from 70px/120px)
+    - SQFT/Area column: w-[90px] (fixed width for bold text)
+    - Table allows horizontal scroll if content overflows
+  - **Applied To**:
+    - Interiors tab: Length, Height, Width inputs for all room items
+    - False Ceiling tab: Length, Width inputs for all ceiling items
+  - **Testing Status**: ✅ Architect verified sanitization logic handles all edge cases correctly, CSS implementation follows best practices

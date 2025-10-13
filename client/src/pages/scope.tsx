@@ -281,6 +281,26 @@ export default function Scope() {
     return l > 0 && w > 0 ? (l * w).toFixed(2) : "0.00";
   };
 
+  // Sanitize decimal input: allow digits and one dot, clamp to 2 decimals
+  const sanitizeDecimalInput = (value: string): string => {
+    // Allow only digits and one dot
+    let sanitized = value.replace(/[^\d.]/g, '');
+    
+    // Ensure only one dot by keeping the first and removing all others
+    const dotIndex = sanitized.indexOf('.');
+    if (dotIndex !== -1) {
+      sanitized = sanitized.slice(0, dotIndex + 1) + sanitized.slice(dotIndex + 1).replace(/\./g, '');
+    }
+    
+    // Limit to 2 decimal places (recompute parts after fixing multiple dots)
+    const parts = sanitized.split('.');
+    if (parts.length === 2 && parts[1].length > 2) {
+      sanitized = parts[0] + '.' + parts[1].slice(0, 2);
+    }
+    
+    return sanitized;
+  };
+
   const handleInteriorFieldChange = (id: string, field: string, value: any) => {
     const item = interiorItems.find((i) => i.id === id);
     if (!item) return;
@@ -462,9 +482,9 @@ export default function Scope() {
                               <TableHeader>
                                 <TableRow>
                                   <TableHead className="w-[180px]">Description</TableHead>
-                                  <TableHead className="w-[70px]">L (ft)</TableHead>
-                                  <TableHead className="w-[70px]">H (ft)</TableHead>
-                                  <TableHead className="w-[70px]">W (ft)</TableHead>
+                                  <TableHead className="w-[140px]">L (ft)</TableHead>
+                                  <TableHead className="w-[140px]">H (ft)</TableHead>
+                                  <TableHead className="w-[140px]">W (ft)</TableHead>
                                   <TableHead className="w-[90px]">SQFT</TableHead>
                                   <TableHead className="w-[150px]">Build Type</TableHead>
                                   <TableHead className="w-[140px]">Core Material</TableHead>
@@ -490,51 +510,75 @@ export default function Scope() {
                                     <TableCell>
                                       <Input
                                         key={`length-${item.id}-${item.length}`}
-                                        type="number"
-                                        step="0.01"
+                                        type="text"
+                                        inputMode="decimal"
+                                        pattern="^\d*(\.\d{0,2})?$"
+                                        placeholder="0.00"
                                         defaultValue={item.length || ""}
+                                        onChange={(e) => {
+                                          e.target.value = sanitizeDecimalInput(e.target.value);
+                                        }}
                                         onBlur={(e) => {
                                           const currentValue = e.target.value;
                                           if (currentValue !== (item.length || "")) {
                                             handleInteriorFieldChange(item.id, "length", currentValue);
                                           }
                                         }}
-                                        onWheel={(e) => e.currentTarget.blur()}
-                                        className="h-8 font-mono"
+                                        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+                                        }}
+                                        className="dimInput font-mono"
                                         data-testid={`input-length-${item.id}`}
                                       />
                                     </TableCell>
                                     <TableCell>
                                       <Input
                                         key={`height-${item.id}-${item.height}`}
-                                        type="number"
-                                        step="0.01"
+                                        type="text"
+                                        inputMode="decimal"
+                                        pattern="^\d*(\.\d{0,2})?$"
+                                        placeholder="0.00"
                                         defaultValue={item.height || ""}
+                                        onChange={(e) => {
+                                          e.target.value = sanitizeDecimalInput(e.target.value);
+                                        }}
                                         onBlur={(e) => {
                                           const currentValue = e.target.value;
                                           if (currentValue !== (item.height || "")) {
                                             handleInteriorFieldChange(item.id, "height", currentValue);
                                           }
                                         }}
-                                        onWheel={(e) => e.currentTarget.blur()}
-                                        className="h-8 font-mono"
+                                        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+                                        }}
+                                        className="dimInput font-mono"
                                         data-testid={`input-height-${item.id}`}
                                       />
                                     </TableCell>
                                     <TableCell>
                                       <Input
                                         key={`width-${item.id}-${item.width}`}
-                                        type="number"
-                                        step="0.01"
+                                        type="text"
+                                        inputMode="decimal"
+                                        pattern="^\d*(\.\d{0,2})?$"
+                                        placeholder="0.00"
                                         defaultValue={item.width || ""}
+                                        onChange={(e) => {
+                                          e.target.value = sanitizeDecimalInput(e.target.value);
+                                        }}
                                         onBlur={(e) => {
                                           const currentValue = e.target.value;
                                           if (currentValue !== (item.width || "")) {
                                             handleInteriorFieldChange(item.id, "width", currentValue);
                                           }
                                         }}
-                                        onWheel={(e) => e.currentTarget.blur()}
-                                        className="h-8 font-mono"
+                                        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+                                        }}
+                                        className="dimInput font-mono"
                                         data-testid={`input-width-${item.id}`}
                                       />
                                     </TableCell>
@@ -705,9 +749,9 @@ export default function Scope() {
                               <TableHeader>
                                 <TableRow>
                                   <TableHead className="w-[300px]">Description</TableHead>
-                                  <TableHead className="w-[120px]">Length (ft)</TableHead>
-                                  <TableHead className="w-[120px]">Width (ft)</TableHead>
-                                  <TableHead className="w-[120px]">Area (SQFT)</TableHead>
+                                  <TableHead className="w-[140px]">Length (ft)</TableHead>
+                                  <TableHead className="w-[140px]">Width (ft)</TableHead>
+                                  <TableHead className="w-[90px]">Area (SQFT)</TableHead>
                                   <TableHead className="w-[60px]"></TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -726,34 +770,50 @@ export default function Scope() {
                                     <TableCell>
                                       <Input
                                         key={`ceiling-length-${item.id}-${item.length}`}
-                                        type="number"
-                                        step="0.01"
+                                        type="text"
+                                        inputMode="decimal"
+                                        pattern="^\d*(\.\d{0,2})?$"
+                                        placeholder="0.00"
                                         defaultValue={item.length || ""}
+                                        onChange={(e) => {
+                                          e.target.value = sanitizeDecimalInput(e.target.value);
+                                        }}
                                         onBlur={(e) => {
                                           const currentValue = e.target.value;
                                           if (currentValue !== (item.length || "")) {
                                             handleFalseCeilingFieldChange(item.id, "length", currentValue);
                                           }
                                         }}
-                                        onWheel={(e) => e.currentTarget.blur()}
-                                        className="h-8 font-mono"
+                                        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+                                        }}
+                                        className="dimInput font-mono"
                                         data-testid={`input-ceiling-length-${item.id}`}
                                       />
                                     </TableCell>
                                     <TableCell>
                                       <Input
                                         key={`ceiling-width-${item.id}-${item.width}`}
-                                        type="number"
-                                        step="0.01"
+                                        type="text"
+                                        inputMode="decimal"
+                                        pattern="^\d*(\.\d{0,2})?$"
+                                        placeholder="0.00"
                                         defaultValue={item.width || ""}
+                                        onChange={(e) => {
+                                          e.target.value = sanitizeDecimalInput(e.target.value);
+                                        }}
                                         onBlur={(e) => {
                                           const currentValue = e.target.value;
                                           if (currentValue !== (item.width || "")) {
                                             handleFalseCeilingFieldChange(item.id, "width", currentValue);
                                           }
                                         }}
-                                        onWheel={(e) => e.currentTarget.blur()}
-                                        className="h-8 font-mono"
+                                        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+                                        }}
+                                        className="dimInput font-mono"
                                         data-testid={`input-ceiling-width-${item.id}`}
                                       />
                                     </TableCell>
