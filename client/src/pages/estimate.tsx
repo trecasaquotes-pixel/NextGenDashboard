@@ -13,6 +13,7 @@ import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shar
 import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
+import { TermsEditor } from "@/components/terms-editor";
 import { formatINR, safeN } from "@/lib/money";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -364,6 +365,9 @@ export default function Estimate() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Terms & Conditions Editor */}
+          {quotation && <TermsEditor quotation={quotation} />}
 
           {/* Navigation */}
           <div className="flex gap-3">
