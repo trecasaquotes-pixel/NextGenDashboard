@@ -1,0 +1,114 @@
+TASK: Implement “Apply Template → Create Rooms & Items” flow for quotes (idempotent merge, FC mirroring).
+
+Tech context:
+- Monorepo (client: Vite React TS, server: Express TS + SQLite/drizzle).
+- Admin → Templates already exists (templates, template_rooms, template_items).
+- Pricing already wired and PDFs are being polished.
+- Goal: From Project Info or Scope screen, user selects a template and it auto-populates rooms + items, without duplicates.
+
+--------------------------------
+1) SHARED TYPES (optional nicety)
+--------------------------------
+In /shared/schema.ts or /shared/types.ts, export light interfaces used by client:
+- TemplateSummary: { id, name, category }
+- TemplateDetail: { id, name, category, rooms: { id, roomName, sortOrder, items: { id, itemKey, displayName, unit, isWallHighlightOrPanel, sortOrder }[] }[] }
+
+--------------------------------
+2) SERVER: APPLY TEMPLATE ENDPOINT
+--------------------------------
+Create /server/routes.quotes.applyTemplate.ts and mount in /server/routes.ts under /api/quotes.
+
+POST /api/quotes/:quoteId/apply-template
+Body: { templateId: string, mode?: "merge" | "reset" }
+Behavior:
+- Load the template with rooms+items.
+- If mode === "reset": remove existing rooms & items from this quote before applying (CAUTION: only if the quote is still editable).
+- Else ("merge"): idempotent merge — add only missing rooms/items.
+
+Idempotent logic:
+- Room match key: roomName (case-insensitive). If multiple same names, keep the first.
+- If a room doesn’t exist, create it with {roomName, sortOrder}.
+- For each template item within a room:
+  - If an item with same itemKey already exists in that room → skip adding a duplicate.
+  - Otherwise create item with:
+    { itemKey, displayName, unit, isWallHighlightOrPanel, sortOrder,
+      // quantities left empty; amount=0 until user fills
+      length: null, height: null, width: null, count: 0, lsum: 0, ratePerSft: 0, amount: 0 }
+
+Validation/guards:
+- Skip template items whose itemKey is inactive in rates (optional: collect and return a warning list).
+- Enforce unit guardrails (e.g., interiors SFT; COUNT/LSUM only for special items).
+
+Response:
+- { ok:true, applied: { roomsAdded, itemsAdded }, skipped?: string[] }
+
+--------------------------------
+3) OPTIONAL: FC MIRRORING (endpoint)
+--------------------------------
+If your schema separates FC quotes, add a companion endpoint:
+
+POST /api/quotes/:quoteId/apply-fc-defaults
+Body: { fromRooms?: string[] } // optional filter
+Behavior:
+- For each interior room present in the quote, ensure one FC line exists with unit="SFT" and blank L/W (user will fill).
+- Also ensure FC Others exist once per quote (fc_paint LSUM, fc_lights COUNT, fc_fan_hook COUNT, fc_cove_led COUNT optional).
+- Idempotent: do not duplicate if already present.
+
+--------------------------------
+4) CLIENT: PROJECT INFO / SCOPE UI
+--------------------------------
+Where: Project Info page (after “Create Quote”) and Scope page toolbar.
+
+Add a button: [Apply Template]
+- On click: open a modal with:
+  - Template dropdown (fetch from GET /api/admin/templates?q=&active=1 — show name + category)
+  - Mode toggle: Merge (default) / Reset
+  - Checkbox: “Also add False Ceiling defaults” (checked by default)
+  - [Apply] button → calls:
+    - POST /api/quotes/:id/apply-template with {templateId, mode}
+    - If checkbox checked, also call POST /api/quotes/:id/apply-fc-defaults
+
+After success:
+- Toast: “Template applied — rooms and items added.”
+- Navigate to Scope screen and expand all rooms.
+
+Scope screen changes:
+- Provide a small “Re-apply template” button (same modal; defaults to Merge).
+- Provide a “Reset to template” button (danger; asks for confirmation; uses mode="reset").
+
+--------------------------------
+5) ID MATCHING & SAFETY
+--------------------------------
+- If user renamed a room in the quote, still match by name ignoring case. If not found, treat as new room and add.
+- Do not delete user-added items on merge.
+- On reset, remove existing rooms/items owned by the quote (leave approvals/PDFs guarded by a confirm: “Reset will clear current entries; continue?”).
+
+--------------------------------
+6) TEMPLATE ITEM PICKER INTEGRITY
+--------------------------------
+- When creating items from template, verify itemKey exists in rates table and isActive=1.
+- If missing/inactive, skip and collect: skipped.push(`${roomName} → ${displayName} (${itemKey})`).
+- Return skipped in response; client shows a dismissible warning list.
+
+--------------------------------
+7) FC DISPLAY (client note)
+--------------------------------
+- On FC tab, list rooms with one FC line each (unit=SFT), plus FC Others block at the bottom.
+- Counts (lights, hook rods, cove led) are editable in the FC Others block and summarized on P1 FC summary.
+
+--------------------------------
+8) QA / TEST PLAN
+--------------------------------
+- New quote → Apply “Residential 3BHK – Standard” (merge). Rooms/items appear in order.
+- Apply again (merge) → no duplicates; “applied.itemsAdded” minimal or zero.
+- Reset mode → removes all rooms/items, re-adds from template.
+- Apply with “also add FC defaults” → FC tab shows room lines + Others.
+- Add dimensions to a few items → totals recompute (pricing already works).
+- If a rate is inactive for some template item → it appears in “skipped” list.
+
+Deliverables:
+- /server/routes.quotes.applyTemplate.ts mounted under /api/quotes
+- (Optional) /server/routes.quotes.applyFcDefaults.ts
+- Client modal + buttons on Project Info and Scope
+- Toasts and navigation after apply
+- Warning list for skipped items
