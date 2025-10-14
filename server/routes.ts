@@ -615,15 +615,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PDF download routes
-  app.get('/api/quotations/:id/pdf/:type', isAuthenticated, async (req: any, res) => {
+  // PDF download routes (supports both user auth and render token)
+  app.get('/api/quotations/:id/pdf/:type', async (req: any, res) => {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
         return res.status(404).json({ message: "Quotation not found" });
       }
-      if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+
+      // Check authentication: either render token or user session
+      const token = req.query.token as string;
+      const quotationId = req.params.id;
+      
+      if (token) {
+        // Verify render token
+        const { verifyRenderToken } = await import('./lib/render-token');
+        if (!verifyRenderToken(token, quotationId)) {
+          return res.status(403).json({ message: "Invalid or expired token" });
+        }
+      } else if (req.user?.claims?.sub) {
+        // Verify user ownership
+        if (quotation.userId !== req.user.claims.sub) {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+      } else {
+        return res.status(401).json({ message: "Authentication required" });
       }
 
       const type = req.params.type as 'interiors' | 'false-ceiling' | 'agreement';
