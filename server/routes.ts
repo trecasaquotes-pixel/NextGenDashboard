@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog } from "@shared/schema";
 import { generateQuoteId } from "./utils/generateQuoteId";
-import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles } from "./lib/backup";
+import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles, buildQuoteZip } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
 import { seedRates } from "./seed/rates.seed";
 import { seedTemplates } from "./seed/templates.seed";
@@ -985,6 +985,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error signing agreement:", error);
       res.status(500).json({ message: "Failed to sign agreement" });
+    }
+  });
+
+  // Export quotation as ZIP
+  app.get("/api/quotations/:id/export-zip", isAuthenticated, async (req, res) => {
+    try {
+      const quotationId = req.params.id;
+      const ensurePdfs = req.query.ensurePdfs !== '0'; // Default true
+      
+      const quotation = await storage.getQuotation(quotationId);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      
+      // Verify ownership
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      
+      try {
+        const zipBuffer = await buildQuoteZip({
+          quoteId: quotationId,
+          ensurePdfs,
+          baseUrl,
+        });
+        
+        // Generate filename with date
+        const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+        const filename = `Trecasa_Quote_${quotation.quoteId}_${date}.zip`;
+        
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send(zipBuffer);
+      } catch (pdfError: any) {
+        console.error("Error generating ZIP:", pdfError);
+        if (pdfError.message?.includes('Could not generate PDFs')) {
+          return res.status(409).json({ 
+            message: "Failed to generate PDFs", 
+            reason: pdfError.message 
+          });
+        }
+        throw pdfError;
+      }
+    } catch (error) {
+      console.error("Error exporting quotation ZIP:", error);
+      res.status(500).json({ message: "Failed to export quotation" });
+    }
+  });
+
+  // Save snapshot for draft quotes
+  app.post("/api/quotations/:id/snapshot", isAuthenticated, async (req, res) => {
+    try {
+      const quotationId = req.params.id;
+      
+      const quotation = await storage.getQuotation(quotationId);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      
+      // Verify ownership
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      // Build snapshot from current state
+      const [allRates, allBrands, globalRulesData] = await Promise.all([
+        db.select().from(rates).where(eq(rates.isActive, true)),
+        db.select().from(brands).where(eq(brands.isActive, true)),
+        db.select().from(globalRules).limit(1),
+      ]);
+      
+      // Build rates-by-itemKey map
+      const ratesByItemKey: Record<string, any> = {};
+      for (const rate of allRates) {
+        ratesByItemKey[rate.itemKey] = rate;
+      }
+      
+      // Get interior items to extract brands used
+      const interiorItems = await storage.getInteriorItems(quotationId);
+      const brandsUsed = {
+        materials: new Set<string>(),
+        finishes: new Set<string>(),
+        hardware: new Set<string>(),
+      };
+      
+      interiorItems.forEach(item => {
+        if (item.material) brandsUsed.materials.add(item.material);
+        if (item.finish) brandsUsed.finishes.add(item.finish);
+        if (item.hardware) brandsUsed.hardware.add(item.hardware);
+      });
+      
+      const snapshotData = {
+        globalRules: globalRulesData[0] || null,
+        ratesByItemKey,
+        brandsSelected: {
+          materials: Array.from(brandsUsed.materials),
+          finishes: Array.from(brandsUsed.finishes),
+          hardware: Array.from(brandsUsed.hardware),
+        },
+        brands: allBrands,
+        timestamp: Date.now(),
+      };
+      
+      // Save snapshot to quotation
+      await storage.updateQuotation(quotationId, {
+        snapshotJson: snapshotData,
+      });
+      
+      res.json({ ok: true, snapshotSaved: true });
+    } catch (error) {
+      console.error("Error saving snapshot:", error);
+      res.status(500).json({ message: "Failed to save snapshot" });
     }
   });
 
