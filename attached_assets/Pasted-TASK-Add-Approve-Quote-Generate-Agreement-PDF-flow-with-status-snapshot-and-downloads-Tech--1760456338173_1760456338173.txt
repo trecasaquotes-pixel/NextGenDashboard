@@ -1,0 +1,152 @@
+TASK: Add “Approve Quote → Generate Agreement PDF” flow with status, snapshot, and downloads.
+
+Tech context:
+- Client: Vite React TS. Server: Express TS + SQLite (drizzle). PDF via lib/pdf-generator.ts
+- Quotes already compute totals and render PDFs (Interiors + FC). Admin screens exist.
+
+--------------------------------
+1) SHARED SCHEMA UPDATES
+--------------------------------
+In /shared/schema.ts add:
+
+A) Quote status + snapshot fields (extend existing quotes table):
+- status: text not null default "draft"   // "draft" | "approved" | "cancelled"
+- approvedAt: integer nullable
+- approvedBy: text nullable
+- snapshotJson: text nullable  // store rates/brands/global rules used at approval time
+
+B) Agreements table:
+export const agreements = sqlite table "agreements" {
+  id: text pk (nanoid)
+  quoteId: text not null            // fk to quotes.id
+  clientName: text not null
+  projectName: text not null
+  siteAddress: text not null
+  amountBeforeGst: integer not null
+  gstPercent: integer not null
+  gstAmount: integer not null
+  grandTotal: integer not null
+  paymentScheduleJson: text not null  // [{label,percent,amount}]
+  termsJson: text not null            // array of strings
+  generatedAt: integer not null
+  pdfPath: text not null              // saved on disk
+  signedByClient: text nullable
+  signedAt: integer nullable
+}
+
+Export types AgreementRow/NewAgreementRow.
+
+--------------------------------
+2) SERVER: STATUS + SNAPSHOT + AGREEMENT ENDPOINTS
+--------------------------------
+File: /server/routes.quotes.approval.ts (mount under /api/quotes)
+
+- POST /api/quotes/:quoteId/approve
+  Body: { approvedBy: string, siteAddress: string }
+  Steps:
+    1) Ensure quote.status === "draft"
+    2) Recompute totals (use current quote lines) and fetch:
+       - global rules (gst %, payment schedule)
+       - brands selected for this quote
+       - rates currently referenced by items
+    3) Build snapshotJson = { globalRules, brandsSelected, ratesByItemKey }
+    4) Update quote: { status:"approved", approvedAt:Date.now(), approvedBy, snapshotJson }
+    5) Create agreement record:
+       - amountBeforeGst = subtotal
+       - gstPercent, gstAmount, grandTotal
+       - paymentScheduleJson = globalRules.paymentSchedule with computed amounts (percent × grandTotal)
+       - termsJson: assemble default T&C (existing dynamic T&C source)
+    6) Generate Agreement PDF (see section 3) → return {agreementId, pdfUrl}
+
+- GET /api/agreements/:id → return agreement row (for download page)
+
+- POST /api/agreements/:id/sign
+  Body: { signedByClient: string }
+  → set signedByClient + signedAt = now
+
+Guardrails:
+- If quote already approved, return 409.
+- Keep snapshot at approval; future admin edits must NOT affect approved totals.
+
+--------------------------------
+3) SERVER: AGREEMENT PDF TEMPLATE
+--------------------------------
+In lib/pdf-generator.ts add renderAgreement(agreement, logoPath):
+A4 portrait, same fonts/margins/header/footer as quotes.
+
+Page 1 — Agreement Summary
+- Header block:
+  Project Name, Client Name, Quote ID, Agreement Date
+- Amount box:
+  Subtotal (₹), GST % / GST ₹, **Grand Total ₹**
+- Payment Schedule table:
+  | Milestone | % | Amount (₹) |
+- Signatures row:
+  | TRECASA Authorized Signatory | Client Signature/Name |
+  “Accepted on: __________”
+- Small note: “This Agreement is based on Approved Quote snapshot dated DD MMM YYYY.”
+
+Page 2+ — Terms & Conditions
+- Ordered list of T&C lines (from termsJson)
+- Footer on every page with red dot, Page X of Y
+
+Save to disk under /storage/agreements/{agreement.id}.pdf and return file path.
+
+--------------------------------
+4) CLIENT: QUOTE PAGE UI
+--------------------------------
+On quote view page:
+
+A) Approve dialog:
+- Button “Approve Quote”
+- Modal fields:
+  - Approved By (text, default current admin name)
+  - Site Address (multiline)
+  - Confirm checkbox: “Lock this quote and generate Agreement”
+- On confirm → POST /api/quotes/:id/approve → on success show toaster and “View Agreement” button
+
+B) Agreement panel:
+- If quote.status === "approved":
+  - Show Agreement card with:
+    - Grand Total, GST, Approved Date, Approved By
+    - Buttons: [Download Agreement PDF], [Mark as Signed]
+  - “Mark as Signed” opens small modal to enter Client Name → POST /api/agreements/:id/sign (update UI)
+
+C) Read-only lock:
+- When status === "approved", disable editing of quote items and project info (show banner: “Approved — locked to snapshot”).
+
+--------------------------------
+5) TERMS SOURCE (DYNAMIC)
+--------------------------------
+Use your existing T&C store (admin/dynamic). If not present, seed default lines like:
+- Measurements are finished-size; deviations re-measured on site.
+- Manufacturing tolerances ±3mm.
+- Warranty as per brand manufacturer terms.
+- Delivery & installation timelines depend on site readiness.
+- Payments as per agreed schedule; delays may affect timeline.
+(Keep it editable via your T&C admin, if already built.)
+
+--------------------------------
+6) AUDIT LOG HOOKS
+--------------------------------
+Log entries:
+- On approve: section "Quotes", action "UPDATE", summary `Approved quote ${quoteId}`
+- On agreement create: section "Agreement", action "CREATE", summary `Agreement created ${agreementId}`
+- On sign: section "Agreement", action "UPDATE", summary `Agreement signed by ${name}`
+
+--------------------------------
+7) QA / TEST
+--------------------------------
+✅ Draft quote → Approve → quote becomes “approved”, snapshot stored.  
+✅ Agreement PDF generates with correct totals, GST, payment schedule amounts.  
+✅ Download link works.  
+✅ After admin changes rates, approved quote/agreement remains unchanged.  
+✅ “Mark as Signed” stores client name + timestamp.  
+✅ PDFs use correct fonts, margins, header/footer, red dot, page numbers.
+
+Deliverables:
+- Schema changes in /shared/schema.ts
+- New server routes in /server/routes.quotes.approval.ts
+- PDF function renderAgreement in lib/pdf-generator.ts
+- Client changes on quote screen (approve modal, agreement card, lock state)
+- Audit log entries wired

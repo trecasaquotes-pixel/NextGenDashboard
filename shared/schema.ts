@@ -56,7 +56,16 @@ export const quotations = pgTable("quotations", {
   projectAddress: text("project_address"),
   
   // Status
-  status: varchar("status").notNull().default("draft"), // draft, sent, accepted, rejected
+  status: varchar("status").notNull().default("draft"), // draft, sent, accepted, rejected, approved, cancelled
+  
+  // Approval tracking
+  approvedAt: integer("approved_at"), // Unix timestamp of approval
+  approvedBy: varchar("approved_by"), // User who approved
+  snapshotJson: jsonb("snapshot_json").$type<{
+    globalRules: any;
+    brandsSelected: any;
+    ratesByItemKey: Record<string, any>;
+  }>(), // Snapshot of rates/brands/rules at approval time
   
   // Totals (calculated subtotals)
   totals: jsonb("totals").$type<{
@@ -128,6 +137,51 @@ export const quotationsRelations = relations(quotations, ({ one, many }) => ({
   interiorItems: many(interiorItems),
   falseCeilingItems: many(falseCeilingItems),
   otherItems: many(otherItems),
+}));
+
+// Agreements table (generated when quote is approved)
+export const agreements = pgTable("agreements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
+  
+  // Project details (snapshot at approval time)
+  clientName: varchar("client_name").notNull(),
+  projectName: varchar("project_name").notNull(),
+  siteAddress: text("site_address").notNull(),
+  
+  // Financial details
+  amountBeforeGst: integer("amount_before_gst").notNull(), // Subtotal in paise
+  gstPercent: integer("gst_percent").notNull(), // GST percentage (18 = 18%)
+  gstAmount: integer("gst_amount").notNull(), // GST amount in paise
+  grandTotal: integer("grand_total").notNull(), // Total amount in paise
+  
+  // Payment schedule (with computed amounts)
+  paymentScheduleJson: jsonb("payment_schedule_json").$type<Array<{
+    label: string;
+    percent: number;
+    amount: number; // In paise
+  }>>().notNull(),
+  
+  // Terms & Conditions
+  termsJson: jsonb("terms_json").$type<string[]>().notNull(),
+  
+  // PDF storage
+  pdfPath: text("pdf_path").notNull(), // File path on disk
+  
+  // Signature tracking
+  signedByClient: varchar("signed_by_client"), // Client name if signed
+  signedAt: integer("signed_at"), // Unix timestamp
+  
+  // Timestamps
+  generatedAt: integer("generated_at").notNull(), // Unix timestamp
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const agreementsRelations = relations(agreements, ({ one }) => ({
+  quotation: one(quotations, {
+    fields: [agreements.quotationId],
+    references: [quotations.id],
+  }),
 }));
 
 // Interior line items (Kitchen, Living, Bedrooms, etc.)
@@ -244,6 +298,11 @@ export const insertOtherItemSchema = createInsertSchema(otherItems).omit({
   createdAt: true,
 });
 
+export const insertAgreementSchema = createInsertSchema(agreements).omit({
+  id: true,
+  createdAt: true,
+});
+
 // TypeScript types
 export type InsertQuotation = z.infer<typeof insertQuotationSchema>;
 export type Quotation = typeof quotations.$inferSelect;
@@ -256,6 +315,9 @@ export type FalseCeilingItem = typeof falseCeilingItems.$inferSelect;
 
 export type InsertOtherItem = z.infer<typeof insertOtherItemSchema>;
 export type OtherItem = typeof otherItems.$inferSelect;
+
+export type InsertAgreement = z.infer<typeof insertAgreementSchema>;
+export type Agreement = typeof agreements.$inferSelect;
 
 // Room types constant
 export const ROOM_TYPES = ["Kitchen", "Living", "Bedrooms", "Bathrooms", "Utility", "Puja"] as const;
