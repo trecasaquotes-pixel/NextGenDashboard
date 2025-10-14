@@ -48,6 +48,17 @@ No specific user preferences were provided in the original document.
   - Unit guardrails: FC items locked to LSUM/COUNT, Others items locked to LSUM (enforced both frontend and backend)
   - Brand-based pricing: separate handmade and factory rates for material/finish/hardware brands
   - Accessible via user dropdown menu → "Admin - Rates"
+- **Admin → Templates Management**: Full-featured template system for creating quotation templates with PostgreSQL persistence. Features include:
+  - Default "Residential 3BHK - Standard" template seeded on first launch with 9 rooms and 48 items
+  - Full CRUD operations for templates, rooms, and items (soft deletes with isActive flag for templates)
+  - Advanced filtering: search by name, filter by category (Residential 1BHK/2BHK/3BHK, Villa, Commercial), active status
+  - Template list view with actions: Edit, Duplicate, Export JSON, Delete
+  - Template editor with hierarchical structure: template details → rooms → items
+  - Inline editing: template name/category/status, room names/sort order, item keys/display names/units
+  - Import/Export JSON functionality for template backup and sharing
+  - Accordion-based UI for managing rooms and items with drag-and-drop sorting capability
+  - Template validation: ensures itemKey references exist in rates table
+  - Accessible via user dropdown menu → "Admin - Templates"
 
 ## External Dependencies
 - **Replit Auth**: User authentication and authorization.
