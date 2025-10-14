@@ -680,7 +680,7 @@ export const auditLog = pgTable("audit_log", {
 });
 
 export const insertAuditLogSchema = createInsertSchema(auditLog, {
-  section: z.enum(["Rates", "Templates", "Brands", "Painting&FC", "GlobalRules"]),
+  section: z.enum(["Rates", "Templates", "Brands", "Painting&FC", "GlobalRules", "Quotes", "Agreement"]),
   action: z.enum(["CREATE", "UPDATE", "DELETE"]),
   summary: z.string().min(1).max(500),
 }).omit({

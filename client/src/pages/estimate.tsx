@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Percent, IndianRupee } from "lucide-react";
+import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2 } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
@@ -15,6 +15,8 @@ import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { TermsEditor } from "@/components/terms-editor";
 import { SignoffEditor } from "@/components/signoff-editor";
+import { ApproveQuoteDialog } from "@/components/approve-quote-dialog";
+import { AgreementCard } from "@/components/agreement-card";
 import { formatINR, safeN } from "@/lib/money";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -25,6 +27,7 @@ export default function Estimate() {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const [showApproveDialog, setShowApproveDialog] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -367,11 +370,46 @@ export default function Estimate() {
             </CardContent>
           </Card>
 
+          {/* Read-only banner if approved */}
+          {quotation?.status === "approved" && (
+            <div className="p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <strong>Quote Approved — Locked</strong>
+                <br />
+                This quote has been approved and is locked to preserve the snapshot used in the agreement. 
+                No further edits are allowed.
+              </p>
+            </div>
+          )}
+
           {/* Terms & Conditions Editor */}
           {quotation && <TermsEditor quotation={quotation} />}
 
           {/* Sign & Status */}
           {quotation && <SignoffEditor quotationId={quotationId!} quotation={quotation} />}
+
+          {/* Agreement Card (if approved) */}
+          {quotation?.status === "approved" && (
+            <AgreementCard
+              quotationId={quotationId!}
+              approvedAt={quotation.approvedAt || undefined}
+              approvedBy={quotation.approvedBy || undefined}
+            />
+          )}
+
+          {/* Approve Button (if not approved) */}
+          {quotation?.status !== "approved" && (
+            <div className="flex justify-end">
+              <Button
+                onClick={() => setShowApproveDialog(true)}
+                size="lg"
+                data-testid="button-approve-quote"
+              >
+                <CheckCircle2 className="mr-2 h-5 w-5" />
+                Approve Quote & Generate Agreement
+              </Button>
+            </div>
+          )}
 
           {/* Navigation */}
           <div className="flex gap-3">
@@ -391,6 +429,13 @@ export default function Estimate() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
+
+          {/* Approve Quote Dialog */}
+          <ApproveQuoteDialog
+            open={showApproveDialog}
+            onOpenChange={setShowApproveDialog}
+            quotationId={quotationId!}
+          />
         </div>
       </main>
 

@@ -98,14 +98,14 @@ export class DatabaseStorage implements IStorage {
 
   async createQuotation(quotation: InsertQuotation): Promise<Quotation> {
     const quoteId = generateQuoteId();
-    const [newQuotation] = await db.insert(quotations).values({ ...quotation, quoteId }).returning();
+    const [newQuotation] = await db.insert(quotations).values({ ...quotation, quoteId } as any).returning();
     return newQuotation;
   }
 
   async updateQuotation(id: string, data: Partial<InsertQuotation>): Promise<Quotation> {
     const [updated] = await db
       .update(quotations)
-      .set({ ...data, updatedAt: new Date() })
+      .set({ ...data, updatedAt: new Date() } as any)
       .where(eq(quotations.id, id))
       .returning();
     return updated;
@@ -211,14 +211,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAgreement(agreement: InsertAgreement): Promise<Agreement> {
-    const [newAgreement] = await db.insert(agreements).values(agreement).returning();
+    const [newAgreement] = await db.insert(agreements).values(agreement as any).returning();
     return newAgreement;
   }
 
   async updateAgreement(id: string, data: Partial<InsertAgreement>): Promise<Agreement> {
     const [updated] = await db
       .update(agreements)
-      .set(data)
+      .set(data as any)
       .where(eq(agreements.id, id))
       .returning();
     return updated;

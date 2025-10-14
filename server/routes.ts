@@ -3,7 +3,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules } from "@shared/schema";
+import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog } from "@shared/schema";
 import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
@@ -834,7 +834,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Create payment schedule with amounts
-      const paymentSchedule = (globalRulesData?.paymentSchedule || []).map((item: any) => ({
+      const paymentScheduleData = globalRulesData?.paymentScheduleJson ? JSON.parse(globalRulesData.paymentScheduleJson) : [];
+      const paymentSchedule = paymentScheduleData.map((item: any) => ({
         label: item.label,
         percent: item.percent,
         amount: Math.round((grandTotal * item.percent) / 100),
@@ -863,6 +864,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         termsJson,
         pdfPath: `/storage/agreements/${quotationId}_agreement.pdf`, // Placeholder
         generatedAt: Date.now(),
+      });
+      
+      // Log approval
+      await db.insert(auditLog).values({
+        userId: req.user.claims.sub,
+        userEmail: req.user.claims.email || "",
+        section: "Quotes",
+        action: "UPDATE",
+        targetId: quotationId,
+        summary: `Approved quote ${quotation.quoteId}`,
+        beforeJson: JSON.stringify({ status: quotation.status }),
+        afterJson: JSON.stringify({ status: "approved", approvedBy: approvedBy || req.user.claims.email }),
+      });
+      
+      // Log agreement creation
+      await db.insert(auditLog).values({
+        userId: req.user.claims.sub,
+        userEmail: req.user.claims.email || "",
+        section: "Agreement",
+        action: "CREATE",
+        targetId: agreement.id,
+        summary: `Agreement created ${agreement.id}`,
+        beforeJson: null,
+        afterJson: JSON.stringify({ quotationId, grandTotal }),
       });
       
       res.json({
@@ -897,6 +922,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get agreement by quotation ID
+  app.get('/api/quotations/:quotationId/agreement', isAuthenticated, async (req: any, res) => {
+    try {
+      const quotationId = req.params.quotationId;
+      
+      // Verify ownership first
+      const quotation = await storage.getQuotation(quotationId);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const agreement = await storage.getAgreementByQuotationId(quotationId);
+      if (!agreement) {
+        return res.status(404).json({ message: "Agreement not found for this quotation" });
+      }
+      
+      res.json(agreement);
+    } catch (error) {
+      console.error("Error fetching agreement by quotation:", error);
+      res.status(500).json({ message: "Failed to fetch agreement" });
+    }
+  });
+
   // Sign agreement
   app.post('/api/agreements/:id/sign', isAuthenticated, async (req: any, res) => {
     try {
@@ -916,6 +967,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updated = await storage.updateAgreement(req.params.id, {
         signedByClient,
         signedAt: Date.now(),
+      });
+      
+      // Log signing
+      await db.insert(auditLog).values({
+        userId: req.user.claims.sub,
+        userEmail: req.user.claims.email || "",
+        section: "Agreement",
+        action: "UPDATE",
+        targetId: req.params.id,
+        summary: `Agreement signed by ${signedByClient}`,
+        beforeJson: JSON.stringify({ signedByClient: agreement.signedByClient }),
+        afterJson: JSON.stringify({ signedByClient, signedAt: updated.signedAt }),
       });
       
       res.json(updated);
