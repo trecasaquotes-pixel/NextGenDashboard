@@ -3,7 +3,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema } from "@shared/schema";
+import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems } from "@shared/schema";
 import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
@@ -18,6 +18,8 @@ import { registerAdminBrandsRoutes } from "./routes.admin.brands";
 import { registerAdminPaintingFcRoutes } from "./routes.admin.paintingFc";
 import { registerAdminGlobalRulesRoutes } from "./routes.admin.globalRules";
 import { registerAdminAuditRoutes } from "./routes.admin.audit";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -173,6 +175,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting quotation:", error);
       res.status(500).json({ message: "Failed to delete quotation" });
+    }
+  });
+
+  // Apply template to quotation (create rooms and items)
+  app.post('/api/quotations/:id/apply-template', isAuthenticated, async (req: any, res) => {
+    try {
+      const quotationId = req.params.id;
+      
+      // Check quotation ownership
+      const quotation = await storage.getQuotation(quotationId);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      // Validate request
+      const { templateId, mode } = applyTemplateSchema.parse(req.body);
+      
+      // Load template with rooms and items
+      const [template] = await db.select().from(templates).where(eq(templates.id, templateId));
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
+      const rooms = await db.select().from(templateRooms)
+        .where(eq(templateRooms.templateId, templateId))
+        .orderBy(templateRooms.sortOrder);
+      
+      const roomsWithItems = await Promise.all(
+        rooms.map(async (room) => {
+          const items = await db.select().from(templateItems)
+            .where(eq(templateItems.templateRoomId, room.id))
+            .orderBy(templateItems.sortOrder);
+          return { ...room, items };
+        })
+      );
+      
+      // If reset mode, delete existing interior items
+      if (mode === "reset") {
+        await db.delete(interiorItems).where(eq(interiorItems.quotationId, quotationId));
+      }
+      
+      // Load existing items to check for duplicates
+      const existingItems = await db.select().from(interiorItems)
+        .where(eq(interiorItems.quotationId, quotationId));
+      
+      // Load active rates for validation
+      const activeRates = await db.select().from(rates).where(eq(rates.isActive, true));
+      const activeRateKeys = new Set(activeRates.map(r => r.itemKey));
+      
+      // Track stats
+      let itemsAdded = 0;
+      const skipped: string[] = [];
+      
+      // Apply template items
+      for (const room of roomsWithItems) {
+        const roomName = room.roomName;
+        
+        for (const templateItem of room.items) {
+          // Check if rate exists and is active
+          if (!activeRateKeys.has(templateItem.itemKey)) {
+            skipped.push(`${roomName} → ${templateItem.displayName} (${templateItem.itemKey})`);
+            continue;
+          }
+          
+          // Check if item already exists (match by roomType + itemKey)
+          const exists = existingItems.some(item => 
+            item.roomType?.toLowerCase() === roomName.toLowerCase() && 
+            item.description?.toLowerCase() === templateItem.displayName.toLowerCase()
+          );
+          
+          if (!exists) {
+            // Create new interior item
+            await db.insert(interiorItems).values({
+              quotationId,
+              roomType: roomName,
+              description: templateItem.displayName,
+              calc: templateItem.unit, // Map unit to calc (SFT→SQFT handled by schema default)
+              buildType: "handmade", // Default
+              material: "Generic Ply", // Default
+              finish: "Generic Laminate", // Default
+              hardware: "Nimmi", // Default
+              length: null,
+              height: null,
+              width: null,
+              sqft: null,
+              unitPrice: null,
+              totalPrice: null,
+            });
+            
+            itemsAdded++;
+          }
+        }
+      }
+      
+      const response: ApplyTemplateResponse = {
+        ok: true,
+        applied: {
+          roomsAdded: 0, // We're using roomType field, not separate rooms
+          itemsAdded,
+        },
+        skipped: skipped.length > 0 ? skipped : undefined,
+      };
+      
+      res.json(response);
+    } catch (error) {
+      console.error("Error applying template:", error);
+      res.status(500).json({ message: "Failed to apply template" });
+    }
+  });
+
+  // Apply FC defaults to quotation (mirror interior rooms + FC Others)
+  app.post('/api/quotations/:id/apply-fc-defaults', isAuthenticated, async (req: any, res) => {
+    try {
+      const quotationId = req.params.id;
+      
+      // Check quotation ownership
+      const quotation = await storage.getQuotation(quotationId);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      // Get all unique room types from interior items
+      const interiorRooms = await db.select().from(interiorItems)
+        .where(eq(interiorItems.quotationId, quotationId));
+      
+      const uniqueRoomTypes = [...new Set(interiorRooms.map(item => item.roomType).filter(Boolean))];
+      
+      // Get existing FC items
+      const existingFcItems = await db.select().from(falseCeilingItems)
+        .where(eq(falseCeilingItems.quotationId, quotationId));
+      
+      let itemsAdded = 0;
+      
+      // Create FC line for each interior room (if not exists)
+      for (const roomType of uniqueRoomTypes) {
+        const exists = existingFcItems.some(item => 
+          item.roomType?.toLowerCase() === roomType?.toLowerCase()
+        );
+        
+        if (!exists) {
+          await db.insert(falseCeilingItems).values({
+            quotationId,
+            roomType,
+            description: `${roomType} False Ceiling`,
+            length: null,
+            width: null,
+            area: null,
+            unitPrice: null,
+            totalPrice: null,
+          });
+          itemsAdded++;
+        }
+      }
+      
+      res.json({
+        ok: true,
+        applied: {
+          roomsAdded: 0,
+          itemsAdded,
+        },
+      });
+    } catch (error) {
+      console.error("Error applying FC defaults:", error);
+      res.status(500).json({ message: "Failed to apply FC defaults" });
     }
   });
 
