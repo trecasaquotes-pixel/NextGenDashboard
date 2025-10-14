@@ -8,6 +8,7 @@ import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
 import { seedRates } from "./seed/rates.seed";
+import { registerAdminRatesRoutes } from "./routes.admin.rates";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -527,6 +528,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate token" });
     }
   });
+
+  // Admin routes
+  registerAdminRatesRoutes(app, isAuthenticated);
 
   const httpServer = createServer(app);
   return httpServer;
