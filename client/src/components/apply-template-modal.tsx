@@ -55,7 +55,7 @@ export function ApplyTemplateModal({
 
   // Fetch active templates
   const { data: templates = [], isLoading: isLoadingTemplates } = useQuery<TemplateSummary[]>({
-    queryKey: ['/api/admin/templates', { active: '1' }],
+    queryKey: ['/api/admin/templates?active=1'],
     enabled: open,
   });
 
@@ -80,9 +80,13 @@ export function ApplyTemplateModal({
       
       return data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/quotations', quotationId, 'interior-items'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/quotations', quotationId, 'false-ceiling-items'] });
+    onSuccess: async (data) => {
+      // Invalidate queries and wait for them to refetch
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/interior-items`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] }),
+      ]);
       
       const itemsText = data.applied.itemsAdded === 1 ? "item" : "items";
       let message = `Template applied — ${data.applied.itemsAdded} ${itemsText} added`;
