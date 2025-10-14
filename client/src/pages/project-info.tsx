@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Save } from "lucide-react";
+import { ArrowLeft, ArrowRight, Save, FileText } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -27,6 +27,7 @@ import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { TemplateModal } from "@/components/template-modal";
+import { ApplyTemplateModal } from "@/components/apply-template-modal";
 
 const projectInfoSchema = z.object({
   projectName: z.string().min(1, "Required"),
@@ -55,6 +56,7 @@ export default function ProjectInfo() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showApplyTemplateModal, setShowApplyTemplateModal] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -364,6 +366,26 @@ export default function ProjectInfo() {
               </Form>
             </CardContent>
           </Card>
+
+          {/* Apply Template Section */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Apply Template</CardTitle>
+              <CardDescription>
+                Auto-populate rooms and items from a predefined template
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="outline"
+                onClick={() => setShowApplyTemplateModal(true)}
+                data-testid="button-apply-template"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Apply Template
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </main>
 
@@ -375,6 +397,13 @@ export default function ProjectInfo() {
         quotationId={quotationId!}
         category={quotation?.projectType || ""}
         hasExistingItems={false}
+        onSuccess={() => navigate(`/quotation/${quotationId}/scope`)}
+      />
+
+      <ApplyTemplateModal
+        open={showApplyTemplateModal}
+        onOpenChange={setShowApplyTemplateModal}
+        quotationId={quotationId!}
         onSuccess={() => navigate(`/quotation/${quotationId}/scope`)}
       />
     </div>
