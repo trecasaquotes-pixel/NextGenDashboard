@@ -41,7 +41,7 @@ export function ShareLinkDialog({
     },
     onSuccess: async (data) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['/api/quotations', quoteId] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quoteId}`] }),
         queryClient.invalidateQueries({ queryKey: ['/api/quotations'] }),
       ]);
       toast({

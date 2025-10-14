@@ -87,9 +87,9 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
           gstAmount,
           grandTotal,
         },
-        pdfs: {
-          interiorsUrl: `${baseUrl}/api/quotations/${quoteId}/pdf/interiors?token=${interiorsRenderToken}`,
-          fcUrl: fcRenderToken ? `${baseUrl}/api/quotations/${quoteId}/pdf/fc?token=${fcRenderToken}` : null,
+        pdfUrls: {
+          interiors: `${baseUrl}/api/quotations/${quoteId}/pdf/interiors?token=${interiorsRenderToken}`,
+          fc: fcRenderToken ? `${baseUrl}/api/quotations/${quoteId}/pdf/fc?token=${fcRenderToken}` : null,
         },
         terms: termsArray,
         status: quotation.status,
@@ -109,14 +109,14 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
     try {
       const { quoteId } = req.params;
       const token = req.query.token as string;
-      const { clientName, signatureDataUrl } = req.body;
+      const { clientName } = req.body;
 
       if (!token || !(await verifyClientToken(quoteId, token))) {
         return res.status(403).json({ message: "Invalid or expired token" });
       }
 
-      if (!clientName || !signatureDataUrl) {
-        return res.status(400).json({ message: "Client name and signature required" });
+      if (!clientName || !clientName.trim()) {
+        return res.status(400).json({ message: "Client name is required" });
       }
 
       const quotation = await storage.getQuotation(quoteId);
@@ -188,17 +188,7 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
         }
       }
 
-      // Save signature image
-      const signatureDir = path.resolve('storage', 'signatures');
-      await fs.mkdir(signatureDir, { recursive: true });
-      
-      // Convert data URL to buffer and save
-      const base64Data = signatureDataUrl.replace(/^data:image\/\w+;base64,/, '');
-      const buffer = Buffer.from(base64Data, 'base64');
-      const signaturePath = path.join(signatureDir, `${quoteId}.png`);
-      await fs.writeFile(signaturePath, buffer);
-
-      // Update agreement with signature
+      // Update agreement with client signature (name only)
       const agreementResult = await db
         .select()
         .from(agreements)
