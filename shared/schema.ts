@@ -7,6 +7,7 @@ import {
   varchar,
   text,
   integer,
+  bigint,
   decimal,
   boolean,
 } from "drizzle-orm/pg-core";
@@ -59,7 +60,7 @@ export const quotations = pgTable("quotations", {
   status: varchar("status").notNull().default("draft"), // draft, sent, accepted, rejected, approved, cancelled
   
   // Approval tracking
-  approvedAt: integer("approved_at"), // Unix timestamp of approval
+  approvedAt: bigint("approved_at", { mode: "number" }), // Unix timestamp of approval
   approvedBy: varchar("approved_by"), // User who approved
   snapshotJson: jsonb("snapshot_json").$type<{
     globalRules: any;
@@ -170,10 +171,10 @@ export const agreements = pgTable("agreements", {
   
   // Signature tracking
   signedByClient: varchar("signed_by_client"), // Client name if signed
-  signedAt: integer("signed_at"), // Unix timestamp
+  signedAt: bigint("signed_at", { mode: "number" }), // Unix timestamp
   
   // Timestamps
-  generatedAt: integer("generated_at").notNull(), // Unix timestamp
+  generatedAt: bigint("generated_at", { mode: "number" }).notNull(), // Unix timestamp
   createdAt: timestamp("created_at").defaultNow(),
 });
 
