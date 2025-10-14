@@ -3,6 +3,9 @@ import { storage } from '../storage';
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from '@shared/schema';
 import { saveJSON, loadJSON, getDataDir } from './store';
 import { generateAllQuotationPDFs } from './pdf-generator';
+import { db } from '../db';
+import { rates, brands, globalRules, agreements } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -11,6 +14,155 @@ interface QuoteBackupData {
   interiorItems: InteriorItem[];
   falseCeilingItems: FalseCeilingItem[];
   otherItems: OtherItem[];
+}
+
+export async function buildQuoteZip(options: {
+  quoteId: string;
+  ensurePdfs?: boolean;
+  baseUrl: string;
+}): Promise<Buffer> {
+  const { quoteId, ensurePdfs = true, baseUrl } = options;
+  const zip = new JSZip();
+  
+  // 1) Load quote and related data
+  const quotation = await storage.getQuotation(quoteId);
+  if (!quotation) {
+    throw new Error('Quotation not found');
+  }
+  
+  const interiorItems = await storage.getInteriorItems(quoteId);
+  const falseCeilingItems = await storage.getFalseCeilingItems(quoteId);
+  const otherItems = await storage.getOtherItems(quoteId);
+  
+  // 2) Build or load snapshot
+  let snapshotData: any = null;
+  
+  if (quotation.snapshotJson) {
+    // Use existing snapshot (from approval)
+    snapshotData = quotation.snapshotJson;
+  } else {
+    // Build live snapshot of current state
+    const [allRates, allBrands, globalRulesData] = await Promise.all([
+      db.select().from(rates).where(eq(rates.isActive, true)),
+      db.select().from(brands).where(eq(brands.isActive, true)),
+      db.select().from(globalRules).limit(1),
+    ]);
+    
+    // Build rates-by-itemKey map
+    const ratesByItemKey: Record<string, any> = {};
+    for (const rate of allRates) {
+      ratesByItemKey[rate.itemKey] = rate;
+    }
+    
+    // Get brands used in this quote (extract from interior items)
+    const brandsUsed = {
+      materials: new Set<string>(),
+      finishes: new Set<string>(),
+      hardware: new Set<string>(),
+    };
+    
+    interiorItems.forEach(item => {
+      if (item.material) brandsUsed.materials.add(item.material);
+      if (item.finish) brandsUsed.finishes.add(item.finish);
+      if (item.hardware) brandsUsed.hardware.add(item.hardware);
+    });
+    
+    snapshotData = {
+      globalRules: globalRulesData[0] || null,
+      ratesByItemKey,
+      brandsSelected: {
+        materials: Array.from(brandsUsed.materials),
+        finishes: Array.from(brandsUsed.finishes),
+        hardware: Array.from(brandsUsed.hardware),
+      },
+      brands: allBrands,
+      timestamp: Date.now(),
+    };
+  }
+  
+  // 3) Prepare JSON files
+  const quoteJson = {
+    quotation,
+    interiorItems,
+    falseCeilingItems,
+    otherItems,
+    createdAt: quotation.createdAt ? new Date(quotation.createdAt).toISOString() : null,
+    updatedAt: quotation.updatedAt ? new Date(quotation.updatedAt).toISOString() : null,
+  };
+  
+  const filesList: string[] = [];
+  
+  // Create folder structure
+  const quoteFolder = zip.folder('quote');
+  const pdfsFolder = zip.folder('pdfs');
+  
+  if (!quoteFolder || !pdfsFolder) {
+    throw new Error('Failed to create ZIP folders');
+  }
+  
+  // Add JSON files to /quote/
+  quoteFolder.file('quote.json', JSON.stringify(quoteJson, null, 2));
+  filesList.push('quote/quote.json');
+  
+  quoteFolder.file('snapshot.json', JSON.stringify(snapshotData, null, 2));
+  filesList.push('quote/snapshot.json');
+  
+  // 4) Handle PDFs
+  if (ensurePdfs) {
+    try {
+      const pdfs = await generateAllQuotationPDFs(quotation, baseUrl);
+      
+      // Add Interiors PDF
+      if (pdfs.interiors) {
+        pdfsFolder.file('interiors.pdf', pdfs.interiors);
+        filesList.push('pdfs/interiors.pdf');
+      }
+      
+      // Add False Ceiling PDF
+      if (pdfs.falseCeiling) {
+        pdfsFolder.file('false-ceiling.pdf', pdfs.falseCeiling);
+        filesList.push('pdfs/false-ceiling.pdf');
+      }
+      
+      // Add Agreement PDF if approved
+      if (quotation.status === 'approved' && pdfs.agreement) {
+        pdfsFolder.file('agreement.pdf', pdfs.agreement);
+        filesList.push('pdfs/agreement.pdf');
+      }
+    } catch (error) {
+      console.error('[buildQuoteZip] PDF generation failed:', error);
+      throw new Error(`Could not generate PDFs: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+  
+  // Add files.json listing
+  quoteFolder.file('files.json', JSON.stringify(filesList, null, 2));
+  
+  // 5) Add README.txt
+  const timestamp = new Date().toISOString();
+  const readmeContent = `Trecasa Quote Backup
+Generated: ${timestamp}
+Quote ID: ${quotation.quoteId}
+
+Files:
+- quote/quote.json → Full quote data and totals
+- quote/snapshot.json → Rate/brand/global rules snapshot
+- quote/files.json → List of included files
+- pdfs/*.pdf → Client-facing documents
+
+${quotation.status === 'approved' ? 
+  'Note: This is an APPROVED quote. It is locked to its snapshot; admin edits made later do not affect this backup.' : 
+  'Note: This is a draft quote. Snapshot reflects current state at time of export.'}
+
+PDF Files Included:
+${filesList.filter(f => f.endsWith('.pdf')).map(f => `- ${f}`).join('\n') || '- No PDFs included (ensurePdfs=false)'}
+`;
+  
+  quoteFolder.file('README.txt', readmeContent);
+  
+  // 6) Generate ZIP buffer
+  const buffer = await zip.generateAsync({ type: 'nodebuffer' });
+  return buffer;
 }
 
 export async function createQuoteBackupZip(quotationId: string, baseUrl: string): Promise<Buffer> {

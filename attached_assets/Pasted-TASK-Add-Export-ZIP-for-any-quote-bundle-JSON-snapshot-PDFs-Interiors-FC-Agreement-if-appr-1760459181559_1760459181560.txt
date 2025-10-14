@@ -1,0 +1,128 @@
+TASK: Add “Export ZIP” for any quote → bundle JSON snapshot + PDFs (Interiors, FC, Agreement if approved).
+
+Tech context:
+- Server: Express TS, SQLite (drizzle), PDF via lib/pdf-generator.ts.
+- Client: Vite React TS.
+- We already store/generated quote PDFs; approved quotes also have an Agreement PDF.
+- Use JSZip (already in deps) to build the archive.
+
+--------------------------------
+1) SERVER: BACKUP LIB
+--------------------------------
+Create /server/lib/backup.ts
+
+Implement:
+export async function buildQuoteZip(db, {
+  quoteId,
+  ensurePdfs = true
+}: {quoteId: string; ensurePdfs?: boolean}) {
+  /*
+    Steps:
+    1) Load quote, project info, rooms/items (interiors + fc), any stored snapshots, selected brands, global rules.
+    2) If ensurePdfs=true:
+       - Ensure Interiors PDF exists; if missing, generate now and store path.
+       - Ensure FC PDF exists (if FC section present).
+       - If quote.status==="approved", ensure Agreement PDF exists (render if missing).
+    3) Compose JSON files:
+       - quote.json  → full quote data, totals, gst, buildType, brands, created/updated.
+       - snapshot.json → if quote has snapshotJson (from approval), include it; otherwise build a live snapshot of current global rules + rates-by-itemKey + brands used.
+       - files.json → list of attached file paths we’re including in the ZIP.
+       - README.txt → plain text “How this backup was generated” with date/time.
+    4) Add PDFs into /pdfs/ folder:
+       - /pdfs/interiors.pdf (if available)
+       - /pdfs/false-ceiling.pdf (if available)
+       - /pdfs/agreement.pdf (if approved)
+    5) Return a Node Buffer for the complete ZIP.
+  */
+}
+
+Notes:
+- Use JSZip to add files. For reading PDFs from disk, use fs/promises.
+- Name the zip as: Trecasa_Quote_${quoteId}_YYYYMMDD.zip
+
+--------------------------------
+2) SERVER: ENDPOINT
+--------------------------------
+Create /server/routes.quotes.export.ts and mount under /api/quotes in /server/routes.ts.
+
+GET /api/quotes/:quoteId/export-zip
+Query: ?ensurePdfs=1 (default 1)
+Behavior:
+- Calls buildQuoteZip(db,{quoteId,ensurePdfs})
+- Sets headers:
+  Content-Type: application/zip
+  Content-Disposition: attachment; filename="Trecasa_Quote_${quoteId}.zip"
+- Sends the Buffer
+
+Error cases:
+- 404 if quote not found.
+- 409 if PDFs cannot be generated and ensurePdfs=1 (return friendly JSON error with reason).
+
+Security:
+- For now, no auth; later guard behind admin token.
+
+--------------------------------
+3) SERVER: OPTIONAL SNAPSHOT FOR DRAFTS
+--------------------------------
+(Useful before sending a draft externally.)
+
+POST /api/quotes/:quoteId/snapshot
+Behavior:
+- Build snapshot from current global rules + brands + rates-by-itemKey.
+- Save to quote.snapshotJson (do not change status).
+- Return {ok:true, snapshotSaved:true}.
+
+--------------------------------
+4) CLIENT: QUOTE PAGE UI
+--------------------------------
+On the quote view page (same place as “Download Interiors PDF” etc.) add a new button:
+
+[Export ZIP]
+- On click → call GET /api/quotes/:id/export-zip
+- Trigger browser download of the zip file.
+- Show toast on success or error (e.g., “Couldn’t generate FC PDF”).
+
+Optional: In the right-side panel, add:
+- “Save Snapshot” (visible for drafts) → POST /api/quotes/:id/snapshot → toast.
+
+--------------------------------
+5) ZIP CONTENT STRUCTURE
+--------------------------------
+Inside the archive:
+- /quote/quote.json
+- /quote/snapshot.json
+- /quote/files.json
+- /quote/README.txt
+- /pdfs/interiors.pdf           (if exists)
+- /pdfs/false-ceiling.pdf       (if exists)
+- /pdfs/agreement.pdf           (if approved)
+
+README.txt content (example):
+"""
+Trecasa Quote Backup
+Generated: ${ISO timestamp}
+Quote ID: ${quoteId}
+
+Files:
+- quote/quote.json → Full quote data and totals
+- quote/snapshot.json → Rate/brand/global rules snapshot
+- pdfs/*.pdf → Client-facing documents
+
+Note:
+Approved quotes are locked to their snapshot; admin edits made later do not affect this backup.
+"""
+
+--------------------------------
+6) QA / TEST
+--------------------------------
+✅ Draft quote → Export ZIP (ensurePdfs=1) → interiors.pdf present; fc.pdf present if FC used; quote.json populated.  
+✅ Approved quote → Export ZIP includes agreement.pdf.  
+✅ “Save Snapshot” creates snapshot for drafts; export includes it.  
+✅ Corrupt/missing PDFs auto-regenerate when ensurePdfs=1; with ensurePdfs=0 they’re just omitted.  
+✅ Zip filename and internal structure correct.
+
+Deliverables:
+- /server/lib/backup.ts (buildQuoteZip)
+- /server/routes.quotes.export.ts with GET /api/quotes/:id/export-zip
+- Optional: /server/routes.quotes.snapshot.ts with POST /api/quotes/:id/snapshot
+- Client button on Quote page to download ZIP (and optional “Save Snapshot”)
