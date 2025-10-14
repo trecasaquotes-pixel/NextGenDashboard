@@ -17,6 +17,7 @@ import AdminTemplates from "@/pages/admin/templates";
 import AdminTemplateEditor from "@/pages/admin/template-editor";
 import AdminBrands from "@/pages/admin/brands";
 import AdminPaintingFc from "@/pages/admin/painting-fc";
+import AdminGlobalRules from "@/pages/admin/global-rules";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -41,6 +42,7 @@ function Router() {
           <Route path="/admin/templates/:id/edit" component={AdminTemplateEditor} />
           <Route path="/admin/brands" component={AdminBrands} />
           <Route path="/admin/painting-fc" component={AdminPaintingFc} />
+          <Route path="/admin/global-rules" component={AdminGlobalRules} />
         </>
       )}
       <Route component={NotFound} />

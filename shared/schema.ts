@@ -506,3 +506,56 @@ export const insertFCCatalogSchema = createInsertSchema(fcCatalog, {
 
 export type FCCatalogRow = typeof fcCatalog.$inferSelect;
 export type NewFCCatalogRow = z.infer<typeof insertFCCatalogSchema>;
+
+// Global Rules table - single-row configuration for application-wide settings
+export const globalRules = pgTable("global_rules", {
+  id: varchar("id").primaryKey().default("global"),
+  buildTypeDefault: varchar("build_type_default", { length: 20 }).notNull().default("handmade"),
+  gstPercent: integer("gst_percent").notNull().default(18),
+  validityDays: integer("validity_days").notNull().default(15),
+  bedroomFactorBase: integer("bedroom_factor_base").notNull().default(3),
+  perBedroomDelta: decimal("per_bedroom_delta", { precision: 5, scale: 3 }).notNull().default("0.10"),
+  paymentScheduleJson: text("payment_schedule_json").notNull().default("[]"),
+  cityFactorsJson: text("city_factors_json").notNull().default("[]"),
+  footerLine1: text("footer_line_1").notNull().default("TRECASA Design Studio | Luxury Interiors | Architecture | Build"),
+  footerLine2: text("footer_line_2").notNull().default("www.trecasadesignstudio.com | +91-XXXXXXXXXX"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+const buildTypeEnum = z.enum(["handmade", "factory"]);
+
+export const insertGlobalRulesSchema = createInsertSchema(globalRules, {
+  buildTypeDefault: buildTypeEnum,
+  gstPercent: z.number().int().min(0).max(28).default(18),
+  validityDays: z.number().int().min(1).max(90).default(15),
+  bedroomFactorBase: z.number().int().min(1).max(5).default(3),
+  perBedroomDelta: z.number().min(0).max(0.25).default(0.10),
+  paymentScheduleJson: z.string().transform((val) => {
+    try {
+      const parsed = JSON.parse(val);
+      if (!Array.isArray(parsed)) throw new Error("Must be array");
+      return val;
+    } catch {
+      throw new Error("paymentScheduleJson must be valid JSON array");
+    }
+  }),
+  cityFactorsJson: z.string().transform((val) => {
+    try {
+      const parsed = JSON.parse(val);
+      if (!Array.isArray(parsed)) throw new Error("Must be array");
+      return val;
+    } catch {
+      throw new Error("cityFactorsJson must be valid JSON array");
+    }
+  }),
+  footerLine1: z.string().min(1).max(200),
+  footerLine2: z.string().min(1).max(200),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type GlobalRulesRow = typeof globalRules.$inferSelect;
+export type NewGlobalRulesRow = z.infer<typeof insertGlobalRulesSchema>;

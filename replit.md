@@ -85,6 +85,22 @@ No specific user preferences were provided in the original document.
   - Search filters for both tabs
   - Bullet points editor for painting pack features (one per line in textarea)
   - Accessible via user dropdown menu → "Admin - Painting & FC"
+- **Admin → Global Rules**: Single-row configuration system for application-wide settings with PostgreSQL persistence. Features include:
+  - Single-row configuration (id="global") seeded on first launch with TRECASA defaults
+  - Five configuration sections: Pricing Defaults, Bedroom Scaling, Payment Schedule, City Factors, Footer Branding
+  - Pricing Defaults: buildTypeDefault (handmade/factory), gstPercent (0-28%), validityDays (1-90)
+  - Bedroom Scaling: bedroomFactorBase (1-5 BHK baseline), perBedroomDelta (0-0.25 per-bedroom multiplier)
+  - Real-time BHK price preview: price = base × (1 + (targetBHK - bedroomFactorBase) × perBedroomDelta)
+  - Payment Schedule: editable JSON array of {label, percent} with validation (must sum to 100%)
+  - Progress bar visualization and "Reset to Default" functionality for payment schedule
+  - City Factors: editable JSON array of {city, factor} with range validation (0.8-1.3)
+  - Footer Branding: two-line PDF footer configuration with live preview (includes red dot separator)
+  - Server-side validation: payment schedule total enforcement, city factor range checks, GST/validity bounds
+  - Upsert API pattern: PUT creates or updates single global configuration row
+  - Client-side validation: Save button disabled when payment schedule ≠ 100% or values out of range
+  - Add/delete functionality for payment schedule items and city factors
+  - Persistence verification: all values reload correctly after page refresh
+  - Accessible via user dropdown menu → "Admin - Global Rules"
 
 ## External Dependencies
 - **Replit Auth**: User authentication and authorization.
