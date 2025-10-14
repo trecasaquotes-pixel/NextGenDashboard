@@ -66,8 +66,8 @@ export default function AdminRatesPage() {
 
   const [filters, setFilters] = useState<RatesFilters>({
     q: "",
-    unit: "",
-    category: "",
+    unit: "all",
+    category: "all",
     active: "1",
   });
 
@@ -98,7 +98,16 @@ export default function AdminRatesPage() {
 
   const { data: rates = [], isLoading, refetch } = useQuery<RateRow[]>({
     queryKey: ["/api/admin/rates", filters],
-    queryFn: () => getRates(filters),
+    queryFn: () => {
+      // Convert "all" to empty string for API
+      const apiFilters = {
+        ...filters,
+        unit: filters.unit === "all" ? "" : filters.unit,
+        category: filters.category === "all" ? "" : filters.category,
+        active: filters.active === "all" ? "" : filters.active,
+      };
+      return getRates(apiFilters);
+    },
     enabled: isAuthenticated,
   });
 
@@ -328,7 +337,7 @@ export default function AdminRatesPage() {
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
@@ -345,7 +354,7 @@ export default function AdminRatesPage() {
                   <SelectValue placeholder="All Units" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Units</SelectItem>
+                  <SelectItem value="all">All Units</SelectItem>
                   {units.map((unit) => (
                     <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                   ))}
@@ -362,7 +371,7 @@ export default function AdminRatesPage() {
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="1">Active</SelectItem>
                   <SelectItem value="0">Inactive</SelectItem>
                 </SelectContent>
