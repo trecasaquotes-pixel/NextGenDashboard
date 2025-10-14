@@ -1,0 +1,130 @@
+TASK: Polish PDF generation (layout, fonts, margins, headers/footers, room summaries, pagination).
+
+Tech context:
+- Current project uses puppeteer-based PDF generation (lib/pdf-generator.ts).
+- All quote PDFs are generated server-side.
+- Goal: make PDFs visually professional for Trecasa branding.
+
+--------------------------------
+1) TYPOGRAPHY
+--------------------------------
+Embed Google fonts:
+- Headings → "Playfair Display" (400/700)
+- Body → "Montserrat" (400/500)
+Use fallback sans-serif if needed.
+
+In pdf-generator.ts, ensure CSS includes:
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@400;500&display=swap');
+body { font-family: 'Montserrat', sans-serif; font-size: 11px; color: #111; }
+h1,h2,h3,h4 { font-family: 'Playfair Display', serif; margin:0; }
+
+--------------------------------
+2) PAGE LAYOUT
+--------------------------------
+Paper: A4 portrait.
+Margins: Top 25mm, Bottom 18mm, Left/Right 15mm.
+CSS for page breaks:
+.table-break { page-break-inside: auto; }
+tr, td { page-break-inside: avoid; page-break-after: auto; }
+
+Ensure 9–12 line items fit per page (no 4–5 row gaps).
+
+--------------------------------
+3) HEADER (ALL PAGES)
+--------------------------------
+Static header bar (absolute top):
+Left → Trecasa logo (use /assets/final-logo-transparent.png or your uploaded path, width ~100px).
+Right → Project info block:
+- Project Name (large)
+- Client Name
+- Quote ID
+- Date
+
+Example HTML fragment:
+<header class="pdf-header">
+  <div class="left"><img src="file://${logoPath}" width="100"/></div>
+  <div class="right">
+    <div class="project-name">${project.projectName}</div>
+    <div class="client-name">${project.clientName}</div>
+    <div class="quote-id">Quote ID: ${quote.id}</div>
+    <div class="date">${formatDate(quote.date)}</div>
+  </div>
+</header>
+
+CSS:
+.pdf-header { position: fixed; top: 10mm; left:15mm; right:15mm; display:flex; justify-content:space-between; align-items:center; font-size:10px; }
+.project-name { font-family:'Playfair Display'; font-size:14px; font-weight:700; }
+
+--------------------------------
+4) FOOTER (ALL PAGES)
+--------------------------------
+Fixed footer bar:
+Left → "TRECASA Design Studio | Luxury Interiors | Architecture | Build"
+Center → red dot ● (Unicode bullet or small circle SVG in #d92027)
+Right → "www.trecasadesignstudio.com | +91-XXXXXXXXXX | Page X of Y"
+
+CSS:
+.pdf-footer {
+  position: fixed;
+  bottom: 10mm;
+  left:15mm;
+  right:15mm;
+  font-size:9px;
+  color:#555;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-top:0.2pt solid #ddd;
+  padding-top:4px;
+}
+.red-dot { color:#d92027; margin:0 4px; }
+
+Implement page numbering using puppeteer’s footerTemplate variables:
+<span class="pageNumber"></span>/<span class="totalPages"></span>
+
+--------------------------------
+5) PAGE 1 – ROOM SUMMARY
+--------------------------------
+Before detailed breakdowns, render a summary table:
+
+| Room | Area (SFT) | Items | Room Total (₹) |
+Each room listed once with its subtotal. 
+Bottom row → Subtotal (₹), GST %, GST ₹, Grand Total ₹.
+
+CSS:
+.summary-table { width:100%; border-collapse:collapse; margin-top:120px; }
+.summary-table th,td { border:1px solid #ccc; padding:6px; text-align:right; }
+.summary-table th:first-child, .summary-table td:first-child { text-align:left; }
+
+--------------------------------
+6) ROOM BREAKDOWN PAGES
+--------------------------------
+For each room after summary:
+- Room title (e.g., "Master Bedroom") as h2 (Playfair Display, 14 pt).
+- Table columns: S.No | Description | Unit | Qty | Rate (₹/SFT) | Amount (₹)
+- “Room Total” row at end (bold).
+
+Add `page-break-after:always` after each room except the last.
+
+--------------------------------
+7) FALSE CEILING QUOTE PDF
+--------------------------------
+Use same header/footer/fonts/margins.
+Separate summary page listing room-wise FC SFT + Others (LSUM + COUNT).
+Same footer red dot and numbering.
+
+--------------------------------
+8) QA / TEST
+--------------------------------
+✅ Fonts render correctly (Playfair Display + Montserrat).  
+✅ Header shows logo + Project Name + Client.  
+✅ Footer appears on every page, aligned + red dot visible.  
+✅ Margins equal on all sides.  
+✅ Room summary on page 1 shows totals; breakdown pages follow.  
+✅ Tables fill page efficiently (no huge white space).  
+✅ Page numbers X of Y work.
+
+Deliverables:
+- Updated /server/lib/pdf-generator.ts (CSS + layout)
+- Updated logo asset reference
+- PDF output verified via sample Interiors + FC quote.
