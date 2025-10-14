@@ -226,8 +226,10 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
       const { roomId } = req.params;
       const itemData = insertTemplateItemSchema.parse({ ...req.body, templateRoomId: roomId });
       
-      // Validate that itemKey exists in rates table
-      const [rateExists] = await db.select().from(rates).where(eq(rates.itemKey, itemData.itemKey));
+      // Validate that itemKey exists in rates table (case-insensitive)
+      const [rateExists] = await db.select().from(rates).where(
+        sql`LOWER(${rates.itemKey}) = LOWER(${itemData.itemKey})`
+      );
       if (!rateExists) {
         return res.status(400).json({ message: `Item key '${itemData.itemKey}' not found in rates` });
       }
@@ -258,9 +260,11 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
         sortOrder: z.number().min(0).optional(),
       }).parse(req.body);
       
-      // If itemKey is being updated, validate it exists
+      // If itemKey is being updated, validate it exists (case-insensitive)
       if (updateData.itemKey) {
-        const [rateExists] = await db.select().from(rates).where(eq(rates.itemKey, updateData.itemKey));
+        const [rateExists] = await db.select().from(rates).where(
+          sql`LOWER(${rates.itemKey}) = LOWER(${updateData.itemKey})`
+        );
         if (!rateExists) {
           return res.status(400).json({ message: `Item key '${updateData.itemKey}' not found in rates` });
         }
