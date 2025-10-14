@@ -3,6 +3,7 @@ import { db } from "./db";
 import { globalRules, insertGlobalRulesSchema } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { getAdminUser, logAudit, createGlobalRulesSummary } from "./lib/audit";
 
 export function registerAdminGlobalRulesRoutes(app: Express, isAuthenticated: any) {
   
@@ -99,6 +100,8 @@ export function registerAdminGlobalRulesRoutes(app: Express, isAuthenticated: an
       const [existing] = await db.select().from(globalRules).where(eq(globalRules.id, "global"));
       
       let result;
+      const adminUser = getAdminUser(req);
+      
       if (existing) {
         [result] = await db.update(globalRules)
           .set({
@@ -108,6 +111,17 @@ export function registerAdminGlobalRulesRoutes(app: Express, isAuthenticated: an
           })
           .where(eq(globalRules.id, "global"))
           .returning();
+        
+        // Log audit for UPDATE
+        await logAudit({
+          ...adminUser,
+          section: "GlobalRules",
+          action: "UPDATE",
+          targetId: "global",
+          summary: createGlobalRulesSummary("UPDATE", existing, result),
+          beforeJson: existing,
+          afterJson: result,
+        });
       } else {
         [result] = await db.insert(globalRules)
           .values({
@@ -116,6 +130,16 @@ export function registerAdminGlobalRulesRoutes(app: Express, isAuthenticated: an
             perBedroomDelta: String(validatedData.perBedroomDelta),
           })
           .returning();
+        
+        // Log audit for CREATE
+        await logAudit({
+          ...adminUser,
+          section: "GlobalRules",
+          action: "CREATE",
+          targetId: "global",
+          summary: createGlobalRulesSummary("CREATE", null, result),
+          afterJson: result,
+        });
       }
       
       res.json(result);

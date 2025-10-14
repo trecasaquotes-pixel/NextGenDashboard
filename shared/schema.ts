@@ -559,3 +559,29 @@ export const insertGlobalRulesSchema = createInsertSchema(globalRules, {
 
 export type GlobalRulesRow = typeof globalRules.$inferSelect;
 export type NewGlobalRulesRow = z.infer<typeof insertGlobalRulesSchema>;
+
+// Audit Log table
+export const auditLog = pgTable("audit_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // For now store user ID; later hook real auth
+  userEmail: varchar("user_email"), // Store email for display
+  section: varchar("section").notNull(), // "Rates" | "Templates" | "Brands" | "Painting&FC" | "GlobalRules"
+  action: varchar("action").notNull(), // "CREATE" | "UPDATE" | "DELETE"
+  targetId: varchar("target_id").notNull(), // ID of the row affected
+  summary: text("summary").notNull(), // Human-readable summary
+  beforeJson: text("before_json"), // JSON string (nullable)
+  afterJson: text("after_json"), // JSON string (nullable)
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAuditLogSchema = createInsertSchema(auditLog, {
+  section: z.enum(["Rates", "Templates", "Brands", "Painting&FC", "GlobalRules"]),
+  action: z.enum(["CREATE", "UPDATE", "DELETE"]),
+  summary: z.string().min(1).max(500),
+}).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type AuditLogRow = typeof auditLog.$inferSelect;
+export type NewAuditLogRow = z.infer<typeof insertAuditLogSchema>;

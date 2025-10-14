@@ -3,6 +3,7 @@ import { db } from "./db";
 import { brands, insertBrandSchema } from "@shared/schema";
 import { eq, sql, and, or, like } from "drizzle-orm";
 import { z } from "zod";
+import { getAdminUser, logAudit, createBrandSummary } from "./lib/audit";
 
 export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
   
@@ -74,6 +75,17 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
         })
         .returning();
       
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Brands",
+        action: "CREATE",
+        targetId: newBrand.id,
+        summary: createBrandSummary("CREATE", null, newBrand),
+        afterJson: newBrand,
+      });
+      
       res.status(201).json(newBrand);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -123,6 +135,18 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
         })
         .where(eq(brands.id, id))
         .returning();
+      
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Brands",
+        action: "UPDATE",
+        targetId: id,
+        summary: createBrandSummary("UPDATE", existingBrand, updatedBrand),
+        beforeJson: existingBrand,
+        afterJson: updatedBrand,
+      });
       
       res.json(updatedBrand);
     } catch (error) {
@@ -219,12 +243,25 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
       }
       
       // Soft delete by setting isActive to false
-      await db.update(brands)
+      const [deletedBrand] = await db.update(brands)
         .set({ 
           isActive: false,
           updatedAt: new Date(),
         })
-        .where(eq(brands.id, id));
+        .where(eq(brands.id, id))
+        .returning();
+      
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Brands",
+        action: "DELETE",
+        targetId: id,
+        summary: createBrandSummary("DELETE", existingBrand, deletedBrand),
+        beforeJson: existingBrand,
+        afterJson: deletedBrand,
+      });
       
       res.json({ message: "Brand deleted successfully" });
     } catch (error) {

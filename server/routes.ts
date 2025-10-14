@@ -17,6 +17,7 @@ import { registerAdminTemplatesRoutes } from "./routes.admin.templates";
 import { registerAdminBrandsRoutes } from "./routes.admin.brands";
 import { registerAdminPaintingFcRoutes } from "./routes.admin.paintingFc";
 import { registerAdminGlobalRulesRoutes } from "./routes.admin.globalRules";
+import { registerAdminAuditRoutes } from "./routes.admin.audit";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -547,6 +548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAdminBrandsRoutes(app, isAuthenticated);
   registerAdminPaintingFcRoutes(app, isAuthenticated);
   registerAdminGlobalRulesRoutes(app, isAuthenticated);
+  registerAdminAuditRoutes(app, isAuthenticated);
 
   const httpServer = createServer(app);
   return httpServer;

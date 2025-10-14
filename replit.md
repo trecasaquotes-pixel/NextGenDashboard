@@ -101,6 +101,21 @@ No specific user preferences were provided in the original document.
   - Add/delete functionality for payment schedule items and city factors
   - Persistence verification: all values reload correctly after page refresh
   - Accessible via user dropdown menu → "Admin - Global Rules"
+- **Admin → Audit Log**: Comprehensive audit trail system tracking all changes across admin sections with PostgreSQL persistence. Features include:
+  - Complete change history for all admin sections: Rates, Templates, Brands, Painting & FC, Global Rules
+  - Automatic logging on CREATE/UPDATE/DELETE operations with user tracking (userId, userEmail)
+  - Structured audit entries: section, action (CREATE|UPDATE|DELETE), targetId, human-readable summary, beforeJson, afterJson
+  - Smart summary generation: context-aware descriptions of what changed (e.g., "Updated rate X: handmade ₹1300→1400")
+  - Advanced filtering: search by summary/user email, filter by section, filter by action, date range (since/until)
+  - Pagination: 50/100/200 entries per page with Previous/Next navigation
+  - Diff viewer modal: side-by-side Before/After JSON comparison with syntax highlighting
+  - Copy to clipboard: individual copy buttons for Before and After JSON states
+  - Real-time updates: audit entries appear immediately after admin actions
+  - User attribution: tracks authenticated user performing each action
+  - Soft delete tracking: logs deactivation operations with before/after states
+  - API endpoints: GET /api/admin/audit (list with filters), GET /api/admin/audit/:id (single entry with full JSON)
+  - Server-side auth enforcement: all audit routes require authenticated session
+  - Accessible via user dropdown menu → "Admin - Audit Log"
 
 ## External Dependencies
 - **Replit Auth**: User authentication and authorization.

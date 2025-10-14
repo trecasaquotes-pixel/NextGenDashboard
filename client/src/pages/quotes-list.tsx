@@ -6,7 +6,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download, Settings, LayoutTemplate, Tag, Paintbrush, Sliders } from "lucide-react";
+import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download, Settings, LayoutTemplate, Tag, Paintbrush, Sliders, History } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -195,6 +195,10 @@ export default function QuotesList() {
               <DropdownMenuItem onClick={() => navigate("/admin/global-rules")} data-testid="button-admin-global-rules">
                 <Sliders className="mr-2 h-4 w-4" />
                 <span>Admin - Global Rules</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/admin/audit")} data-testid="button-admin-audit">
+                <History className="mr-2 h-4 w-4" />
+                <span>Admin - Audit Log</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>

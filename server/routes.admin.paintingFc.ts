@@ -3,6 +3,7 @@ import { db } from "./db";
 import { paintingPacks, fcCatalog, insertPaintingPackSchema, insertFCCatalogSchema } from "@shared/schema";
 import { eq, sql, and, or, like } from "drizzle-orm";
 import { z } from "zod";
+import { getAdminUser, logAudit, createPaintingPackSummary, createFcCatalogSummary } from "./lib/audit";
 
 export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any) {
   
@@ -77,6 +78,17 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
         })
         .returning();
       
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Painting&FC",
+        action: "CREATE",
+        targetId: newPack.id,
+        summary: createPaintingPackSummary("CREATE", null, newPack),
+        afterJson: newPack,
+      });
+      
       res.status(201).json(newPack);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -145,6 +157,18 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
         .where(eq(paintingPacks.id, id))
         .returning();
       
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Painting&FC",
+        action: "UPDATE",
+        targetId: id,
+        summary: createPaintingPackSummary("UPDATE", existingPack, updatedPack),
+        beforeJson: existingPack,
+        afterJson: updatedPack,
+      });
+      
       res.json(updatedPack);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -191,9 +215,22 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
         return res.status(404).json({ message: "Painting pack not found" });
       }
       
-      await db.update(paintingPacks)
+      const [deletedPack] = await db.update(paintingPacks)
         .set({ isActive: false, updatedAt: new Date() })
-        .where(eq(paintingPacks.id, id));
+        .where(eq(paintingPacks.id, id))
+        .returning();
+      
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Painting&FC",
+        action: "DELETE",
+        targetId: id,
+        summary: createPaintingPackSummary("DELETE", existingPack, deletedPack),
+        beforeJson: existingPack,
+        afterJson: deletedPack,
+      });
       
       res.json({ message: "Painting pack deleted successfully" });
     } catch (error) {
@@ -284,6 +321,17 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
         })
         .returning();
       
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Painting&FC",
+        action: "CREATE",
+        targetId: newItem.id,
+        summary: createFcCatalogSummary("CREATE", null, newItem),
+        afterJson: newItem,
+      });
+      
       res.status(201).json(newItem);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -333,6 +381,18 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
         .where(eq(fcCatalog.id, id))
         .returning();
       
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Painting&FC",
+        action: "UPDATE",
+        targetId: id,
+        summary: createFcCatalogSummary("UPDATE", existingItem, updatedItem),
+        beforeJson: existingItem,
+        afterJson: updatedItem,
+      });
+      
       res.json(updatedItem);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -379,9 +439,22 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
         return res.status(404).json({ message: "FC catalog item not found" });
       }
       
-      await db.update(fcCatalog)
+      const [deletedItem] = await db.update(fcCatalog)
         .set({ isActive: false, updatedAt: new Date() })
-        .where(eq(fcCatalog.id, id));
+        .where(eq(fcCatalog.id, id))
+        .returning();
+      
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Painting&FC",
+        action: "DELETE",
+        targetId: id,
+        summary: createFcCatalogSummary("DELETE", existingItem, deletedItem),
+        beforeJson: existingItem,
+        afterJson: deletedItem,
+      });
       
       res.json({ message: "FC catalog item deleted successfully" });
     } catch (error) {

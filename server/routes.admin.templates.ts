@@ -11,6 +11,7 @@ import {
 } from "@shared/schema";
 import { eq, sql, and, or, like } from "drizzle-orm";
 import { z } from "zod";
+import { getAdminUser, logAudit, createTemplateSummary } from "./lib/audit";
 
 export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any) {
   
@@ -92,6 +93,17 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
         })
         .returning();
       
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Templates",
+        action: "CREATE",
+        targetId: newTemplate.id,
+        summary: createTemplateSummary("CREATE", null, newTemplate),
+        afterJson: newTemplate,
+      });
+      
       res.status(201).json(newTemplate);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -112,6 +124,12 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
         isActive: z.boolean().optional(),
       }).parse(req.body);
       
+      // Fetch existing template for audit
+      const [existingTemplate] = await db.select().from(templates).where(eq(templates.id, id));
+      if (!existingTemplate) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
       const [updatedTemplate] = await db.update(templates)
         .set({
           ...updateData,
@@ -123,6 +141,18 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
       if (!updatedTemplate) {
         return res.status(404).json({ message: "Template not found" });
       }
+      
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Templates",
+        action: "UPDATE",
+        targetId: id,
+        summary: createTemplateSummary("UPDATE", existingTemplate, updatedTemplate),
+        beforeJson: existingTemplate,
+        afterJson: updatedTemplate,
+      });
       
       res.json(updatedTemplate);
     } catch (error) {
@@ -139,6 +169,12 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
     try {
       const { id } = req.params;
       
+      // Fetch existing template for audit
+      const [existingTemplate] = await db.select().from(templates).where(eq(templates.id, id));
+      if (!existingTemplate) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
       const [deletedTemplate] = await db.update(templates)
         .set({ isActive: false, updatedAt: new Date() })
         .where(eq(templates.id, id))
@@ -147,6 +183,18 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
       if (!deletedTemplate) {
         return res.status(404).json({ message: "Template not found" });
       }
+      
+      // Log audit
+      const adminUser = getAdminUser(req);
+      await logAudit({
+        ...adminUser,
+        section: "Templates",
+        action: "DELETE",
+        targetId: id,
+        summary: createTemplateSummary("DELETE", existingTemplate, deletedTemplate),
+        beforeJson: existingTemplate,
+        afterJson: deletedTemplate,
+      });
       
       res.json(deletedTemplate);
     } catch (error) {

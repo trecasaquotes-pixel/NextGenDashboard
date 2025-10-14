@@ -1,0 +1,152 @@
+TASK: Build “Admin → Audit Log” with read-only history of admin changes + diff viewer.
+
+Tech context:
+- Monorepo: client (Vite React TS), server (Express TS + SQLite via drizzle), shared types in /shared.
+- We already have Admin pages for Rates, Templates, Brands, Painting & FC, Global Rules.
+- Log any CREATE/UPDATE/DELETE (soft) across these sections.
+- Do NOT touch Replit auth or vite dev helpers.
+
+--------------------------------
+1) SHARED SCHEMA (drizzle sqlite)
+--------------------------------
+In /shared/schema.ts add:
+
+export const auditLog = sqlite table "audit_log" {
+  id: text pk (nanoid)
+  user: text not null                  // for now store a string; later hook real auth
+  section: text not null               // "Rates" | "Templates" | "Brands" | "Painting&FC" | "GlobalRules"
+  action: text not null                // "CREATE" | "UPDATE" | "DELETE"
+  targetId: text not null              // id of the row affected (e.g., rate id, template id)
+  summary: text not null               // human-readable summary
+  beforeJson: text                     // JSON string (nullable)
+  afterJson: text                      // JSON string (nullable)
+  createdAt: integer default now
+}
+
+Export type AuditLogRow.
+
+--------------------------------
+2) SERVER: LOGGING UTILS
+--------------------------------
+Create /server/lib/audit.ts:
+
+export async function logAudit(db, {
+  user,
+  section,
+  action,
+  targetId,
+  summary,
+  beforeJson,
+  afterJson
+}: {
+  user: string; section: string; action: string; targetId: string; summary: string;
+  beforeJson?: any; afterJson?: any;
+}) {
+  await db.insert(auditLog).values({
+    id: nanoid(),
+    user,
+    section,
+    action,
+    targetId,
+    summary,
+    beforeJson: beforeJson ? JSON.stringify(beforeJson) : null,
+    afterJson: afterJson ? JSON.stringify(afterJson) : null,
+    createdAt: Date.now()
+  });
+}
+
+Temporary user source:
+- Create helper getAdminUser(req): returns req.headers["x-admin-user"] || "admin"
+- We’ll pass "x-admin-user" from client later or keep "admin" default.
+
+--------------------------------
+3) SERVER: WIRE AUDIT IN ADMIN ROUTES
+--------------------------------
+In each admin route module (rates, templates, brands, painting-fc, global-rules), wrap writes:
+
+- On CREATE: summary like `Created rate "Wardrobe – Swing" (unit SFT)`
+- On UPDATE: fetch old row → write → fetch new row → diff keys changed to build summary (e.g., `Updated Handmade ₹ 1300→1400`)
+- On DELETE/soft: `Deactivated item "shoe_rack"`
+
+Call logAudit(db,{ user:getAdminUser(req), section:"Rates"|..., action:"CREATE"/"UPDATE"/"DELETE", targetId:id, summary, beforeJson:oldRow, afterJson:newRow })
+
+--------------------------------
+4) SERVER: AUDIT API
+--------------------------------
+Create /server/routes.admin.audit.ts and mount under /api/admin/audit in /server/routes.ts
+
+Endpoints:
+- GET /api/admin/audit → list (with paging & filters)
+  Query params: 
+    - q (search in summary, user)
+    - section (one)
+    - action (one)
+    - since (unix ms)
+    - until (unix ms)
+    - page (default 1)
+    - pageSize (default 50, max 200)
+- GET /api/admin/audit/:id → single entry (for full-screen diff if needed)
+
+Return shape for list:
+{
+  rows: [{id,user,section,action,targetId,summary,createdAt}],
+  total,
+  page,
+  pageSize
+}
+
+--------------------------------
+5) CLIENT: ROUTE & NAV
+--------------------------------
+Add left-nav: “Audit Log”
+Route: /admin/audit
+
+--------------------------------
+6) CLIENT: PAGE UI (React TS)
+--------------------------------
+Create /client/src/pages/admin/AuditPage.tsx
+
+Layout:
+- Header: “Audit Log”
+- Filters row:
+  - Section dropdown (All, Rates, Templates, Brands, Painting&FC, GlobalRules)
+  - Action dropdown (All, CREATE, UPDATE, DELETE)
+  - Date range (since/until)
+  - Search box (q)
+  - Page size (50/100/200)
+- Table:
+  Columns: Date/Time, User, Section, Action, Summary, View
+  - Date/Time rendered as local human-readable
+  - “View” button → opens Diff modal
+
+- Pagination footer with Prev/Next.
+
+Diff Modal:
+- Loads /api/admin/audit/:id
+- Shows two side-by-side JSON panes: BEFORE vs AFTER (pretty-printed)
+- Highlight changed keys if easy (basic text diff ok)
+- Copy to clipboard button
+
+UX details:
+- Persist filters in URL params
+- Debounce search input
+- Show total count
+
+API helpers:
+- /client/src/api/adminAudit.ts with listAudit(params) and getAudit(id)
+
+--------------------------------
+7) QA
+--------------------------------
+- Perform actions in other admin screens and confirm entries appear.
+- Filter by section/action/date; pagination works.
+- Diff modal shows before/after JSON.
+- Default user shown as “admin” unless x-admin-user header is set.
+
+Deliverables:
+- Schema: auditLog in /shared/schema.ts
+- Server: /server/lib/audit.ts; wire calls in all admin write routes
+- Server: /server/routes.admin.audit.ts mounted at /api/admin/audit
+- Client: /client/src/pages/admin/AuditPage.tsx
+- Client: /client/src/api/adminAudit.ts
+- Nav link: “Admin → Audit Log”
