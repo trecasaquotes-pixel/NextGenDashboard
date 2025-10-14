@@ -51,11 +51,11 @@ export function ApproveQuoteDialog({
       
       // Invalidate queries with await
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: `/api/quotations/${quotationId}` }),
-        queryClient.invalidateQueries({ queryKey: `/api/quotations/${quotationId}/interior-items` }),
-        queryClient.invalidateQueries({ queryKey: `/api/quotations/${quotationId}/false-ceiling-items` }),
-        queryClient.invalidateQueries({ queryKey: `/api/quotations/${quotationId}/other-items` }),
-        queryClient.invalidateQueries({ queryKey: `/api/quotations/${quotationId}/agreement` }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/interior-items`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/other-items`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/agreement`] }),
       ]);
       
       onOpenChange(false);

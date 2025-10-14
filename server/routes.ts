@@ -3,7 +3,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog } from "@shared/schema";
+import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog, brands } from "@shared/schema";
 import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles, buildQuoteZip } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
@@ -1006,30 +1006,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       
-      try {
-        const zipBuffer = await buildQuoteZip({
-          quoteId: quotationId,
-          ensurePdfs,
-          baseUrl,
-        });
-        
-        // Generate filename with date
-        const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
-        const filename = `Trecasa_Quote_${quotation.quoteId}_${date}.zip`;
-        
-        res.setHeader('Content-Type', 'application/zip');
-        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        res.send(zipBuffer);
-      } catch (pdfError: any) {
-        console.error("Error generating ZIP:", pdfError);
-        if (pdfError.message?.includes('Could not generate PDFs')) {
-          return res.status(409).json({ 
-            message: "Failed to generate PDFs", 
-            reason: pdfError.message 
-          });
-        }
-        throw pdfError;
-      }
+      const zipBuffer = await buildQuoteZip({
+        quoteId: quotationId,
+        ensurePdfs,
+        baseUrl,
+      });
+      
+      // Generate filename with date
+      const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const filename = `Trecasa_Quote_${quotation.quoteId}_${date}.zip`;
+      
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(zipBuffer);
     } catch (error) {
       console.error("Error exporting quotation ZIP:", error);
       res.status(500).json({ message: "Failed to export quotation" });

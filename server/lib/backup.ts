@@ -108,6 +108,7 @@ export async function buildQuoteZip(options: {
   filesList.push('quote/snapshot.json');
   
   // 4) Handle PDFs
+  let pdfGenerationError: string | null = null;
   if (ensurePdfs) {
     try {
       const pdfs = await generateAllQuotationPDFs(quotation, baseUrl);
@@ -130,8 +131,9 @@ export async function buildQuoteZip(options: {
         filesList.push('pdfs/agreement.pdf');
       }
     } catch (error) {
-      console.error('[buildQuoteZip] PDF generation failed:', error);
-      throw new Error(`Could not generate PDFs: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('[buildQuoteZip] PDF generation failed, continuing without PDFs:', error);
+      pdfGenerationError = error instanceof Error ? error.message : 'Unknown error';
+      // Continue without PDFs instead of throwing
     }
   }
   
@@ -140,6 +142,7 @@ export async function buildQuoteZip(options: {
   
   // 5) Add README.txt
   const timestamp = new Date().toISOString();
+  const pdfFiles = filesList.filter(f => f.endsWith('.pdf'));
   const readmeContent = `Trecasa Quote Backup
 Generated: ${timestamp}
 Quote ID: ${quotation.quoteId}
@@ -154,8 +157,8 @@ ${quotation.status === 'approved' ?
   'Note: This is an APPROVED quote. It is locked to its snapshot; admin edits made later do not affect this backup.' : 
   'Note: This is a draft quote. Snapshot reflects current state at time of export.'}
 
-PDF Files Included:
-${filesList.filter(f => f.endsWith('.pdf')).map(f => `- ${f}`).join('\n') || '- No PDFs included (ensurePdfs=false)'}
+PDF Files:
+${pdfFiles.length > 0 ? pdfFiles.map(f => `- ${f}`).join('\n') : '- No PDFs included'}${pdfGenerationError ? `\n\nPDF Generation Error:\n${pdfGenerationError}\n\nNote: PDFs can be generated from the Print page in the web app.` : ''}
 `;
   
   quoteFolder.file('README.txt', readmeContent);
