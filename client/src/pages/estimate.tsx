@@ -160,7 +160,7 @@ export default function Estimate() {
         title: "Snapshot Saved",
         description: "Current rates and settings have been captured",
       });
-      queryClient.invalidateQueries({ queryKey: `/api/quotations/${quotationId}` });
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
     },
     onError: (error: any) => {
       toast({
