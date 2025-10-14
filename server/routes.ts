@@ -10,9 +10,11 @@ import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
 import { seedRates } from "./seed/rates.seed";
 import { seedTemplates } from "./seed/templates.seed";
 import { seedBrands } from "./seed/brands.seed";
+import { seedPaintingFc } from "./seed/paintingFc.seed";
 import { registerAdminRatesRoutes } from "./routes.admin.rates";
 import { registerAdminTemplatesRoutes } from "./routes.admin.templates";
 import { registerAdminBrandsRoutes } from "./routes.admin.brands";
+import { registerAdminPaintingFcRoutes } from "./routes.admin.paintingFc";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -22,6 +24,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await seedRates();
   await seedTemplates();
   await seedBrands();
+  await seedPaintingFc();
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -539,6 +542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAdminRatesRoutes(app, isAuthenticated);
   registerAdminTemplatesRoutes(app, isAuthenticated);
   registerAdminBrandsRoutes(app, isAuthenticated);
+  registerAdminPaintingFcRoutes(app, isAuthenticated);
 
   const httpServer = createServer(app);
   return httpServer;

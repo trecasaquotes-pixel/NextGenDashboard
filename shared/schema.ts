@@ -436,3 +436,73 @@ export const insertBrandSchema = createInsertSchema(brands, {
 export type BrandRow = typeof brands.$inferSelect;
 export type NewBrandRow = z.infer<typeof insertBrandSchema>;
 export type BrandType = z.infer<typeof brandTypeEnum>;
+
+// Painting Packs table for BHK-scaled LSUM painting packages
+export const paintingPacks = pgTable("painting_packs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 100 }).notNull(),
+  basePriceLsum: integer("base_price_lsum").notNull().default(0),
+  bulletsJson: text("bullets_json").notNull().default("[]"),
+  bhkFactorBase: integer("bhk_factor_base").notNull().default(3),
+  perBedroomDelta: decimal("per_bedroom_delta", { precision: 5, scale: 3 }).notNull().default("0.10"),
+  showInQuote: boolean("show_in_quote").notNull().default(true),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPaintingPackSchema = createInsertSchema(paintingPacks, {
+  name: z.string().min(2).max(100),
+  basePriceLsum: z.number().int().min(0),
+  bulletsJson: z.string().transform((val) => {
+    try {
+      const parsed = JSON.parse(val);
+      if (!Array.isArray(parsed)) throw new Error("Must be array");
+      return val;
+    } catch {
+      throw new Error("bulletsJson must be valid JSON array");
+    }
+  }),
+  bhkFactorBase: z.number().int().min(1).max(10).default(3),
+  perBedroomDelta: z.number().min(0).max(0.25).default(0.10),
+  showInQuote: z.boolean().default(true),
+  isActive: z.boolean().default(true),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type PaintingPackRow = typeof paintingPacks.$inferSelect;
+export type NewPaintingPackRow = z.infer<typeof insertPaintingPackSchema>;
+
+// FC Catalog table for admin-configurable FC "Others" items
+export const fcCatalog = pgTable("fc_catalog", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar("key", { length: 60 }).notNull().unique(),
+  displayName: varchar("display_name", { length: 100 }).notNull(),
+  unit: varchar("unit", { length: 10 }).notNull(),
+  defaultValue: integer("default_value").notNull().default(0),
+  ratePerUnit: integer("rate_per_unit").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+const fcUnitEnum = z.enum(["LSUM", "COUNT"]);
+
+export const insertFCCatalogSchema = createInsertSchema(fcCatalog, {
+  key: z.string().min(2).max(60),
+  displayName: z.string().min(2).max(100),
+  unit: fcUnitEnum,
+  defaultValue: z.number().int().min(0).default(0),
+  ratePerUnit: z.number().int().min(0).default(0),
+  isActive: z.boolean().default(true),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type FCCatalogRow = typeof fcCatalog.$inferSelect;
+export type NewFCCatalogRow = z.infer<typeof insertFCCatalogSchema>;

@@ -1,0 +1,173 @@
+TASK: Build “Admin → Painting & FC” admin screen with CRUD, presets, and guardrails.
+
+Tech context:
+- Monorepo: client (Vite React TS), server (Express TS + SQLite via drizzle), shared types in /shared.
+- Painting packs are LSUM packages tied to BHK scaling.
+- FC “Others” lines are a mix of LSUM (paint) and COUNT (lights, fan hooks, cove).
+- Do NOT touch Replit auth or vite dev helpers.
+
+--------------------------------
+1) SHARED SCHEMA (drizzle sqlite)
+--------------------------------
+In /shared/schema.ts add two groups:
+
+A) Painting Packs:
+export const paintingPacks = sqlite table "painting_packs" {
+  id: text pk (nanoid)
+  name: text not null              // e.g., "Tractor Emulsion", "Premium", "Royal Luxury", "Royal Shine", "Royal Aspira"
+  basePriceLsum: integer not null  // default LSUM for 3BHK baseline (₹)
+  bulletsJson: text not null       // JSON string array of bullet points
+  bhkFactorBase: integer not null default 3 // baseline BHK for basePrice (3)
+  perBedroomDelta: real not null default 0.10 // +/– 10% per bedroom difference from baseline
+  showInQuote: integer not null default 1
+  isActive: integer not null default 1
+  createdAt: integer default now
+  updatedAt: integer default now
+}
+
+Types: PaintingPackRow, NewPaintingPackRow.
+
+B) FC Others (admin-configurable):
+export const fcCatalog = sqlite table "fc_catalog" {
+  id: text pk (nanoid)
+  key: text not null unique        // "fc_paint", "fc_lights", "fc_fan_hook", "fc_cove_led"
+  displayName: text not null
+  unit: text not null              // "LSUM" | "COUNT"
+  defaultValue: integer not null default 0 // used to prefill count or lsum
+  ratePerUnit: integer not null default 0  // only used when unit=COUNT
+  isActive: integer not null default 1
+  createdAt: integer default now
+  updatedAt: integer default now
+}
+
+Types: FCCatalogRow, NewFCCatalogRow.
+
+--------------------------------
+2) SERVER: ROUTES
+--------------------------------
+Create /server/routes.admin.paintingFc.ts and mount under /api/admin/painting-fc in /server/routes.ts.
+
+Painting Packs:
+- GET    /api/admin/painting-packs         → list (?active=1&showInQuote=1&q=)
+- POST   /api/admin/painting-packs         → create {name, basePriceLsum, bulletsJson(array), bhkFactorBase, perBedroomDelta, showInQuote?, isActive?}
+- PUT    /api/admin/painting-packs/:id     → update same fields
+- PATCH  /api/admin/painting-packs/:id/active → {isActive:boolean}
+- DELETE /api/admin/painting-packs/:id     → soft delete (isActive=0)
+
+FC Catalog:
+- GET    /api/admin/fc-catalog             → list
+- POST   /api/admin/fc-catalog             → create {key, displayName, unit, defaultValue, ratePerUnit, isActive?}
+- PUT    /api/admin/fc-catalog/:id         → update fields
+- PATCH  /api/admin/fc-catalog/:id/active  → {isActive:boolean}
+- DELETE /api/admin/fc-catalog/:id         → soft delete
+
+Validation:
+- Painting: name 2..60; basePriceLsum ≥ 0; bulletsJson must be array; perBedroomDelta between 0 and 0.25
+- FC: key unique, unit in ["LSUM","COUNT"]; for COUNT require ratePerUnit ≥ 0
+
+Seeder (/server/seed/paintingFc.seed.ts) if tables empty:
+Painting packs (use your spec):
+1) "Tractor Emulsion" 35000, bullets:
+   - "Touchup with Putti for walls."
+   - "Two coats painting for complete walls."
+   - "Door paintings are not included."
+
+2) "Premium" 50000:
+   - "One coat Acrylic putty for all walls."
+   - "Two coats painting for complete walls."
+   - "Washroom doors and main door painting is included."
+
+3) "Royal Luxury Emulsion" 80000:
+   - "2 coats Acrylic putty for complete walls."
+   - "1 base coat for all walls."
+   - "3 coats paint for all walls."
+   - "Included for washroom walls, balcony and polish for main door."
+
+4) "Royal Shine" 90000:
+   - same bullets as Royal Luxury Emulsion.
+
+5) "Royal Aspira" 100000:
+   - "2 coats Acrylic putty for complete walls."
+   - "1 base coat for all walls."
+   - "3 coats paint for all walls."
+   - "Included for washroom walls, balcony and PU polish for main door."
+
+Set bhkFactorBase=3 and perBedroomDelta=0.10 for all.
+
+FC Catalog defaults:
+- {key:"fc_paint", displayName:"False Ceiling Painting", unit:"LSUM", defaultValue:0, ratePerUnit:0}
+- {key:"fc_lights", displayName:"FC Lights (Downlights/Spots)", unit:"COUNT", defaultValue:0, ratePerUnit:0}
+- {key:"fc_fan_hook", displayName:"Fan Hook Rods", unit:"COUNT", defaultValue:0, ratePerUnit:0}
+- {key:"fc_cove_led", displayName:"Cove LED Strip", unit:"COUNT", defaultValue:0, ratePerUnit:0}
+
+--------------------------------
+3) CLIENT: ROUTE & NAV
+--------------------------------
+Add left-nav: “Painting & FC”
+Route: /admin/painting-fc
+
+--------------------------------
+4) CLIENT: PAGE UI (React TS)
+--------------------------------
+Create /client/src/pages/admin/PaintingFcPage.tsx
+
+Layout with two tabs:
+
+TAB A: Painting Packs
+- Top bar: Title + [Add Pack]
+- Grid/List of cards for each pack:
+  - Name (editable)
+  - Base LSUM (₹) (editable)
+  - BHK Baseline (int) (default 3) and Per-Bedroom Delta (0.10 default) (editable with min/max)
+  - Bullets editor (multi-line where each line = one bullet)
+  - Toggles: Show in Quote, Active
+  - Actions: Delete (soft), Duplicate
+- Add/Edit modal: name, basePriceLsum, bullets (textarea → split lines), bhkFactorBase, perBedroomDelta, showInQuote, active
+
+Computed preview on each card:
+- Show how price scales by bedrooms (for display only):
+  function priceForBhk(bhk) = base * (1 + (bhk - bhkFactorBase) * perBedroomDelta).
+  E.g., for 2BHK: base * (1 - 0.10); for 4BHK: base * (1 + 0.10).
+
+TAB B: FC Catalog (Others)
+- Table:
+  Columns: Key (read-only), Display Name (editable), Unit (dropdown locked: LSUM for "fc_paint", COUNT for others), Default Value (editable number), Rate per Unit (editable number for COUNT), Active (toggle), Actions (Delete)
+- Add Item modal: key, displayName, unit, defaultValue, ratePerUnit, active
+- Guardrails: 
+  - "fc_paint" must be LSUM.
+  - "fc_lights", "fc_fan_hook", "fc_cove_led" must be COUNT.
+  - Prevent duplicate keys.
+
+Behaviors common:
+- Inline save on blur
+- Toasts on success/failure
+- Search within tab
+
+API client helpers:
+- /client/src/api/adminPaintingFc.ts with list/create/update/toggleActive/delete for both groups.
+
+--------------------------------
+5) CONSUMPTION NOTES (used by quote builder)
+--------------------------------
+- When user selects a Painting Pack during FC quote:
+  - Compute LSUM by bedrooms: price = basePriceLsum * (1 + (bhk - bhkFactorBase) * perBedroomDelta)
+  - Insert as a separate line in FC QUOTE (LSUM), not in Interiors.
+- FC Catalog values:
+  - On new FC quote, prefill “FC Lights count” with fc_lights.defaultValue, etc.
+  - Totals: FC Lights = count * ratePerUnit; Fan Hooks similar; FC Paint is LSUM amount box.
+
+--------------------------------
+6) QA
+--------------------------------
+- Create/edit/delete painting packs; bullets render as list; scaling preview updates.
+- FC catalog editing works; units locked for reserved keys.
+- In quote builder, selecting a pack computes correct LSUM for 1/2/3/4 BHK.
+- FC Lights and Fan Hooks count × rate totals reflect admin-configured rates.
+
+Deliverables:
+- Schema additions in /shared/schema.ts (paintingPacks, fcCatalog)
+- Seeder /server/seed/paintingFc.seed.ts
+- Admin routes in /server/routes.admin.paintingFc.ts mounted
+- Client page /client/src/pages/admin/PaintingFcPage.tsx
+- API client /client/src/api/adminPaintingFc.ts
+- Nav link “Painting & FC”
