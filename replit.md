@@ -23,7 +23,13 @@ No specific user preferences were provided in the original document.
 - **Smart Rate Calculator**: Incorporates brand-based pricing for real-time calculation updates.
 - **Totals Calculation System**: Real-time computation of subtotals, discounts, and GST.
 - **Template System**: Auto-creation of room items based on project categories using predefined templates.
-- **Server-Side PDF Generation**: Puppeteer-based PDF rendering with authentication via time-limited, quotation-specific render tokens.
+- **PDF Generation System**: Dual-approach PDF generation with client-side and server-side options:
+  - **Client-Side PDF**: Primary implementation using html2pdf.js for browser-based PDF generation (htmlToPdfBytes/downloadBytesAs)
+  - **Server-Side PDF**: Puppeteer-based rendering with Google Fonts (Playfair Display, Montserrat), professional margins (A4: 25mm top, 18mm bottom, 15mm sides), header/footer templates with page numbering
+  - **Professional Typography**: Playfair Display (serif) for headings, Montserrat (sans-serif) for body text
+  - **Room Summary Tables**: Dedicated summary page (page 1) showing room-wise totals before detailed breakdowns
+  - **Page Break System**: Proper pagination with .page-break, .page-break-before, .break-inside-avoid classes
+  - **Loading States**: User feedback with toast notifications and button states during PDF generation
 - **Render Token System**: HMAC-signed tokens (5-minute expiry) enable Puppeteer to access protected pages without user sessions. Set RENDER_SECRET environment variable in production.
 
 ### Feature Specifications

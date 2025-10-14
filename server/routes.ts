@@ -442,6 +442,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PDF download routes
+  app.get('/api/quotations/:id/pdf/:type', isAuthenticated, async (req: any, res) => {
+    try {
+      const quotation = await storage.getQuotation(req.params.id);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      const type = req.params.type as 'interiors' | 'false-ceiling' | 'agreement';
+      if (!['interiors', 'false-ceiling', 'agreement'].includes(type)) {
+        return res.status(400).json({ message: "Invalid PDF type" });
+      }
+
+      // Determine base URL from request
+      const protocol = req.protocol;
+      const host = req.get('host');
+      const baseUrl = `${protocol}://${host}`;
+
+      console.log(`[PDF] Generating ${type} PDF for ${quotation.quoteId} with baseUrl: ${baseUrl}`);
+      const { generateQuotationPDF } = await import('./lib/pdf-generator');
+      const pdfBuffer = await generateQuotationPDF(quotation, type, baseUrl);
+
+      const typeLabel = type === 'interiors' ? 'Interiors' : type === 'false-ceiling' ? 'FalseCeiling' : 'Agreement';
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="TRECASA_${quotation.quoteId}_${typeLabel}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      res.status(500).json({ message: "Failed to generate PDF" });
+    }
+  });
+
   // Render routes for PDF generation (token-authenticated, used by Puppeteer)
   // These routes return the HTML content without requiring user session authentication
   app.get('/render/quotation/:id/print', async (req: any, res) => {

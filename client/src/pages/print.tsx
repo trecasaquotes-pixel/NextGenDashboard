@@ -16,6 +16,7 @@ import { formatINR, safeN } from "@/lib/money";
 import { defaultTerms, renderTerms } from "@/lib/terms";
 import { dateFormat } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { htmlToPdfBytes, downloadBytesAs } from "@/lib/pdf";
 
 export default function Print() {
   const [match, params] = useRoute("/quotation/:id/print");
@@ -99,12 +100,45 @@ export default function Print() {
     },
   });
 
-  const handlePrint = (type: "interiors" | "false-ceiling") => {
-    setActiveTab(type);
-    // Small delay to ensure tab content is rendered
-    setTimeout(() => {
-      window.print();
-    }, 100);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const handleDownloadPDF = async (type: "interiors" | "false-ceiling") => {
+    if (!quotation) return;
+    
+    setIsGeneratingPDF(true);
+    try {
+      const elementId = type === "interiors" ? "print-interiors-root" : "print-fc-root";
+      const element = document.getElementById(elementId);
+      
+      if (!element) {
+        throw new Error(`Element ${elementId} not found`);
+      }
+
+      toast({
+        title: "Generating PDF...",
+        description: "Please wait while we create your PDF",
+      });
+
+      const pdfBytes = await htmlToPdfBytes(element);
+      const typeLabel = type === "interiors" ? "Interiors" : "FalseCeiling";
+      const filename = `TRECASA_${quotation.quoteId}_${typeLabel}.pdf`;
+      
+      await downloadBytesAs(filename, pdfBytes);
+
+      toast({
+        title: "Success",
+        description: "PDF downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   if (!match || authLoading || !isAuthenticated || !quotation) {
@@ -274,12 +308,13 @@ export default function Print() {
               {/* Download Button - Screen only */}
               <div className="print:hidden">
                 <Button 
-                  onClick={() => handlePrint("interiors")}
+                  onClick={() => handleDownloadPDF("interiors")}
                   size="lg"
+                  disabled={isGeneratingPDF}
                   data-testid="button-download-interiors-pdf"
                 >
                   <Printer className="mr-2 h-5 w-5" />
-                  Download Interiors PDF
+                  {isGeneratingPDF ? "Generating..." : "Download Interiors PDF"}
                 </Button>
               </div>
 
@@ -542,12 +577,13 @@ export default function Print() {
               {/* Download Button - Screen only */}
               <div className="print:hidden">
                 <Button 
-                  onClick={() => handlePrint("false-ceiling")}
+                  onClick={() => handleDownloadPDF("false-ceiling")}
                   size="lg"
+                  disabled={isGeneratingPDF}
                   data-testid="button-download-fc-pdf"
                 >
                   <Printer className="mr-2 h-5 w-5" />
-                  Download False Ceiling PDF
+                  {isGeneratingPDF ? "Generating..." : "Download False Ceiling PDF"}
                 </Button>
               </div>
 
