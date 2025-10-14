@@ -3,7 +3,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems } from "@shared/schema";
+import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules } from "@shared/schema";
 import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
@@ -746,6 +746,182 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating render token:", error);
       res.status(500).json({ message: "Failed to generate token" });
+    }
+  });
+
+  // Approval & Agreement routes
+  app.post('/api/quotations/:id/approve', isAuthenticated, async (req: any, res) => {
+    try {
+      const quotationId = req.params.id;
+      const { approvedBy, siteAddress } = req.body;
+      
+      // Fetch quotation
+      const quotation = await storage.getQuotation(quotationId);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      
+      // Check ownership
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      // Check if already approved
+      if (quotation.status === "approved") {
+        return res.status(409).json({ message: "Quote already approved" });
+      }
+      
+      // Fetch global rules for GST and payment schedule
+      const [globalRulesData] = await db
+        .select()
+        .from(globalRules)
+        .where(eq(globalRules.id, "global"));
+      
+      // Fetch interior items to get selected brands and rates
+      const interiorItemsList = await storage.getInteriorItems(quotationId);
+      
+      // Build snapshot (rates, brands, global rules used at approval)
+      const ratesByItemKey: Record<string, any> = {};
+      const brandsSelected = new Set<string>();
+      
+      for (const item of interiorItemsList) {
+        brandsSelected.add(item.material || "Generic Ply");
+        brandsSelected.add(item.finish || "Generic Laminate");
+        brandsSelected.add(item.hardware || "Nimmi");
+      }
+      
+      const snapshotJson = {
+        globalRules: globalRulesData || {},
+        brandsSelected: Array.from(brandsSelected),
+        ratesByItemKey,
+      };
+      
+      // Calculate totals
+      const interiorsSubtotal = interiorItemsList.reduce((sum, item) => {
+        const total = parseFloat(item.totalPrice || "0");
+        return sum + (isNaN(total) ? 0 : total);
+      }, 0);
+      
+      const fcItems = await storage.getFalseCeilingItems(quotationId);
+      const fcSubtotal = fcItems.reduce((sum, item) => {
+        const total = parseFloat(item.totalPrice || "0");
+        return sum + (isNaN(total) ? 0 : total);
+      }, 0);
+      
+      const grandSubtotal = interiorsSubtotal + fcSubtotal;
+      
+      // Apply discount
+      let discountAmount = 0;
+      if (quotation.discountType === "percent") {
+        discountAmount = (grandSubtotal * parseFloat(quotation.discountValue || "0")) / 100;
+      } else {
+        discountAmount = parseFloat(quotation.discountValue || "0");
+      }
+      
+      const amountAfterDiscount = grandSubtotal - discountAmount;
+      
+      // Calculate GST
+      const gstPercent = globalRulesData?.gstPercent || 18;
+      const gstAmount = (amountAfterDiscount * gstPercent) / 100;
+      const grandTotal = amountAfterDiscount + gstAmount;
+      
+      // Update quotation status
+      const updatedQuotation = await storage.updateQuotation(quotationId, {
+        status: "approved" as const,
+        approvedAt: Date.now(),
+        approvedBy: approvedBy || req.user.claims.email || "Unknown",
+        snapshotJson: snapshotJson as any,
+      });
+      
+      // Create payment schedule with amounts
+      const paymentSchedule = (globalRulesData?.paymentSchedule || []).map((item: any) => ({
+        label: item.label,
+        percent: item.percent,
+        amount: Math.round((grandTotal * item.percent) / 100),
+      }));
+      
+      // Assemble T&C from dynamic source
+      const termsJson = [
+        "All measurements are finished-size; deviations will be re-measured on site.",
+        "Manufacturing tolerances are ±3mm.",
+        "Warranty as per brand manufacturer terms.",
+        "Delivery & installation timelines depend on site readiness.",
+        "Payments as per agreed schedule; delays may affect timeline.",
+      ];
+      
+      // Create agreement
+      const agreement = await storage.createAgreement({
+        quotationId,
+        clientName: quotation.clientName,
+        projectName: quotation.projectName,
+        siteAddress: siteAddress || quotation.projectAddress || "",
+        amountBeforeGst: Math.round(amountAfterDiscount * 100), // Convert to paise
+        gstPercent,
+        gstAmount: Math.round(gstAmount * 100),
+        grandTotal: Math.round(grandTotal * 100),
+        paymentScheduleJson: paymentSchedule,
+        termsJson,
+        pdfPath: `/storage/agreements/${quotationId}_agreement.pdf`, // Placeholder
+        generatedAt: Date.now(),
+      });
+      
+      res.json({
+        ok: true,
+        quotation: updatedQuotation,
+        agreement,
+      });
+    } catch (error) {
+      console.error("Error approving quotation:", error);
+      res.status(500).json({ message: "Failed to approve quotation" });
+    }
+  });
+
+  // Get agreement by ID
+  app.get('/api/agreements/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const agreement = await storage.getAgreement(req.params.id);
+      if (!agreement) {
+        return res.status(404).json({ message: "Agreement not found" });
+      }
+      
+      // Verify ownership through quotation
+      const quotation = await storage.getQuotation(agreement.quotationId);
+      if (!quotation || quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      res.json(agreement);
+    } catch (error) {
+      console.error("Error fetching agreement:", error);
+      res.status(500).json({ message: "Failed to fetch agreement" });
+    }
+  });
+
+  // Sign agreement
+  app.post('/api/agreements/:id/sign', isAuthenticated, async (req: any, res) => {
+    try {
+      const { signedByClient } = req.body;
+      
+      const agreement = await storage.getAgreement(req.params.id);
+      if (!agreement) {
+        return res.status(404).json({ message: "Agreement not found" });
+      }
+      
+      // Verify ownership through quotation
+      const quotation = await storage.getQuotation(agreement.quotationId);
+      if (!quotation || quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const updated = await storage.updateAgreement(req.params.id, {
+        signedByClient,
+        signedAt: Date.now(),
+      });
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error signing agreement:", error);
+      res.status(500).json({ message: "Failed to sign agreement" });
     }
   });
 

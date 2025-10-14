@@ -5,6 +5,7 @@ import {
   interiorItems,
   falseCeilingItems,
   otherItems,
+  agreements,
   type User,
   type UpsertUser,
   type Quotation,
@@ -15,6 +16,8 @@ import {
   type InsertFalseCeilingItem,
   type OtherItem,
   type InsertOtherItem,
+  type Agreement,
+  type InsertAgreement,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -49,6 +52,12 @@ export interface IStorage {
   createOtherItem(item: InsertOtherItem): Promise<OtherItem>;
   updateOtherItem(id: string, data: Partial<InsertOtherItem>): Promise<OtherItem>;
   deleteOtherItem(id: string): Promise<void>;
+
+  // Agreement operations
+  getAgreement(id: string): Promise<Agreement | undefined>;
+  getAgreementByQuotationId(quotationId: string): Promise<Agreement | undefined>;
+  createAgreement(agreement: InsertAgreement): Promise<Agreement>;
+  updateAgreement(id: string, data: Partial<InsertAgreement>): Promise<Agreement>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -185,6 +194,34 @@ export class DatabaseStorage implements IStorage {
 
   async deleteOtherItem(id: string): Promise<void> {
     await db.delete(otherItems).where(eq(otherItems.id, id));
+  }
+
+  // Agreement operations
+  async getAgreement(id: string): Promise<Agreement | undefined> {
+    const [agreement] = await db.select().from(agreements).where(eq(agreements.id, id));
+    return agreement;
+  }
+
+  async getAgreementByQuotationId(quotationId: string): Promise<Agreement | undefined> {
+    const [agreement] = await db
+      .select()
+      .from(agreements)
+      .where(eq(agreements.quotationId, quotationId));
+    return agreement;
+  }
+
+  async createAgreement(agreement: InsertAgreement): Promise<Agreement> {
+    const [newAgreement] = await db.insert(agreements).values(agreement).returning();
+    return newAgreement;
+  }
+
+  async updateAgreement(id: string, data: Partial<InsertAgreement>): Promise<Agreement> {
+    const [updated] = await db
+      .update(agreements)
+      .set(data)
+      .where(eq(agreements.id, id))
+      .returning();
+    return updated;
   }
 }
 
