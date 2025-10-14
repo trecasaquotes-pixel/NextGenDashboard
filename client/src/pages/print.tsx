@@ -312,7 +312,7 @@ export default function Print() {
 
                   {/* Section A: Project Summary */}
                   <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
+                    <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
@@ -324,16 +324,66 @@ export default function Print() {
                     </div>
                   </div>
 
-                  {/* Section B: Room-wise Breakdown */}
-                  <div className="space-y-6">
-                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM-WISE BREAKDOWN</h3>
+                  {/* Section B: Room Summary Table */}
+                  <div className="space-y-3 break-inside-avoid page-break">
+                    <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM SUMMARY</h3>
+                    <table className="summary-table w-full border-collapse text-sm">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border border-gray-300 px-3 py-2 text-left">Room</th>
+                          <th className="border border-gray-300 px-3 py-2 text-right">Area (SFT)</th>
+                          <th className="border border-gray-300 px-3 py-2 text-right">Items</th>
+                          <th className="border border-gray-300 px-3 py-2 text-right">Room Total (₹)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(interiorsByRoom).map(([room, items]) => {
+                          const roomArea = items.reduce((sum, item) => sum + Number(item.sqft || 0), 0);
+                          const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
+                          return (
+                            <tr key={room}>
+                              <td className="border border-gray-300 px-3 py-2 text-left font-medium">{room}</td>
+                              <td className="border border-gray-300 px-3 py-2 text-right font-mono">{roomArea.toFixed(2)}</td>
+                              <td className="border border-gray-300 px-3 py-2 text-right font-mono">{items.length}</td>
+                              <td className="border border-gray-300 px-3 py-2 text-right font-mono font-semibold">{formatINR(roomTotal)}</td>
+                            </tr>
+                          );
+                        })}
+                        <tr className="bg-gray-100 font-semibold">
+                          <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">Subtotal:</td>
+                          <td className="border border-gray-300 px-3 py-2 text-right font-mono">{formatINR(interiorsSubtotal)}</td>
+                        </tr>
+                        {interiorsDiscountAmount > 0 && (
+                          <tr>
+                            <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">
+                              Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
+                            </td>
+                            <td className="border border-gray-300 px-3 py-2 text-right font-mono text-red-600">-{formatINR(interiorsDiscountAmount)}</td>
+                          </tr>
+                        )}
+                        <tr>
+                          <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">GST (18%):</td>
+                          <td className="border border-gray-300 px-3 py-2 text-right font-mono">{formatINR(interiorsGst)}</td>
+                        </tr>
+                        <tr className="bg-[#013220] text-white font-bold">
+                          <td colSpan={3} className="border border-gray-300 px-3 py-3 text-right text-base">Grand Total:</td>
+                          <td className="border border-gray-300 px-3 py-3 text-right font-mono text-base">{formatINR(interiorsFinalTotal)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Section C: Room-wise Breakdown */}
+                  <div className="space-y-6 page-break-before">
+                    <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM-WISE BREAKDOWN</h3>
                     
-                    {Object.entries(interiorsByRoom).map(([room, items]) => {
+                    {Object.entries(interiorsByRoom).map(([room, items], roomIdx) => {
                       const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
+                      const isLastRoom = roomIdx === Object.entries(interiorsByRoom).length - 1;
                       
                       return (
-                        <div key={room} className="break-inside-avoid">
-                          <h4 className="font-semibold text-[#013220] mb-2">{room}</h4>
+                        <div key={room} className={`break-inside-avoid ${!isLastRoom ? 'page-break' : ''}`}>
+                          <h4 className="room-title font-semibold text-[#013220] mb-2">{room}</h4>
                           <table className="w-full text-sm border-collapse zebra-table">
                             <thead>
                               <tr className="bg-gray-100">
@@ -530,7 +580,7 @@ export default function Print() {
 
                   {/* Section A: Project Summary */}
                   <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
+                    <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
@@ -542,17 +592,99 @@ export default function Print() {
                     </div>
                   </div>
 
-                  {/* Section B: Room-wise False Ceiling Breakdown */}
+                  {/* Section B: Room Summary Table */}
                   {falseCeilingItems.length > 0 && (
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
+                    <div className="space-y-3 break-inside-avoid page-break">
+                      <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM SUMMARY</h3>
+                      <table className="summary-table w-full border-collapse text-sm">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="border border-gray-300 px-3 py-2 text-left">Room</th>
+                            <th className="border border-gray-300 px-3 py-2 text-right">FC Area (SFT)</th>
+                            <th className="border border-gray-300 px-3 py-2 text-right">Items</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(falseCeilingByRoom).map(([room, items]) => {
+                            const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
+                            return (
+                              <tr key={room}>
+                                <td className="border border-gray-300 px-3 py-2 text-left font-medium">{room}</td>
+                                <td className="border border-gray-300 px-3 py-2 text-right font-mono">{roomArea.toFixed(2)}</td>
+                                <td className="border border-gray-300 px-3 py-2 text-right font-mono">{items.length}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                       
-                      {Object.entries(falseCeilingByRoom).map(([room, items]) => {
+                      {/* Others Items Summary */}
+                      {otherItems.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="font-semibold text-[#013220] mb-2">Other Items</h4>
+                          <table className="summary-table w-full border-collapse text-sm">
+                            <thead>
+                              <tr className="bg-gray-100">
+                                <th className="border border-gray-300 px-3 py-2 text-left">Item Type</th>
+                                <th className="border border-gray-300 px-3 py-2 text-left">Description</th>
+                                <th className="border border-gray-300 px-3 py-2 text-center">Type</th>
+                                <th className="border border-gray-300 px-3 py-2 text-right">Value</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {otherItems.map((item) => (
+                                <tr key={item.id}>
+                                  <td className="border border-gray-300 px-3 py-2 font-medium">{item.itemType || "N/A"}</td>
+                                  <td className="border border-gray-300 px-3 py-2">{item.description || "N/A"}</td>
+                                  <td className="border border-gray-300 px-3 py-2 text-center capitalize">{item.valueType || "lumpsum"}</td>
+                                  <td className="border border-gray-300 px-3 py-2 text-right font-mono">{item.value || "0"}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                      
+                      {/* Totals */}
+                      <table className="summary-table w-full border-collapse text-sm mt-4">
+                        <tbody>
+                          <tr className="bg-gray-100 font-semibold">
+                            <td colSpan={2} className="border border-gray-300 px-3 py-2 text-right">Subtotal:</td>
+                            <td className="border border-gray-300 px-3 py-2 text-right font-mono">{formatINR(fcSubtotal)}</td>
+                          </tr>
+                          {fcDiscountAmount > 0 && (
+                            <tr>
+                              <td colSpan={2} className="border border-gray-300 px-3 py-2 text-right">
+                                Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
+                              </td>
+                              <td className="border border-gray-300 px-3 py-2 text-right font-mono text-red-600">-{formatINR(fcDiscountAmount)}</td>
+                            </tr>
+                          )}
+                          <tr>
+                            <td colSpan={2} className="border border-gray-300 px-3 py-2 text-right">GST (18%):</td>
+                            <td className="border border-gray-300 px-3 py-2 text-right font-mono">{formatINR(fcGst)}</td>
+                          </tr>
+                          <tr className="bg-[#013220] text-white font-bold">
+                            <td colSpan={2} className="border border-gray-300 px-3 py-3 text-right text-base">Grand Total:</td>
+                            <td className="border border-gray-300 px-3 py-3 text-right font-mono text-base">{formatINR(fcFinalTotal)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Section C: Room-wise False Ceiling Breakdown */}
+                  {falseCeilingItems.length > 0 && (
+                    <div className="space-y-6 page-break-before">
+                      <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
+                      
+                      {Object.entries(falseCeilingByRoom).map(([room, items], roomIdx) => {
                         const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
+                        const isLastRoom = roomIdx === Object.entries(falseCeilingByRoom).length - 1;
                         
                         return (
-                          <div key={room} className="break-inside-avoid">
-                            <h4 className="font-semibold text-[#013220] mb-2">{room}</h4>
+                          <div key={room} className={`break-inside-avoid ${!isLastRoom ? 'page-break' : ''}`}>
+                            <h4 className="room-title font-semibold text-[#013220] mb-2">{room}</h4>
                             <table className="w-full text-sm border-collapse zebra-table">
                               <thead>
                                 <tr className="bg-gray-100">
