@@ -10,6 +10,7 @@ import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
 import { seedRates } from "./seed/rates.seed";
 import { seedTemplates } from "./seed/templates.seed";
 import { registerAdminRatesRoutes } from "./routes.admin.rates";
+import { registerAdminTemplatesRoutes } from "./routes.admin.templates";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -533,6 +534,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin routes
   registerAdminRatesRoutes(app, isAuthenticated);
+  registerAdminTemplatesRoutes(app, isAuthenticated);
 
   const httpServer = createServer(app);
   return httpServer;
