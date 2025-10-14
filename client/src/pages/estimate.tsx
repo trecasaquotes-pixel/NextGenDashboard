@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2, Download, Save } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
@@ -110,6 +110,66 @@ export default function Estimate() {
   const handleDiscountBlur = () => {
     updateDiscount.mutate({ discountType, discountValue });
   };
+
+  // Export ZIP mutation
+  const exportZip = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/quotations/${quotationId}/export-zip`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to export ZIP');
+      }
+      
+      return response.blob();
+    },
+    onSuccess: (blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Trecasa_Quote_${quotation?.quoteId}_${new Date().toISOString().split('T')[0]}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "Success",
+        description: "Quote exported successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to export quote",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Save snapshot mutation
+  const saveSnapshot = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", `/api/quotations/${quotationId}/snapshot`, {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Snapshot Saved",
+        description: "Current rates and settings have been captured",
+      });
+      queryClient.invalidateQueries({ queryKey: `/api/quotations/${quotationId}` });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save snapshot",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (!match || authLoading || !isAuthenticated) {
     return null;
@@ -397,9 +457,34 @@ export default function Estimate() {
             />
           )}
 
-          {/* Approve Button (if not approved) */}
-          {quotation?.status !== "approved" && (
-            <div className="flex justify-end">
+          {/* Export & Snapshot Actions */}
+          <div className="flex flex-wrap gap-3 items-center justify-between">
+            <div className="flex gap-3">
+              <Button
+                onClick={() => exportZip.mutate()}
+                disabled={exportZip.isPending}
+                variant="outline"
+                data-testid="button-export-zip"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {exportZip.isPending ? "Exporting..." : "Export ZIP"}
+              </Button>
+              
+              {quotation?.status !== "approved" && (
+                <Button
+                  onClick={() => saveSnapshot.mutate()}
+                  disabled={saveSnapshot.isPending}
+                  variant="outline"
+                  data-testid="button-save-snapshot"
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  {saveSnapshot.isPending ? "Saving..." : "Save Snapshot"}
+                </Button>
+              )}
+            </div>
+
+            {/* Approve Button (if not approved) */}
+            {quotation?.status !== "approved" && (
               <Button
                 onClick={() => setShowApproveDialog(true)}
                 size="lg"
@@ -408,8 +493,8 @@ export default function Estimate() {
                 <CheckCircle2 className="mr-2 h-5 w-5" />
                 Approve Quote & Generate Agreement
               </Button>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Navigation */}
           <div className="flex gap-3">
