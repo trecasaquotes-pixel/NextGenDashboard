@@ -306,3 +306,101 @@ export type RateRow = typeof rates.$inferSelect;
 export type NewRateRow = z.infer<typeof insertRateSchema>;
 export type Unit = z.infer<typeof unitEnum>;
 export type Category = z.infer<typeof categoryEnum>;
+
+// Templates tables for auto-creating room structures
+export const templateCategoryEnum = z.enum([
+  "Residential 1BHK",
+  "Residential 2BHK",
+  "Residential 3BHK",
+  "Villa",
+  "Commercial"
+]);
+
+export const templates = pgTable("templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 100 }).notNull(),
+  category: varchar("category").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const templateRooms = pgTable("template_rooms", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  templateId: varchar("template_id").notNull().references(() => templates.id, { onDelete: 'cascade' }),
+  roomName: varchar("room_name", { length: 60 }).notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const templateItems = pgTable("template_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  templateRoomId: varchar("template_room_id").notNull().references(() => templateRooms.id, { onDelete: 'cascade' }),
+  itemKey: varchar("item_key").notNull(),
+  displayName: varchar("display_name", { length: 80 }).notNull(),
+  unit: varchar("unit").notNull().default("SFT"),
+  isWallHighlightOrPanel: boolean("is_wall_highlight_or_panel").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Template relations
+export const templatesRelations = relations(templates, ({ many }) => ({
+  rooms: many(templateRooms),
+}));
+
+export const templateRoomsRelations = relations(templateRooms, ({ one, many }) => ({
+  template: one(templates, {
+    fields: [templateRooms.templateId],
+    references: [templates.id],
+  }),
+  items: many(templateItems),
+}));
+
+export const templateItemsRelations = relations(templateItems, ({ one }) => ({
+  room: one(templateRooms, {
+    fields: [templateItems.templateRoomId],
+    references: [templateRooms.id],
+  }),
+}));
+
+// Template validation schemas
+export const insertTemplateSchema = createInsertSchema(templates, {
+  name: z.string().min(2).max(100),
+  category: templateCategoryEnum,
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTemplateRoomSchema = createInsertSchema(templateRooms, {
+  roomName: z.string().min(2).max(60),
+  sortOrder: z.number().min(0).default(0),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTemplateItemSchema = createInsertSchema(templateItems, {
+  itemKey: z.string().min(2),
+  displayName: z.string().min(2).max(80),
+  unit: unitEnum,
+  isWallHighlightOrPanel: z.boolean().default(false),
+  sortOrder: z.number().min(0).default(0),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type TemplateRow = typeof templates.$inferSelect;
+export type NewTemplateRow = z.infer<typeof insertTemplateSchema>;
+export type TemplateRoomRow = typeof templateRooms.$inferSelect;
+export type NewTemplateRoomRow = z.infer<typeof insertTemplateRoomSchema>;
+export type TemplateItemRow = typeof templateItems.$inferSelect;
+export type NewTemplateItemRow = z.infer<typeof insertTemplateItemSchema>;
+export type TemplateCategory = z.infer<typeof templateCategoryEnum>;

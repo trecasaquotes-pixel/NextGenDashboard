@@ -1,0 +1,150 @@
+TASK: Build “Admin → Templates” screen with full CRUD, import/export JSON, and preview.
+
+Tech context:
+- Monorepo: client (Vite React TS), server (Express TS + SQLite via drizzle), shared types in /shared.
+- Templates auto-create rooms + items for quotes. Interiors use SFT by default.
+- Do NOT touch Replit auth or vite dev helpers.
+
+--------------------------------
+1) SHARED SCHEMA (SQLite via drizzle)
+--------------------------------
+Extend /shared/schema.ts with template tables:
+
+export const templates = sqlite table "templates":
+- id: text pk (nanoid)
+- name: text not null (e.g., "2BHK – Residential", "3BHK – Villa")
+- category: text not null (enum: "Residential 1BHK","Residential 2BHK","Residential 3BHK","Villa","Commercial")
+- isActive: integer not null default 1
+- createdAt: integer default now
+- updatedAt: integer default now
+
+export const templateRooms = sqlite table "template_rooms":
+- id: text pk (nanoid)
+- templateId: text not null (fk templates.id)
+- roomName: text not null (e.g., "Kitchen","Master Bedroom","Bedroom 2","Dining","Living","Others")
+- sortOrder: integer not null default 0
+
+export const templateItems = sqlite table "template_items":
+- id: text pk (nanoid)
+- templateRoomId: text not null (fk template_rooms.id)
+- itemKey: text not null (must exist in rates.itemKey)
+- displayName: text not null (copy of rates.displayName for convenience)
+- unit: text not null (default "SFT"; allow "COUNT" or "LSUM" only when needed)
+- isWallHighlightOrPanel: integer not null default 0
+- sortOrder: integer not null default 0
+
+Types to export:
+- TemplateRow, TemplateRoomRow, TemplateItemRow
+
+--------------------------------
+2) SERVER: TEMPLATES API
+--------------------------------
+Create /server/routes.admin.templates.ts and mount under /api/admin/templates in /server/routes.ts
+
+Endpoints:
+- GET /api/admin/templates → list all (with ?q=&category=&active=1)
+- GET /api/admin/templates/:id → full detail including rooms + items
+- POST /api/admin/templates → create template {name, category, isActive?}
+- PUT  /api/admin/templates/:id → update {name, category, isActive}
+- DELETE /api/admin/templates/:id → soft delete (isActive=0)
+- POST /api/admin/templates/:id/rooms → add room {roomName, sortOrder?}
+- PUT  /api/admin/templates/:id/rooms/:roomId → update {roomName, sortOrder}
+- DELETE /api/admin/templates/:id/rooms/:roomId
+- POST /api/admin/templates/:id/rooms/:roomId/items → add item {itemKey, displayName, unit, isWallHighlightOrPanel?, sortOrder?}
+- PUT  /api/admin/templates/:id/rooms/:roomId/items/:itemId → update fields above
+- DELETE /api/admin/templates/:id/rooms/:roomId/items/:itemId
+- POST /api/admin/templates/import → body {json} to import a full template
+- GET  /api/admin/templates/:id/export → returns JSON of one template (including rooms/items)
+
+Validation rules:
+- itemKey must exist in rates table (server should reject unknown itemKey)
+- unit normally "SFT"; allow "COUNT"/"LSUM" only for FC Others or special OTHERS items
+- isWallHighlightOrPanel true for any *paneling / wall highlight* items (forces handmade during pricing)
+- Name 2..100 chars; roomName 2..60 chars
+
+--------------------------------
+3) DEFAULT SEED (one example template)
+--------------------------------
+Create /server/seed/templates.seed.ts that inserts ONE sample template if templates table is empty:
+Template: "Residential 3BHK – Standard"
+Rooms (sortOrder ascending):
+- Kitchen → items: base_unit, wall_unit, loft_unit, tall_unit, appliance_unit, pantry_unit, utility_wall_storage, utility_tall_unit, (COUNT) tandem_drawer_set, (COUNT) wicker_basket
+- Living → items: tv_base_unit, tv_tall_unit_closed, tv_open_display, crockery_bar_unit, wall_panel_highlight (isWallHighlightOrPanel=1), decor_partition
+- Dining → items: crockery_base, crockery_loft, crockery_wall_unit, puja_base_unit, puja_loft_unit, puja_doors, puja_back_glass, dining_wall_highlight (isWallHighlightOrPanel=1)
+- Master Bedroom → items: wardrobe_swing, wardrobe_slide, wardrobe_loft, tv_base_unit_mb, tv_wall_panel_mb (isWallHighlightOrPanel=1), dresser_unit, mb_wall_highlight (isWallHighlightOrPanel=1), side_tables
+- Bedroom 2 → items: b2_wardrobe_swing, b2_wardrobe_loft, study_table, overhead_storage, bookshelf_display, b2_wall_highlight (isWallHighlightOrPanel=1)
+- Bedroom 3 → items: b3_wardrobe_swing, b3_wardrobe_loft, b3_tv_base_unit, work_table_compact, b3_wall_highlight (isWallHighlightOrPanel=1)
+- Others → items: vanity_unit, vanity_mirror, shoe_rack, main_door_paneling (isWallHighlightOrPanel=1), puja_door_frame_architrave, foyer_console, foyer_corridor_panel (isWallHighlightOrPanel=1), mirror_wall_panel (isWallHighlightOrPanel=1), termite_treatment (LSUM), floor_matting (LSUM), transportation_handling (LSUM)
+
+--------------------------------
+4) CLIENT: ROUTE & NAV
+--------------------------------
+Add admin route: /admin/templates
+Add left nav entry: “Templates”
+
+--------------------------------
+5) CLIENT: PAGE UI (React TS)
+--------------------------------
+Create /client/src/pages/admin/TemplatesPage.tsx:
+
+Layout:
+- Top bar: Title “Templates” + [Add Template] (primary)
+- Filters row: Category dropdown, Active (All/Active/Inactive), Search by name
+- List/grid of templates with:
+  - name, category, active toggle
+  - actions: Edit, Duplicate, Export JSON, Delete
+
+Edit Template Drawer (or separate page):
+- Fields: Name, Category, Active toggle
+- Rooms section:
+  - List of rooms with drag-and-drop sort
+  - For each room: roomName (editable), [Add Item], actions (Delete room)
+  - Items table per room: columns → Display Name, Item Key (autocomplete from rates), Unit (dropdown), Paneling? (checkbox), Sort (drag), Actions (Delete)
+  - “Add Item” shows a searchable picker backed by /api/admin/rates (active items only), autofills itemKey, displayName, unit; allow override of displayName/unit with guardrails.
+- Footer buttons: Save, Cancel
+
+Actions:
+- Add Template → POST
+- Edit fields → PUT on blur / Save
+- Add Room → POST
+- Edit Room → PUT
+- Delete Room → DELETE
+- Add Item → POST
+- Edit Item → PUT
+- Delete Item → DELETE
+- Duplicate Template → POST (server clones template, rooms, items; append “(copy)” to name)
+- Export JSON → GET export; trigger download
+- Import JSON → button opens file picker; POST to import endpoint; on success, navigate to new template
+
+Guardrails:
+- Item Key must exist in rates; if user types a custom key, show “Not found in rates” error.
+- Unit locking: interiors default SFT. COUNT/LSUM only allowed for Others/FC special items.
+- If “Paneling?” checked, show a small info: “Priced as Handmade regardless of project build type.”
+
+--------------------------------
+6) TEMPLATE → QUOTE APPLICATION (NOTE ONLY)
+--------------------------------
+(Implementation later) The “Apply Template” action in quote creation should:
+- Create rooms in the quote per selected template, preserving sort order
+- For each room, add items with unit + isWallHighlightOrPanel flags
+- Quantities default empty; user fills L/H or L/W or COUNT/LSUM values
+- No duplicates if applied twice (idempotent by checking itemKey per room)
+
+--------------------------------
+7) QA / CHECKS
+--------------------------------
+- Create a template; add rooms and items; save successfully
+- Drag sort rooms and items; order persists
+- Duplicate template; edit name; both exist independently
+- Export JSON and Import JSON cycle works
+- Item picker only shows active rates; deactivated items are hidden
+- Paneling checkbox forces Handmade later (pricing engine note)
+- Deleting a template with rooms/items is allowed (soft delete by isActive=0)
+
+Deliverables:
+- Schema additions in /shared/schema.ts
+- Seeder /server/seed/templates.seed.ts
+- Admin routes in /server/routes.admin.templates.ts, mounted in /server/routes.ts
+- Client page /client/src/pages/admin/TemplatesPage.tsx
+- API client /client/src/api/adminTemplates.ts with list/get/create/update/delete/import/export helpers
+- Nav link to Admin → Templates

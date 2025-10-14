@@ -8,14 +8,16 @@ import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
 import { seedRates } from "./seed/rates.seed";
+import { seedTemplates } from "./seed/templates.seed";
 import { registerAdminRatesRoutes } from "./routes.admin.rates";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
   
-  // Seed default rates on first run
+  // Seed default data on first run
   await seedRates();
+  await seedTemplates();
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
