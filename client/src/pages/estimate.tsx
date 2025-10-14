@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2, Download, Save } from "lucide-react";
+import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2, Download, Save, Share2 } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
@@ -16,6 +16,7 @@ import { AppFooter } from "@/components/app-footer";
 import { TermsEditor } from "@/components/terms-editor";
 import { SignoffEditor } from "@/components/signoff-editor";
 import { ApproveQuoteDialog } from "@/components/approve-quote-dialog";
+import { ShareLinkDialog } from "@/components/share-link-dialog";
 import { AgreementCard } from "@/components/agreement-card";
 import { formatINR, safeN } from "@/lib/money";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -28,6 +29,7 @@ export default function Estimate() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [showApproveDialog, setShowApproveDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -481,6 +483,15 @@ export default function Estimate() {
                   {saveSnapshot.isPending ? "Saving..." : "Save Snapshot"}
                 </Button>
               )}
+
+              <Button
+                onClick={() => setShowShareDialog(true)}
+                variant="outline"
+                data-testid="button-share-link"
+              >
+                <Share2 className="mr-2 h-4 w-4" />
+                Share with Client
+              </Button>
             </div>
 
             {/* Approve Button (if not approved) */}
@@ -520,6 +531,15 @@ export default function Estimate() {
             open={showApproveDialog}
             onOpenChange={setShowApproveDialog}
             quotationId={quotationId!}
+          />
+
+          {/* Share Link Dialog */}
+          <ShareLinkDialog
+            open={showShareDialog}
+            onOpenChange={setShowShareDialog}
+            quoteId={quotationId!}
+            clientToken={quotation?.clientToken}
+            clientTokenExpiresAt={quotation?.clientTokenExpiresAt}
           />
         </div>
       </main>
