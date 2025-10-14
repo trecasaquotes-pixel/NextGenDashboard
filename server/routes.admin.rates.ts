@@ -4,6 +4,22 @@ import { rates, insertRateSchema } from "@shared/schema";
 import { eq, sql, and, or, like } from "drizzle-orm";
 import { z } from "zod";
 
+// Unit guardrail validation
+function validateUnitForItemKey(itemKey: string, unit: string): { valid: boolean; error?: string } {
+  const lsumOnly = ['termite_treatment', 'floor_matting', 'transportation_handling', 'fc_paint'];
+  const countOnly = ['fc_lights', 'fc_fan_hook', 'fc_cove_led'];
+  
+  if (lsumOnly.includes(itemKey) && unit !== 'LSUM') {
+    return { valid: false, error: `Item '${itemKey}' must use LSUM unit` };
+  }
+  
+  if (countOnly.includes(itemKey) && unit !== 'COUNT') {
+    return { valid: false, error: `Item '${itemKey}' must use COUNT unit` };
+  }
+  
+  return { valid: true };
+}
+
 export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
   
   // GET /api/admin/rates - List rates with optional filters
@@ -56,6 +72,12 @@ export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
     try {
       const validatedData = insertRateSchema.parse(req.body);
       
+      // Validate unit guardrails
+      const unitValidation = validateUnitForItemKey(validatedData.itemKey, validatedData.unit);
+      if (!unitValidation.valid) {
+        return res.status(400).json({ message: unitValidation.error });
+      }
+      
       const [newRate] = await db.insert(rates)
         .values({
           ...validatedData,
@@ -95,6 +117,19 @@ export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
         isActive: z.boolean().optional(),
         notes: z.string().optional().nullable(),
       }).parse(req.body);
+      
+      // If unit is being updated, validate against itemKey
+      if (updateData.unit) {
+        const [existingRate] = await db.select().from(rates).where(eq(rates.id, id));
+        if (!existingRate) {
+          return res.status(404).json({ message: "Rate not found" });
+        }
+        
+        const unitValidation = validateUnitForItemKey(existingRate.itemKey, updateData.unit);
+        if (!unitValidation.valid) {
+          return res.status(400).json({ message: unitValidation.error });
+        }
+      }
       
       const [updatedRate] = await db.update(rates)
         .set({

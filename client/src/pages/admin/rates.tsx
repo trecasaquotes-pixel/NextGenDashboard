@@ -98,16 +98,7 @@ export default function AdminRatesPage() {
 
   const { data: rates = [], isLoading, refetch } = useQuery<RateRow[]>({
     queryKey: ["/api/admin/rates", filters],
-    queryFn: () => {
-      // Convert "all" to empty string for API
-      const apiFilters = {
-        ...filters,
-        unit: filters.unit === "all" ? "" : filters.unit,
-        category: filters.category === "all" ? "" : filters.category,
-        active: filters.active === "all" ? "" : filters.active,
-      };
-      return getRates(apiFilters);
-    },
+    queryFn: () => getRates(filters),
     enabled: isAuthenticated,
   });
 

@@ -11,9 +11,18 @@ export interface RatesFilters {
 export async function getRates(filters?: RatesFilters): Promise<RateRow[]> {
   const params = new URLSearchParams();
   if (filters?.q) params.append('q', filters.q);
-  if (filters?.unit) params.append('unit', filters.unit);
-  if (filters?.category) params.append('category', filters.category);
-  if (filters?.active !== undefined) params.append('active', filters.active);
+  // Only add unit param if it has a real value (not "all" or empty)
+  if (filters?.unit && filters.unit !== 'all' && filters.unit !== '') {
+    params.append('unit', filters.unit);
+  }
+  // Only add category param if it has a real value (not "all" or empty)
+  if (filters?.category && filters.category !== 'all' && filters.category !== '') {
+    params.append('category', filters.category);
+  }
+  // Only add active param if it has a real value (not "all", empty string, or undefined)
+  if (filters?.active && filters.active !== '' && filters.active !== 'all') {
+    params.append('active', filters.active);
+  }
   
   const queryString = params.toString();
   const url = `/api/admin/rates${queryString ? `?${queryString}` : ''}`;
