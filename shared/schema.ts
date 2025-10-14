@@ -125,6 +125,10 @@ export const quotations = pgTable("quotations", {
   includeAnnexureInteriors: boolean("include_annexure_interiors").default(true),
   includeAnnexureFC: boolean("include_annexure_fc").default(true),
   
+  // Client Portal (share link)
+  clientToken: text("client_token"), // Random token for share URL
+  clientTokenExpiresAt: bigint("client_token_expires_at", { mode: "number" }), // Unix timestamp in ms
+  
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

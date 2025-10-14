@@ -1,0 +1,154 @@
+TASK: Add a Client Portal so you can share a link with the client to view the quote, accept T&Cs, e-sign, and trigger agreement generation.
+
+Tech context:
+- Client: Vite React TS
+- Server: Express TS + SQLite via drizzle
+- PDFs are generated server-side (Interiors, FC, Agreement)
+- Quotes already support “approved + snapshot”
+- No authentication for clients; use signed link tokens
+
+--------------------------------
+1) SHARED: CLIENT TOKEN on quotes
+--------------------------------
+Extend /shared/schema.ts (quotes table) with:
+- clientToken: text nullable  // random token for share URL
+- clientTokenExpiresAt: integer nullable // unix ms, optional (e.g., +14 days)
+
+When creating a quote or when “Create Link” is pressed, generate a new token (nanoid 32) and save expiry (optional).
+
+--------------------------------
+2) SERVER: TOKEN UTIL
+--------------------------------
+/server/lib/render-token.ts (or similar)
+- export function createClientToken(): string  → nanoid(32)
+- export function verifyClientToken(db, quoteId, token) → boolean
+  - Fetch quote; return true iff token matches and not expired
+
+--------------------------------
+3) SERVER: CLIENT PORTAL ROUTES
+--------------------------------
+Mount under /api/client-quote
+
+A) GET /api/client-quote/:quoteId/info?token=...
+Returns public info needed for the portal:
+{
+  project: { name, clientName, siteAddress? },
+  totals: {
+    interiors: { subtotal, gstPercent, gstAmount, grandTotal },
+    fc?: { subtotal, gstPercent, gstAmount, grandTotal }
+  },
+  pdfs: { interiorsUrl, fcUrl }, // presigned/static URLs
+  terms: string[],                // T&C to show in portal
+  status: "draft" | "approved",
+  approvedAt?: number
+}
+
+Rules:
+- Validate token; 403 if invalid.
+- Use current saved totals; do not recompute here.
+
+B) POST /api/client-quote/:quoteId/accept?token=...
+Body: { clientName, signatureDataUrl }
+Steps:
+- Validate token
+- If quote.status !== "approved":
+  - Approve quote (same logic as admin approve) with approvedBy="Client Portal"
+  - Generate agreement PDF
+- Save e-signature PNG from data URL to /storage/signatures/{quoteId}.png
+- Update agreements row: signedByClient=clientName, signedAt=now
+- Return { ok:true, agreementUrl }
+
+C) POST /api/client-quote/:quoteId/request-link
+(Admin action; no token)
+- Generates {clientToken, clientTokenExpiresAt} if missing or when “Regenerate Link” is pressed
+- Returns shareUrl = `${PUBLIC_BASE_URL}/quote/${quoteId}?t=${token}`
+
+--------------------------------
+4) CLIENT: ADMIN SIDE – SHARE LINK UI
+--------------------------------
+In the Quote view (admin):
+- Add a “Share with Client” panel containing:
+  - Button: [Create/Regenerate Link] → calls POST request-link
+  - Read-only textbox with the share URL + [Copy] button
+  - Toggle: “Set link expiry (14 days)” → sets clientTokenExpiresAt
+
+--------------------------------
+5) CLIENT: PUBLIC PORTAL PAGE
+--------------------------------
+Create /client/src/pages/ClientQuotePortal.tsx
+Route: /quote/:quoteId (public)
+
+On load:
+- Read token (t) from query string.
+- Call GET /api/client-quote/:id/info?token=...
+- Render:
+
+Header (brand + project + client)
+- Project Name (Playfair)
+- Client Name
+- Quote ID + Date (if stored)
+
+PDF viewer links
+- “Download Interiors PDF”
+- If FC exists: “Download False Ceiling PDF”
+
+Totals box (cards)
+- Interiors: Subtotal, GST, Grand Total
+- FC (if present): Subtotal, GST, Grand Total
+- Grand Total (All) if you want to show combined
+
+Terms & Conditions
+- Scrollable box with checkboxes: “I have read and agree to the Terms & Conditions.”
+
+E-Signature capture
+- Canvas pad (use a simple TS React canvas component)
+- Field: Client Name (required)
+- Buttons: [Clear Signature], [Accept & Sign]
+
+On “Accept & Sign”:
+- Validate checkbox + signature drawn + client name
+- Convert canvas to dataURL (PNG)
+- POST /api/client-quote/:id/accept?token=...
+- On success: show success page with:
+  - “Agreement Generated”
+  - Button [Download Agreement PDF]
+
+Style:
+- Use same fonts (Playfair, Montserrat)
+- Footer with red dot, brand lines (consistent look)
+
+--------------------------------
+6) SERVER: STATIC PDF LINKS
+--------------------------------
+Ensure PDFs are reachable via express static:
+app.use('/storage', express.static(path.resolve('storage')))
+
+Return in GET /info:
+- pdfs.interiorsUrl = `/storage/pdf/quotes/${quoteId}/interiors.pdf` (or your actual path)
+- pdfs.fcUrl if exists
+- agreementUrl returned after accept
+
+--------------------------------
+7) AUDIT LOG HOOKS
+--------------------------------
+- Request link: section "Quotes", action "UPDATE", summary `Client link generated for ${quoteId}`
+- Accept & Sign: section "Agreement", action "UPDATE", summary `Client accepted & signed ${quoteId}`
+
+--------------------------------
+8) QA / TEST
+--------------------------------
+✅ Admin clicks “Create Link” → gets a share URL.  
+✅ Opening the URL shows PDFs + totals + T&C.  
+✅ Client draws signature + enters name + accepts → server approves quote (if not already), saves signature, and returns Agreement URL.  
+✅ Agreement PDF available to download; agreement table updated with signedByClient + signedAt.  
+✅ Token expiry blocks access after date (if enabled).  
+✅ Regenerate link invalidates old token (overwrite token value).
+
+Deliverables:
+- quotes table fields (clientToken, clientTokenExpiresAt)
+- /server/lib/render-token.ts or similar helpers
+- /api/client-quote endpoints (info, accept, request-link)
+- Admin quote screen: Share panel
+- Public page: ClientQuotePortal.tsx with signature pad and accept flow
+- Static file serving for PDFs/signatures
+- Audit log entries
