@@ -12,6 +12,7 @@ import { seedTemplates } from "./seed/templates.seed";
 import { seedBrands } from "./seed/brands.seed";
 import { registerAdminRatesRoutes } from "./routes.admin.rates";
 import { registerAdminTemplatesRoutes } from "./routes.admin.templates";
+import { registerAdminBrandsRoutes } from "./routes.admin.brands";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -537,6 +538,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin routes
   registerAdminRatesRoutes(app, isAuthenticated);
   registerAdminTemplatesRoutes(app, isAuthenticated);
+  registerAdminBrandsRoutes(app, isAuthenticated);
 
   const httpServer = createServer(app);
   return httpServer;
