@@ -405,6 +405,49 @@ export type TemplateItemRow = typeof templateItems.$inferSelect;
 export type NewTemplateItemRow = z.infer<typeof insertTemplateItemSchema>;
 export type TemplateCategory = z.infer<typeof templateCategoryEnum>;
 
+// Template summary and detail types for client use
+export interface TemplateSummary {
+  id: string;
+  name: string;
+  category: string;
+}
+
+export interface TemplateDetail {
+  id: string;
+  name: string;
+  category: string;
+  rooms: {
+    id: string;
+    roomName: string;
+    sortOrder: number;
+    items: {
+      id: string;
+      itemKey: string;
+      displayName: string;
+      unit: string;
+      isWallHighlightOrPanel: boolean;
+      sortOrder: number;
+    }[];
+  }[];
+}
+
+// Apply template request/response schemas
+export const applyTemplateSchema = z.object({
+  templateId: z.string(),
+  mode: z.enum(["merge", "reset"]).default("merge"),
+});
+
+export type ApplyTemplateRequest = z.infer<typeof applyTemplateSchema>;
+
+export interface ApplyTemplateResponse {
+  ok: boolean;
+  applied: {
+    roomsAdded: number;
+    itemsAdded: number;
+  };
+  skipped?: string[];
+}
+
 // Brands table for brand-based pricing adders
 export const brandTypes = ["core", "finish", "hardware"] as const;
 export const brandTypeEnum = z.enum(brandTypes);
