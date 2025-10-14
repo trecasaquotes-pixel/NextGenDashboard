@@ -17,6 +17,7 @@ import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { TemplateModal } from "@/components/template-modal";
+import { ApplyTemplateModal } from "@/components/apply-template-modal";
 import {
   Select,
   SelectContent,
@@ -83,6 +84,7 @@ export default function Scope() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showApplyTemplateModal, setShowApplyTemplateModal] = useState(false);
   const [totalsUpdatedAt, setTotalsUpdatedAt] = useState<number | null>(null);
 
   // Redirect if not authenticated
@@ -975,6 +977,14 @@ export default function Scope() {
                     Back to Project Info
                   </Button>
                   <Button 
+                    variant="outline"
+                    onClick={() => setShowApplyTemplateModal(true)}
+                    data-testid="button-apply-template-scope"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Apply Template
+                  </Button>
+                  <Button 
                     onClick={() => navigate(`/quotation/${quotationId}/estimate`)}
                     data-testid="button-continue-estimate"
                   >
@@ -1009,6 +1019,17 @@ export default function Scope() {
         hasExistingItems={interiorItems.length > 0 || falseCeilingItems.length > 0 || otherItems.length > 0}
         onSuccess={() => {
           // Refresh the page or just close the modal - items will auto-refresh via query invalidation
+        }}
+      />
+
+      <ApplyTemplateModal
+        open={showApplyTemplateModal}
+        onOpenChange={setShowApplyTemplateModal}
+        quotationId={quotationId!}
+        onSuccess={() => {
+          // Items will auto-refresh via query invalidation
+          queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/interior-items`] });
+          queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`] });
         }}
       />
     </div>
