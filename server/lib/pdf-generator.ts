@@ -78,17 +78,119 @@ export async function generateQuotationPDF(
       throw new Error(`Element ${selector} not found on page`);
     }
 
-    // Generate PDF
+    // Inject PDF-optimized CSS with Google Fonts
+    await page.addStyleTag({
+      content: `
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@400;500&display=swap');
+        
+        @media print {
+          body {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            color: #111;
+            margin: 0;
+            padding: 0;
+          }
+          
+          h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            margin: 0;
+          }
+          
+          .print-content {
+            padding-top: 35mm !important;
+            padding-bottom: 25mm !important;
+          }
+          
+          /* Page breaks */
+          .page-break {
+            page-break-after: always;
+          }
+          
+          .page-break-before {
+            page-break-before: always;
+          }
+          
+          .break-inside-avoid {
+            page-break-inside: avoid;
+          }
+          
+          table {
+            page-break-inside: auto;
+          }
+          
+          tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+          }
+          
+          td {
+            page-break-inside: avoid;
+            page-break-after: auto;
+          }
+          
+          /* Typography refinements */
+          .room-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 14pt;
+            font-weight: 700;
+            color: #013220;
+            margin-bottom: 8px;
+          }
+          
+          .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 12pt;
+            font-weight: 700;
+            color: #013220;
+          }
+          
+          .summary-table th,
+          .summary-table td {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 10px;
+          }
+          
+          .pdf-footer-content {
+            font-size: 9px;
+            color: #555;
+            font-family: 'Montserrat', sans-serif;
+          }
+        }
+      `
+    });
+
+    // Generate PDF with professional margins and header/footer
     console.log(`[PDF Generator] Generating PDF for ${type}`);
     const pdfBytes = await page.pdf({
       format: 'A4',
       printBackground: true,
       margin: {
-        top: '10mm',
-        right: '10mm',
-        bottom: '10mm',
-        left: '10mm',
+        top: '25mm',
+        right: '15mm',
+        bottom: '18mm',
+        left: '15mm',
       },
+      displayHeaderFooter: true,
+      headerTemplate: `
+        <div style="width: 100%; font-size: 10px; padding: 0 15mm; margin-top: 10mm; display: flex; justify-content: space-between; align-items: center; font-family: 'Montserrat', sans-serif;">
+          <div style="font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #013220;">
+            TRECASA DESIGN STUDIO
+          </div>
+          <div style="text-align: right; color: #333; line-height: 1.3;">
+            <div style="font-size: 9px; color: #666;">Quote ID: <span class="quoteId"></span></div>
+          </div>
+        </div>
+      `,
+      footerTemplate: `
+        <div style="width: 100%; font-size: 9px; padding: 0 15mm 10mm; display: flex; justify-content: space-between; align-items: center; border-top: 0.2pt solid #ddd; padding-top: 4px; color: #555; font-family: 'Montserrat', sans-serif;">
+          <div>TRECASA Design Studio | Luxury Interiors | Architecture | Build</div>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span style="color: #d92027; font-size: 12px;">●</span>
+          </div>
+          <div>www.trecasadesignstudio.com | Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
+        </div>
+      `,
     });
 
     // Convert Uint8Array to Buffer
