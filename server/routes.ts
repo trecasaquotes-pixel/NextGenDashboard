@@ -18,6 +18,7 @@ import { registerAdminBrandsRoutes } from "./routes.admin.brands";
 import { registerAdminPaintingFcRoutes } from "./routes.admin.paintingFc";
 import { registerAdminGlobalRulesRoutes } from "./routes.admin.globalRules";
 import { registerAdminAuditRoutes } from "./routes.admin.audit";
+import { registerClientQuoteRoutes } from "./routes/client-quote";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 
@@ -1098,6 +1099,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAdminPaintingFcRoutes(app, isAuthenticated);
   registerAdminGlobalRulesRoutes(app, isAuthenticated);
   registerAdminAuditRoutes(app, isAuthenticated);
+
+  // Client portal routes (public + admin)
+  registerClientQuoteRoutes(app, isAuthenticated);
 
   const httpServer = createServer(app);
   return httpServer;
