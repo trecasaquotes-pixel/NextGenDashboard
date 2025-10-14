@@ -39,6 +39,15 @@ No specific user preferences were provided in the original document.
 - **Signature Block & Status Controls**: Client and Trecasa signature system with typed signatures, timestamps, and status tracking (draft, sent, accepted, rejected).
 - **Agreement Pack — PDF Merging**: Functionality to merge the service agreement, annexure title pages, and quotation PDFs into a single downloadable document.
 - **Backup & Export System**: ZIP file generation for individual quotations (includes PDFs for Interiors, False Ceiling, Agreement, plus JSON data) and global data export (all quotations with JSON metadata). Accessible via Print page and Quotes list page.
+- **Admin → Rates Management**: Comprehensive administrative interface for managing pricing rates with PostgreSQL persistence. Features include:
+  - 59 default rates seeded on first launch (Kitchen, Living, Dining, Bedrooms, Others, FC categories)
+  - Full CRUD operations with soft deletes (isActive flag)
+  - Advanced filtering: search by name/key, filter by category, unit, and active status
+  - Inline editing: handmade/factory rates (with debounce), category dropdown, active toggle
+  - Add/Edit modal with form validation and duplicate functionality
+  - Unit guardrails: FC items locked to LSUM/COUNT, Others items locked to LSUM (enforced both frontend and backend)
+  - Brand-based pricing: separate handmade and factory rates for material/finish/hardware brands
+  - Accessible via user dropdown menu → "Admin - Rates"
 
 ## External Dependencies
 - **Replit Auth**: User authentication and authorization.
