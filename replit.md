@@ -59,6 +59,17 @@ No specific user preferences were provided in the original document.
   - Accordion-based UI for managing rooms and items with drag-and-drop sorting capability
   - Template validation: ensures itemKey references exist in rates table
   - Accessible via user dropdown menu → "Admin - Templates"
+- **Admin → Brands & Add-ons**: Comprehensive brand management system for pricing adders with PostgreSQL persistence. Features include:
+  - 12 default brands seeded on first launch: Core (Generic Ply, Century Ply, Greenply), Finish (Generic Laminate, Merino, Greenlam, Acrylic), Hardware (Generic, Hettich, Häfele, Ebco, Sleek)
+  - Full CRUD operations with soft deletes (isActive flag)
+  - Tab-based interface for Core, Finish, and Hardware brand categories
+  - Inline editing: brand name and adder per SFT (₹) with debounced updates
+  - Default brand management: only one default per type (radio-like behavior), enforced server-side
+  - Guardrails: unique names per type (case-insensitive), cannot deactivate/delete default brands, must set another default first
+  - Search filter for quick brand lookup (client-side)
+  - Special handling: Acrylic finish displays "+₹200/sft (special)" badge in UI
+  - Brand adders integrated into pricing calculations: base rate + core adder + finish adder + hardware adder
+  - Accessible via user dropdown menu → "Admin - Brands & Add-ons"
 
 ## External Dependencies
 - **Replit Auth**: User authentication and authorization.
