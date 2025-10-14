@@ -15,6 +15,7 @@ import Agreement from "@/pages/agreement";
 import AdminRates from "@/pages/admin/rates";
 import AdminTemplates from "@/pages/admin/templates";
 import AdminTemplateEditor from "@/pages/admin/template-editor";
+import AdminBrands from "@/pages/admin/brands";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -37,6 +38,7 @@ function Router() {
           <Route path="/admin/rates" component={AdminRates} />
           <Route path="/admin/templates" component={AdminTemplates} />
           <Route path="/admin/templates/:id/edit" component={AdminTemplateEditor} />
+          <Route path="/admin/brands" component={AdminBrands} />
         </>
       )}
       <Route component={NotFound} />
