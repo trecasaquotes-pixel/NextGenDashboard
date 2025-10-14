@@ -70,6 +70,21 @@ No specific user preferences were provided in the original document.
   - Special handling: Acrylic finish displays "+₹200/sft (special)" badge in UI
   - Brand adders integrated into pricing calculations: base rate + core adder + finish adder + hardware adder
   - Accessible via user dropdown menu → "Admin - Brands & Add-ons"
+- **Admin → Painting & FC**: Administrative system for managing painting packages with BHK-based scaling and FC catalog items with PostgreSQL persistence. Features include:
+  - 5 default painting packs seeded on first launch: Tractor Emulsion (₹35k), Premium (₹50k), Royal Luxury Emulsion (₹80k), Royal Shine (₹90k), Royal Aspira (₹100k)
+  - 4 default FC catalog items: FC Paint (LSUM), FC Lights (COUNT), Fan Hook Rods (COUNT), Cove LED Strip (COUNT)
+  - Full CRUD operations for both painting packs and FC catalog with soft deletes (isActive flag)
+  - Tab-based interface for Painting Packs and FC Catalog
+  - BHK-based pricing scaling: price = basePriceLsum × (1 + (targetBHK - bhkFactorBase) × perBedroomDelta)
+  - Real-time price preview for 1/2/3/4 BHK on each painting pack card
+  - Inline editing: pack name, base price, BHK baseline, delta, bullets, show in quote toggle, active toggle (with debounce)
+  - FC catalog inline editing: display name, unit (locked for reserved keys), default value, rate per unit, active toggle
+  - Guardrails: reserved FC keys (fc_paint, fc_lights, fc_fan_hook, fc_cove_led) have locked units enforced server-side
+  - Add/Edit/Duplicate/Delete functionality for painting packs
+  - Add/Edit/Delete functionality for FC catalog items
+  - Search filters for both tabs
+  - Bullet points editor for painting pack features (one per line in textarea)
+  - Accessible via user dropdown menu → "Admin - Painting & FC"
 
 ## External Dependencies
 - **Replit Auth**: User authentication and authorization.

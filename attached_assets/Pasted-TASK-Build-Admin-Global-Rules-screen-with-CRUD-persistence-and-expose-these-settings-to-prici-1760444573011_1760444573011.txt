@@ -1,0 +1,138 @@
+TASK: Build “Admin → Global Rules” screen with CRUD + persistence and expose these settings to pricing/print.
+
+Tech context:
+- Monorepo: client (Vite React TS), server (Express TS + SQLite via drizzle), shared types in /shared.
+- Influences project defaults, pricing (GST, build type), page 1 summary (payment schedule), and city factors.
+- Do NOT touch Replit auth or vite dev helpers.
+
+--------------------------------
+1) SHARED SCHEMA (drizzle sqlite)
+--------------------------------
+In /shared/schema.ts add a single-row table “global_rules”.
+
+export const globalRules = sqlite table "global_rules" {
+  id: text pk (default "global") // enforce only one row
+  buildTypeDefault: text not null default "handmade"  // "handmade" | "factory"
+  gstPercent: integer not null default 18            // integer %
+  validityDays: integer not null default 15
+  bedroomFactorBase: integer not null default 3      // base BHK taken as 1.0 factor
+  perBedroomDelta: real not null default 0.10        // ±10% per bedroom from base
+  paymentScheduleJson: text not null                 // JSON array of {label:string, percent:number}, e.g. [{"label":"Booking","percent":10},{"label":"On Site Measurement","percent":50},{"label":"On Delivery","percent":35},{"label":"After Installation","percent":5}]
+  cityFactorsJson: text not null                     // JSON array of {city:string, factor:number} e.g. [{"city":"Hyderabad","factor":1.00},{"city":"Bengaluru","factor":1.05}]
+  footerLine1: text not null default "TRECASA Design Studio | Luxury Interiors | Architecture | Build"
+  footerLine2: text not null default "www.trecasadesignstudio.com | +91-XXXXXXXXXX"
+  createdAt: integer default now
+  updatedAt: integer default now
+}
+
+Export type GlobalRulesRow.
+
+Seeder (/server/seed/globalRules.seed.ts):
+- If table empty, insert one row with id="global" and sensible defaults:
+  buildTypeDefault="handmade", gstPercent=18, validityDays=15,
+  bedroomFactorBase=3, perBedroomDelta=0.10,
+  paymentScheduleJson=[
+    {"label":"Booking","percent":10},
+    {"label":"Site Measurement","percent":50},
+    {"label":"On Delivery","percent":35},
+    {"label":"After Installation","percent":5}
+  ],
+  cityFactorsJson=[{"city":"Hyderabad","factor":1.00}],
+  footerLine1="TRECASA Design Studio | Luxury Interiors | Architecture | Build",
+  footerLine2="www.trecasadesignstudio.com | +91-XXXXXXXXXX"
+
+--------------------------------
+2) SERVER: ROUTES
+--------------------------------
+Create /server/routes.admin.globalRules.ts and mount under /api/admin/global-rules in /server/routes.ts.
+
+Endpoints:
+- GET  /api/admin/global-rules           → returns the single row
+- PUT  /api/admin/global-rules           → upsert; accepts full payload:
+  {buildTypeDefault, gstPercent, validityDays, bedroomFactorBase, perBedroomDelta,
+   paymentScheduleJson(array of {label,percent}), cityFactorsJson(array of {city,factor}),
+   footerLine1, footerLine2}
+
+Validation:
+- buildTypeDefault in ["handmade","factory"]
+- gstPercent integer 0..28
+- validityDays integer 1..90
+- bedroomFactorBase integer 1..5
+- perBedroomDelta number 0..0.25
+- paymentSchedule percent sums to 100 (server should check and reject otherwise)
+- cityFactors factor between 0.8 and 1.3
+
+--------------------------------
+3) CLIENT: ROUTE & NAV
+--------------------------------
+Add left-nav entry under Admin: “Global Rules”
+Route: /admin/global-rules
+
+--------------------------------
+4) CLIENT: PAGE UI (React TS)
+--------------------------------
+Create /client/src/pages/admin/GlobalRulesPage.tsx with a simple form:
+
+Sections & fields:
+
+A) Pricing Defaults
+- Build Type Default: Segmented control → Handmade | Factory
+- GST %: number input
+- Quote Validity (days): number input
+
+B) Bedroom Scaling
+- Base BHK (select 1..5; default 3)
+- Per-Bedroom Delta (0.00–0.25 step 0.01)
+- Read-only preview text: “At 2BHK price = base × (1 − delta); at 4BHK price = base × (1 + delta)”.
+
+C) Payment Schedule (must sum to 100)
+- Editable list of rows: Label (text), Percent (number)
+- Buttons: Add row, Delete row, “Reset to Trecasa Default”
+- Live progress bar showing current total %
+
+D) City Factors
+- Table: City (text), Factor (number, e.g. 1.00, 1.05)
+- Buttons: Add city, Delete city
+- Helper: “Factor multiplies base SFT rate for that city.”
+
+E) Footer Branding (PDF)
+- Footer Line 1 (text)
+- Footer Line 2 (text)
+- Small preview box: renders both lines with the 🔴 red dot between brand and services (pure CSS preview).
+
+Actions:
+- Load data on mount (GET)
+- Save button (PUT). Show toast on success. Disable when invalid (e.g., payment != 100%).
+
+Validation (client):
+- Payment schedule total must be 100 before enabling Save.
+- Per-Bedroom Delta within [0, 0.25].
+- GST within [0, 28].
+
+API client helper:
+- /client/src/api/adminGlobalRules.ts with getGlobalRules() and saveGlobalRules(payload).
+
+--------------------------------
+5) CONSUMPTION HOOKS (NOTE ONLY)
+--------------------------------
+- When creating a project, default Build Type from global rules.
+- Painting pack price display: base × (1 + (bhk - baseBhk) × perBedroomDelta)
+- FC quote & Interiors print: use footerLine1/2 for fixed footer on every page.
+- Page 1 summary should render the payment schedule rows exactly as configured here.
+- City factor may be applied when project city matches a configured city; keep a TODO if not wired yet.
+
+--------------------------------
+6) QA
+--------------------------------
+- Load current values → edit → Save → values persist (GET returns updated).
+- Payment schedule validation blocks save when not 100%.
+- City factors add/remove works; factors numeric limits enforced.
+- Footer preview reflects the two lines in brand styling.
+
+Deliverables:
+- Schema addition in /shared/schema.ts (globalRules)
+- Seeder /server/seed/globalRules.seed.ts
+- Admin routes in /server/routes.admin.globalRules.ts (mounted)
+- Client page /client/src/pages/admin/GlobalRulesPage.tsx
+- API client /client/src/api/adminGlobalRules.ts
+- Nav link to “Global Rules”
