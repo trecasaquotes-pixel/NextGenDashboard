@@ -306,7 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const interiorRooms = await db.select().from(interiorItems)
         .where(eq(interiorItems.quotationId, quotationId));
       
-      const uniqueRoomTypes = [...new Set(interiorRooms.map(item => item.roomType).filter(Boolean))];
+      const uniqueRoomTypes = Array.from(new Set(interiorRooms.map(item => item.roomType).filter(Boolean)));
       
       // Get existing FC items
       const existingFcItems = await db.select().from(falseCeilingItems)
