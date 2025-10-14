@@ -260,3 +260,49 @@ export type OtherItem = typeof otherItems.$inferSelect;
 // Room types constant
 export const ROOM_TYPES = ["Kitchen", "Living", "Bedrooms", "Bathrooms", "Utility", "Puja"] as const;
 export const OTHER_ITEM_TYPES = ["Paint", "Lights", "Fan Hook Rods"] as const;
+
+// Rates table for admin-managed pricing
+export const rates = pgTable("rates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  itemKey: varchar("item_key").notNull().unique(), // lowercase snake_case
+  displayName: varchar("display_name", { length: 80 }).notNull(),
+  unit: varchar("unit").notNull(), // SFT, COUNT, LSUM
+  baseRateHandmade: integer("base_rate_handmade").notNull().default(0),
+  baseRateFactory: integer("base_rate_factory").notNull().default(0),
+  category: varchar("category").notNull(), // Kitchen, Living, etc.
+  isActive: boolean("is_active").notNull().default(true),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Rate validation schemas
+export const unitEnum = z.enum(["SFT", "COUNT", "LSUM"]);
+export const categoryEnum = z.enum([
+  "Kitchen",
+  "Living", 
+  "Dining",
+  "Master Bedroom",
+  "Bedroom 2",
+  "Bedroom 3",
+  "Others",
+  "FC"
+]);
+
+export const insertRateSchema = createInsertSchema(rates, {
+  itemKey: z.string().regex(/^[a-z0-9_]+$/, "Must be lowercase letters, numbers, and underscores only"),
+  displayName: z.string().min(2).max(80),
+  unit: unitEnum,
+  category: categoryEnum,
+  baseRateHandmade: z.number().min(0),
+  baseRateFactory: z.number().min(0),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type RateRow = typeof rates.$inferSelect;
+export type NewRateRow = z.infer<typeof insertRateSchema>;
+export type Unit = z.infer<typeof unitEnum>;
+export type Category = z.infer<typeof categoryEnum>;

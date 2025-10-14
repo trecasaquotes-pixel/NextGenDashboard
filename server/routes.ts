@@ -7,10 +7,14 @@ import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItem
 import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
+import { seedRates } from "./seed/rates.seed";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+  
+  // Seed default rates on first run
+  await seedRates();
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
