@@ -31,7 +31,7 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
   const { toast } = useToast();
 
   const { data: agreement } = useQuery<Agreement>({
-    queryKey: [`/api/quotations/${quotationId}/agreement`],
+    queryKey: `/api/quotations/${quotationId}/agreement`,
     enabled: !!quotationId && !!approvedAt,
   });
 
@@ -48,7 +48,7 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
         title: "Agreement Signed",
         description: "Client signature has been recorded",
       });
-      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/agreement`] });
+      queryClient.invalidateQueries({ queryKey: `/api/quotations/${quotationId}/agreement` });
       setShowSignDialog(false);
       setClientName("");
     },
