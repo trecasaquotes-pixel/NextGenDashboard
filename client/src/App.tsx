@@ -19,12 +19,16 @@ import AdminBrands from "@/pages/admin/brands";
 import AdminPaintingFc from "@/pages/admin/painting-fc";
 import AdminGlobalRules from "@/pages/admin/global-rules";
 import AdminAuditLog from "@/pages/admin/audit-log";
+import ClientQuotePortal from "@/pages/client-quote-portal";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
   return (
     <Switch>
+      {/* Public routes */}
+      <Route path="/client/:quoteId" component={ClientQuotePortal} />
+
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (
