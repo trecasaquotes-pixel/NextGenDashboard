@@ -1,0 +1,213 @@
+TASK: Build “Admin → Rates” screen with full CRUD and persistence.
+
+Tech context:
+- Monorepo with client (Vite React TypeScript) and server (Express TypeScript, SQLite via drizzle-orm). 
+- Shared types live in /shared. 
+- Pricing uses SFT/COUNT/LSUM; interiors default SFT; FC Others include LSUM and COUNT.
+- Do NOT touch Replit auth or vite dev helpers.
+
+--------------------------------
+1) SHARED SCHEMA (SQLite via drizzle)
+--------------------------------
+Create/extend /shared/schema.ts with a new “rates” table + enums:
+
+- export const unitEnum = sqlite text enum via zod validation (values: "SFT" | "COUNT" | "LSUM")
+- export const categoryEnum = sqlite text enum for display grouping (values: "Kitchen","Living","Dining","Master Bedroom","Bedroom 2","Bedroom 3","Others","FC")
+
+export const rates = sqlite table "rates":
+- id: text primary key (nanoid)
+- itemKey: text, unique, not null (lowercase snake case)
+- displayName: text, not null
+- unit: text, not null (constrained to unitEnum)
+- baseRateHandmade: integer, not null, default 0
+- baseRateFactory: integer, not null, default 0
+- category: text, not null (constrained to categoryEnum)
+- isActive: integer, not null, default 1
+- notes: text, nullable
+- createdAt: integer (unix ms), default now
+- updatedAt: integer (unix ms), default now
+
+Export types:
+- RateRow (select type)
+- NewRateRow (insert type)
+
+IMPORTANT: Keep existing exports intact. Add zod helpers if you’re already using drizzle-zod.
+
+--------------------------------
+2) SERVER: DRIZZLE + SEED
+--------------------------------
+Create /server/seed/rates.seed.ts that inserts defaults *only if the table is empty*.
+Defaults (unit + handmade/factory):
+
+// Kitchen
+base_unit (SFT 1300/1500)
+wall_unit (SFT 1300/1500)
+loft_unit (SFT 1300/1500)
+tall_unit (SFT 1300/1500)
+appliance_unit (SFT 1300/1500)
+pantry_unit (SFT 1300/1500)
+utility_wall_storage (SFT 1300/1500)
+utility_tall_unit (SFT 1300/1500)
+tandem_drawer_set (COUNT 0/0)
+wicker_basket (COUNT 0/0)
+
+// Living
+tv_base_unit (SFT 1300/1500)
+tv_tall_unit_closed (SFT 1300/1500)
+tv_open_display (SFT 1300/1500)
+crockery_bar_unit (SFT 1300/1500)
+decor_partition (SFT 1300/1500)
+wall_panel_highlight (SFT 1300/1500)
+
+// Dining + Puja
+crockery_base (SFT 1300/1500)
+crockery_loft (SFT 1300/1500)
+crockery_wall_unit (SFT 1300/1500)
+puja_base_unit (SFT 1300/1500)
+puja_loft_unit (SFT 1300/1500)
+puja_doors (SFT 1300/1500)
+puja_back_glass (SFT 1300/1500)
+dining_wall_highlight (SFT 1300/1500)
+
+// Master Bedroom
+wardrobe_swing (SFT 1300/1500)
+wardrobe_slide (SFT 1300/1500)
+wardrobe_loft (SFT 1300/1500)
+tv_base_unit_mb (SFT 1300/1500)
+tv_wall_panel_mb (SFT 1300/1500)
+dresser_unit (SFT 1300/1500)
+mb_wall_highlight (SFT 1300/1500)
+side_tables (SFT 1300/1500)
+
+// Bedroom 2
+b2_wardrobe_swing (SFT 1300/1500)
+b2_wardrobe_loft (SFT 1300/1500)
+study_table (SFT 1300/1500)
+overhead_storage (SFT 1300/1500)
+bookshelf_display (SFT 1300/1500)
+b2_wall_highlight (SFT 1300/1500)
+
+// Bedroom 3
+b3_wardrobe_swing (SFT 1300/1500)
+b3_wardrobe_loft (SFT 1300/1500)
+b3_tv_base_unit (SFT 1300/1500)
+work_table_compact (SFT 1300/1500)
+b3_wall_highlight (SFT 1300/1500)
+
+// Others
+vanity_unit (SFT 1300/1500)
+vanity_mirror (SFT 1300/1500)
+shoe_rack (SFT 1300/1500)
+main_door_paneling (SFT 1300/1500)
+puja_door_frame_architrave (SFT 1300/1500)
+foyer_console (SFT 1300/1500)
+foyer_corridor_panel (SFT 1300/1500)
+mirror_wall_panel (SFT 1300/1500)
+termite_treatment (LSUM 0/0)
+floor_matting (LSUM 0/0)
+transportation_handling (LSUM 0/0)
+
+// False Ceiling
+fc_room (SFT 0/0)  // leave base zero; editable in admin
+fc_paint (LSUM 0/0)
+fc_lights (COUNT 0/0)
+fc_fan_hook (COUNT 0/0)
+fc_cove_led (COUNT 0/0)
+
+Wire the seeder so it runs once on server start (after migrations): 
+- If count(*) from rates == 0, insert defaults; otherwise skip.
+
+--------------------------------
+3) SERVER: ADMIN RATES API
+--------------------------------
+Create /server/routes.admin.rates.ts and mount under /api/admin/rates in /server/routes.ts.
+
+Endpoints (JSON):
+- GET /api/admin/rates  → list with optional filters ?q=&unit=&category=&active=1
+- POST /api/admin/rates → create {displayName, itemKey, unit, category, baseRateHandmade, baseRateFactory, notes?, isActive?}
+- PUT /api/admin/rates/:id → update all editable fields
+- PATCH /api/admin/rates/:id/active → {isActive:boolean}
+- DELETE /api/admin/rates/:id → (soft delete: set isActive=0)
+
+Validation:
+- itemKey: lowercase, a-z0-9_, unique
+- displayName: 2..80 chars
+- unit in ["SFT","COUNT","LSUM"]
+- category in enum above
+- baseRate* >= 0
+- For COUNT/LSUM allow base rates 0
+
+Return updated row after writes. Update updatedAt on each write.
+
+--------------------------------
+4) CLIENT: ROUTE & NAV
+--------------------------------
+Add an Admin section route: /admin/rates
+- Add left-nav entry: “Rates”
+
+--------------------------------
+5) CLIENT: PAGE UI (React + TS)
+--------------------------------
+Create /client/src/pages/admin/RatesPage.tsx with:
+Layout:
+- Header: “Rates” + primary button [Add Item]
+- Filters row: 
+  - Category (dropdown)
+  - Unit (dropdown)
+  - Active (All/Active/Inactive)
+  - Search (text)
+- Table (virtualized if easy; else normal):
+  Columns: 
+    - Display Name (editable text)
+    - Unit (dropdown, but enforce guardrails below)
+    - Handmade ₹ (editable number)
+    - Factory ₹ (editable number)
+    - Category (dropdown)
+    - Active (toggle)
+    - Actions (… menu: Duplicate / Delete)
+- Right drawer modal for Add/Edit:
+  Fields: displayName, itemKey (read-only on edit), unit, category, handmade₹, factory₹, notes
+  Save/Cancel buttons
+
+Behaviors:
+- Inline edit for handmade₹/factory₹ with debounced auto-save (PUT)
+- Filters call GET with query params
+- Add Item opens modal → POST → refresh
+- Toggle Active performs PATCH
+- Duplicate clones row with “_copy” appended to itemKey (then open modal to rename)
+- Delete → soft delete (set isActive=0)
+- Show toasts on success/fail
+
+Guardrails:
+- For **FC** items named: fc_paint → unit LSUM only; fc_lights/fc_fan_hook/fc_cove_led → unit COUNT only (disable unit dropdown)
+- For **Others**: termite_treatment, floor_matting, transportation_handling → unit LSUM only
+- For all Interiors defaults → unit SFT only
+- If user attempts unsupported unit, show tooltip “Unit is locked for this item.”
+
+Types/hooks:
+- Make a small api client: /client/src/api/adminRates.ts with getRates, createRate, updateRate, toggleActive, deleteRate.
+
+--------------------------------
+6) CONSUMPTION NOTE (no change now)
+--------------------------------
+Existing quote pricing should read rates by itemKey & build type (handmade/factory). Old quotes keep their stored snapshots; new quotes pull latest rates. (If snapshotting isn’t implemented, leave a TODO comment; don’t block this task.)
+
+--------------------------------
+7) TESTS / QA
+--------------------------------
+- After build, load /admin/rates and verify:
+  - Defaults are seeded on first run
+  - Filters work (category/unit/active/search)
+  - Inline edits persist
+  - Add new item and see it in the table
+  - Toggle active hides it from future pickers (leave current quotes untouched)
+  - Guardrails: units locked for FC Others and LSUM items
+  - Performance is fine with 100+ rows
+
+Deliverables:
+- Updated /shared/schema.ts (rates table + enums + types)
+- /server/seed/rates.seed.ts wired into startup
+- /server/routes.admin.rates.ts mounted at /api/admin/rates
+- /client/src/pages/admin/RatesPage.tsx with full UI
+- /client/src/api/adminRates.ts helpers
+- Nav link to “Admin → Rates”
