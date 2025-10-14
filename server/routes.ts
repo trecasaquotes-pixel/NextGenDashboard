@@ -9,6 +9,7 @@ import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles } f
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
 import { seedRates } from "./seed/rates.seed";
 import { seedTemplates } from "./seed/templates.seed";
+import { seedBrands } from "./seed/brands.seed";
 import { registerAdminRatesRoutes } from "./routes.admin.rates";
 import { registerAdminTemplatesRoutes } from "./routes.admin.templates";
 
@@ -19,6 +20,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Seed default data on first run
   await seedRates();
   await seedTemplates();
+  await seedBrands();
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {

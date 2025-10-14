@@ -404,3 +404,35 @@ export type NewTemplateRoomRow = z.infer<typeof insertTemplateRoomSchema>;
 export type TemplateItemRow = typeof templateItems.$inferSelect;
 export type NewTemplateItemRow = z.infer<typeof insertTemplateItemSchema>;
 export type TemplateCategory = z.infer<typeof templateCategoryEnum>;
+
+// Brands table for brand-based pricing adders
+export const brandTypes = ["core", "finish", "hardware"] as const;
+export const brandTypeEnum = z.enum(brandTypes);
+
+export const brands = pgTable("brands", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  type: varchar("type").notNull(),
+  name: varchar("name", { length: 60 }).notNull(),
+  adderPerSft: integer("adder_per_sft").notNull().default(0),
+  isDefault: boolean("is_default").notNull().default(false),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Brand validation schemas
+export const insertBrandSchema = createInsertSchema(brands, {
+  type: brandTypeEnum,
+  name: z.string().min(2).max(60),
+  adderPerSft: z.number().int().min(0).default(0),
+  isDefault: z.boolean().default(false),
+  isActive: z.boolean().default(true),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type BrandRow = typeof brands.$inferSelect;
+export type NewBrandRow = z.infer<typeof insertBrandSchema>;
+export type BrandType = z.infer<typeof brandTypeEnum>;

@@ -1,0 +1,116 @@
+TASK: Build “Admin → Brands & Add-ons” with Core / Finish / Hardware adders, CRUD, and guardrails.
+
+Tech context:
+- Monorepo: client (Vite React TS), server (Express TS + SQLite via drizzle), shared types in /shared.
+- Pricing: base rate (Handmade/Factory) + brand adders per SFT.
+- Special rule: Acrylic finish = +₹200/sft (overrides +₹100 finish adder).
+- Do NOT touch Replit auth or vite dev helpers.
+
+--------------------------------
+1) SHARED SCHEMA (drizzle sqlite)
+--------------------------------
+In /shared/schema.ts add a brands table:
+
+export const brandTypes = ["core","finish","hardware"] as const;
+
+export const brands = sqlite table "brands":
+- id: text pk (nanoid)
+- type: text not null (must be one of brandTypes)
+- name: text not null, unique within type
+- adderPerSft: integer not null default 0   // in ₹/sft
+- isDefault: integer not null default 0      // only one default per type
+- isActive: integer not null default 1
+- createdAt: integer default now
+- updatedAt: integer default now
+
+Export types:
+- BrandRow (select), NewBrandRow (insert)
+
+Constraint:
+- Only one row per type with isDefault=1 (enforce in server logic).
+
+--------------------------------
+2) SERVER: Admin Brands API
+--------------------------------
+Create /server/routes.admin.brands.ts and mount under /api/admin/brands in /server/routes.ts
+
+Endpoints:
+- GET  /api/admin/brands           → list (filters: ?type=&active=1&q=)
+- POST /api/admin/brands           → create {type,name,adderPerSft,isDefault?,isActive?}
+- PUT  /api/admin/brands/:id       → update fields above
+- PATCH/PUT /api/admin/brands/:id/default → set this row as default for its type (unset previous)
+- PATCH /api/admin/brands/:id/active → {isActive:boolean}
+- DELETE /api/admin/brands/:id     → soft delete (isActive=0)
+
+Validation:
+- type ∈ ["core","finish","hardware"]
+- name 2..60 chars; unique per type (case-insensitive)
+- adderPerSft ≥ 0 (integer)
+- On setting isDefault=1, ensure all other rows of same type set to 0.
+
+Seeder (optional but helpful) in /server/seed/brands.seed.ts if table empty:
+- Core: ["Generic Ply"(default,+0), "Century Ply"(+100), "Greenply"(+100)]
+- Finish: ["Generic Laminate (Nimmi)"(default,+0), "Merino"(+100), "Greenlam"(+100), "Acrylic"(+200 special)]
+- Hardware: ["Generic"(default,+0), "Hettich"(+100), "Häfele"(+100), "Ebco"(+100), "Sleek"(+100)]
+
+--------------------------------
+3) CLIENT: Route & Nav
+--------------------------------
+Add left-nav entry under Admin: “Brands & Add-ons”
+Route: /admin/brands
+
+--------------------------------
+4) CLIENT: Page UI (React TS)
+--------------------------------
+Create /client/src/pages/admin/BrandsPage.tsx
+
+Layout:
+- Top bar: Title “Brands & Add-ons” + [Add Brand] (primary)
+- Tabs or segmented controls: Core | Finish | Hardware
+- Search input (filters current tab)
+- Table per tab:
+  Columns: Name (editable), Adder ₹/sft (editable number), Default (radio), Active (toggle), Actions (… Delete)
+- Right drawer / modal for Add Brand:
+  Fields: Type (pre-filled from tab), Name, Adder ₹/sft, Set as Default (checkbox)
+  Buttons: Save/Cancel
+
+Behaviors:
+- Switch tabs filters by ?type=
+- Inline edit name/adder saves on blur (PUT)
+- Toggling Default calls /:id/default (server unsets others of same type)
+- Active toggle → PATCH active
+- Delete → soft delete (isActive=0)
+- Search filters by name (client-side for current tab)
+
+Guardrails / Hints:
+- Only one Default per type (radio group behavior)
+- Special UI hint when Finish name = “Acrylic”: show chip “+₹200/sft (special)”
+- Prevent duplicate names within the same type (server error → toast)
+
+--------------------------------
+5) PRICING INTEGRATION NOTE (no code now)
+--------------------------------
+In the pricing engine:
+- Start with base rate from Rates (Handmade or Factory).
+- Add brand adders:
+  + coreAdder (selected core brand)
+  + finishAdder (selected finish brand)
+  + hardwareAdder (selected hardware brand)
+- If selected finish brand is “Acrylic”, use +200 instead of generic +100 rule.
+- For paneling/highlights lines, effective build = “handmade” (as previously specced).
+
+--------------------------------
+6) QA
+--------------------------------
+- Create brands in each tab; set defaults; edit adders; toggle active
+- Ensure only one default per type at any time
+- Finish → Acrylic shows visual chip and persists +200
+- Old quotes unaffected (future: snapshot chosen brands per quote)
+
+Deliverables:
+- Schema addition in /shared/schema.ts (brands)
+- (Optional) /server/seed/brands.seed.ts to preload defaults
+- Admin routes in /server/routes.admin.brands.ts mounted
+- Client page /client/src/pages/admin/BrandsPage.tsx
+- API client /client/src/api/adminBrands.ts with list/create/update/toggleDefault/toggleActive/delete
+- Nav link to “Admin → Brands & Add-ons”
