@@ -122,6 +122,20 @@ No specific user preferences were provided in the original document.
   - API endpoints: GET /api/admin/audit (list with filters), GET /api/admin/audit/:id (single entry with full JSON)
   - Server-side auth enforcement: all audit routes require authenticated session
   - Accessible via user dropdown menu → "Admin - Audit Log"
+- **Client Portal — Secure Quote Sharing**: Token-based system for sharing quotations with clients without requiring authentication. Features include:
+  - Secure token generation with optional 14-day expiry (cryptographically random, validated on each request)
+  - Share Link Dialog in Estimate page: generate, regenerate, copy, and open client portal links
+  - Public Client Portal page accessible at /client/:quoteId?token=... with no authentication required
+  - Client view displays: project info, financial summary with discount/GST, terms & conditions, PDF download buttons
+  - Client acceptance flow: typed name signature (no signature image), quote approval, agreement generation
+  - Dual PDF authentication: supports both user sessions and render tokens for secure document access
+  - Real-time query invalidation ensures admin UI updates immediately after link generation
+  - Audit logging: tracks link generation/regeneration and client acceptance with full before/after states
+  - Database schema: clientToken and clientTokenExpiresAt fields in quotations table
+  - Token utilities: server/lib/client-token.ts with generation, verification, and expiry validation
+  - API endpoints: GET /api/client-quote/:id/info, POST /api/client-quote/:id/accept, POST /api/client-quote/:id/request-link
+  - Error handling: expired tokens, invalid links, missing quotes with user-friendly messages
+  - Accessible via "Share with Client" button on Estimate page
 
 ## External Dependencies
 - **Replit Auth**: User authentication and authorization.
