@@ -367,8 +367,7 @@ export default function Print() {
                 <div className="pdf-header bg-[#0E2F1B] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="brand-row flex items-center justify-between">
                     <div className="brand-left">
-                      <h1 className="text-2xl font-bold mb-2">TRECASA DESIGN STUDIO</h1>
-                      <p className="text-[#D1B77C] text-xs">Luxury Interiors | Architecture | Build</p>
+                      <h1 className="text-2xl font-bold">TRECASA DESIGN STUDIO</h1>
                     </div>
                     <div className="flex items-center gap-6">
                       <div className="text-right text-[8px] space-y-1 header-meta">
@@ -419,6 +418,22 @@ export default function Print() {
                         <tr className="summary-grand">
                           <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-bold">Interiors Subtotal</td>
                           <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-mono font-bold">{formatINR(interiorsSubtotal)}</td>
+                        </tr>
+                        {interiorsDiscountAmount > 0 && (
+                          <tr>
+                            <td className="px-3 py-2 text-right">
+                              Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
+                            </td>
+                            <td className="px-3 py-2 text-right font-mono text-red-600">-{formatINR(interiorsDiscountAmount)}</td>
+                          </tr>
+                        )}
+                        <tr>
+                          <td className="px-3 py-2 text-right">GST (18%):</td>
+                          <td className="px-3 py-2 text-right font-mono">{formatINR(interiorsGst)}</td>
+                        </tr>
+                        <tr className="bg-[#0E2F1B] text-white">
+                          <td className="px-3 py-2 text-right font-bold">Final Interiors Quote</td>
+                          <td className="px-3 py-2 text-right font-mono font-bold">{formatINR(interiorsFinalTotal)}</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -476,8 +491,8 @@ export default function Print() {
                                 </tr>
                               ))}
                               <tr className="room-subtotal bg-[#0F3A2B] text-white font-semibold border-t-2 border-[#D1B77C]">
-                                <td colSpan={6} className="px-2 py-1.5 text-right">Room Subtotal:</td>
-                                <td className="px-2 py-1.5 text-right font-mono tabular-nums">{formatINR(roomTotal)}</td>
+                                <td colSpan={6} className="px-2 py-2 text-right">Room Subtotal:</td>
+                                <td className="px-2 py-2 text-right font-mono tabular-nums">{formatINR(roomTotal)}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -544,7 +559,16 @@ export default function Print() {
                               ...terms.vars
                             })
                           : (terms?.customText || "").split('\n').filter(line => line.trim());
-                        return lines.map((line, idx) => <li key={idx}>{line}</li>);
+                        return lines.map((line, idx) => {
+                          // Check if line has a title (text before first colon)
+                          const colonIndex = line.indexOf(':');
+                          if (colonIndex > 0 && colonIndex < 50) { // Title should be reasonable length
+                            const title = line.substring(0, colonIndex + 1);
+                            const rest = line.substring(colonIndex + 1);
+                            return <li key={idx}><strong>{title}</strong>{rest}</li>;
+                          }
+                          return <li key={idx}>{line}</li>;
+                        });
                       })()}
                     </ul>
                   </div>
@@ -631,8 +655,7 @@ export default function Print() {
                 <div className="pdf-header bg-[#0E2F1B] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="brand-row flex items-center justify-between">
                     <div className="brand-left">
-                      <h1 className="text-2xl font-bold mb-2">TRECASA DESIGN STUDIO</h1>
-                      <p className="text-[#D1B77C] text-xs">Luxury Interiors | Architecture | Build</p>
+                      <h1 className="text-2xl font-bold">TRECASA DESIGN STUDIO</h1>
                     </div>
                     <div className="flex items-center gap-6">
                       <div className="text-right text-[8px] space-y-1 header-meta">
@@ -686,6 +709,22 @@ export default function Print() {
                               <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-bold">False Ceiling Subtotal</td>
                               <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-mono font-bold">{formatINR(fcSubtotal)}</td>
                             </tr>
+                            {fcDiscountAmount > 0 && (
+                              <tr>
+                                <td className="px-3 py-2 text-right">
+                                  Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
+                                </td>
+                                <td className="px-3 py-2 text-right font-mono text-red-600">-{formatINR(fcDiscountAmount)}</td>
+                              </tr>
+                            )}
+                            <tr>
+                              <td className="px-3 py-2 text-right">GST (18%):</td>
+                              <td className="px-3 py-2 text-right font-mono">{formatINR(fcGst)}</td>
+                            </tr>
+                            <tr className="bg-[#0E2F1B] text-white">
+                              <td className="px-3 py-2 text-right font-bold">Final False Ceiling Quote</td>
+                              <td className="px-3 py-2 text-right font-mono font-bold">{formatINR(fcFinalTotal)}</td>
+                            </tr>
                           </tfoot>
                         </table>
                       </section>
@@ -737,8 +776,8 @@ export default function Print() {
                                   </tr>
                                 ))}
                                 <tr className="bg-[#0E2F1B] text-white font-semibold border-t-2 border-[#D1B77C]">
-                                  <td colSpan={3} className="px-2 py-1.5 text-right">Room Area:</td>
-                                  <td className="px-2 py-1.5 text-center font-mono tabular-nums">{roomArea.toFixed(2)} SQFT</td>
+                                  <td colSpan={3} className="px-2 py-2 text-right">Room Area:</td>
+                                  <td className="px-2 py-2 text-center font-mono tabular-nums">{roomArea.toFixed(2)} SQFT</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -826,7 +865,16 @@ export default function Print() {
                               ...terms.vars
                             })
                           : (terms?.customText || "").split('\n').filter(line => line.trim());
-                        return lines.map((line, idx) => <li key={idx}>{line}</li>);
+                        return lines.map((line, idx) => {
+                          // Check if line has a title (text before first colon)
+                          const colonIndex = line.indexOf(':');
+                          if (colonIndex > 0 && colonIndex < 50) { // Title should be reasonable length
+                            const title = line.substring(0, colonIndex + 1);
+                            const rest = line.substring(colonIndex + 1);
+                            return <li key={idx}><strong>{title}</strong>{rest}</li>;
+                          }
+                          return <li key={idx}>{line}</li>;
+                        });
                       })()}
                     </ul>
                   </div>
