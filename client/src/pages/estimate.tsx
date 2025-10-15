@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2, Download, Save, Share2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2, Download, Save, Share2, FileEdit } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
@@ -67,6 +67,11 @@ export default function Estimate() {
 
   const { data: otherItems = [] } = useQuery<OtherItem[]>({
     queryKey: [`/api/quotations/${quotationId}/other-items`],
+    enabled: !!quotationId && isAuthenticated,
+  });
+
+  const { data: changeOrders = [] } = useQuery<any[]>({
+    queryKey: [`/api/quotations/${quotationId}/change-orders`],
     enabled: !!quotationId && isAuthenticated,
   });
 
@@ -435,6 +440,82 @@ export default function Estimate() {
                   All rates are inclusive of margin. GST extra as applicable.
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Change Orders Section */}
+          <Card>
+            <CardHeader className="border-b border-card-border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl">Change Orders</CardTitle>
+                  <CardDescription>Track project modifications and additions</CardDescription>
+                </div>
+                <Button
+                  onClick={() => navigate(`/quotation/${quotationId}/change-orders/new`)}
+                  size="sm"
+                  data-testid="button-create-change-order"
+                >
+                  <FileEdit className="w-4 h-4 mr-2" />
+                  Create Change Order
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              {changeOrders.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileEdit className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>No change orders yet</p>
+                  <p className="text-sm">Create a change order to track project modifications</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {changeOrders.map((co: any) => {
+                    const subtotal = safeN(co.totals?.grandSubtotal);
+                    const discountAmt = co.discountType === "percent" 
+                      ? (subtotal * safeN(co.discountValue)) / 100
+                      : safeN(co.discountValue);
+                    const afterDiscount = subtotal - discountAmt;
+                    const gst = (afterDiscount * 18) / 100;
+                    const total = afterDiscount + gst;
+
+                    return (
+                      <div
+                        key={co.id}
+                        className="p-4 border rounded-lg hover-elevate cursor-pointer"
+                        onClick={() => navigate(`/change-orders/${co.id}`)}
+                        data-testid={`change-order-${co.id}`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-1">
+                              <p className="font-semibold">{co.title}</p>
+                              <span className={`text-xs px-2 py-1 rounded ${
+                                co.status === "approved" ? "bg-green-500 text-white" :
+                                co.status === "sent" ? "bg-blue-500 text-white" :
+                                co.status === "rejected" ? "bg-red-500 text-white" :
+                                "bg-gray-500 text-white"
+                              }`}>
+                                {co.status}
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{co.changeOrderId}</p>
+                            {co.description && (
+                              <p className="text-sm text-muted-foreground mt-1">{co.description}</p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold font-mono">{formatINR(total)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {co.items?.length || 0} items
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
 
