@@ -320,8 +320,8 @@ export default function Print() {
 
               {/* Print Content */}
               <div id="print-interiors-root" className="print-content bg-white text-black" data-pdf-ready="true">
-                {/* Branded Header */}
-                <div className="print-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
+                {/* PDF Header - Fixed */}
+                <div className="pdf-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
@@ -330,16 +330,24 @@ export default function Print() {
                       </div>
                       <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
                     </div>
-                    <div className="text-right text-sm space-y-1">
-                      <p><strong>Client:</strong> {quotation.clientName || "N/A"}</p>
-                      <p><strong>Quote ID:</strong> {quotation.quoteId}</p>
-                      <p><strong>Date:</strong> {currentDate}</p>
+                    <div className="text-right text-sm space-y-1 header-meta">
+                      <div><strong>Client:</strong> {quotation.clientName || "N/A"}</div>
+                      <div><strong>Quote ID:</strong> {quotation.quoteId}</div>
+                      <div><strong>Date:</strong> {currentDate}</div>
+                      <div><strong>Project:</strong> {quotation.projectName || "N/A"}</div>
                     </div>
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="p-8 space-y-8">
+                {/* PDF Footer - Fixed */}
+                <div className="pdf-footer">
+                  <div>© 2025 TRECASA DESIGN STUDIO</div>
+                  <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
+                  <div className="dot" style={{width: '8px', height: '8px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block'}}></div>
+                </div>
+
+                {/* PDF Body - Content */}
+                <div className="pdf-body p-8 space-y-8">
                   {/* Title */}
                   <div className="text-center border-b-2 border-[#C9A74E] pb-4">
                     <h2 className="text-2xl font-bold text-[#013220]">INTERIORS QUOTATION</h2>
@@ -443,9 +451,9 @@ export default function Print() {
                                   <td className="border border-gray-300 px-2 py-1 text-right font-mono font-semibold">₹{item.totalPrice || "0"}</td>
                                 </tr>
                               ))}
-                              <tr className="bg-[#013220] text-white font-semibold">
-                                <td colSpan={6} className="border border-gray-300 px-2 py-2 text-right">Room Subtotal:</td>
-                                <td className="border border-gray-300 px-2 py-2 text-right font-mono">{formatINR(roomTotal)}</td>
+                              <tr className="room-subtotal bg-[#0F3A2B] text-white font-semibold">
+                                <td colSpan={6} className="border border-[#0A2A1F] px-2 py-2 text-right">Room Subtotal:</td>
+                                <td className="border border-[#0A2A1F] px-2 py-2 text-right font-mono">{formatINR(roomTotal)}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -455,28 +463,28 @@ export default function Print() {
                   </div>
 
                   {/* Section C: Summary */}
-                  <div className="space-y-3 break-inside-avoid">
+                  <div className="summary-totals space-y-3 break-inside-avoid">
                     <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">SUMMARY</h3>
                     <table className="w-full max-w-md ml-auto text-sm">
                       <tbody>
-                        <tr>
+                        <tr className="row">
                           <td className="py-1 text-right pr-4">Interiors Subtotal:</td>
                           <td className="py-1 text-right font-mono font-semibold">{formatINR(interiorsSubtotal)}</td>
                         </tr>
                         {interiorsDiscountAmount > 0 && (
-                          <tr>
+                          <tr className="row">
                             <td className="py-1 text-right pr-4">
                               Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
                             </td>
                             <td className="py-1 text-right font-mono text-red-600">-{formatINR(interiorsDiscountAmount)}</td>
                           </tr>
                         )}
-                        <tr>
+                        <tr className="row">
                           <td className="py-1 text-right pr-4">GST (18%):</td>
                           <td className="py-1 text-right font-mono">{formatINR(interiorsGst)}</td>
                         </tr>
-                        <tr className="border-t-2 border-[#C9A74E]">
-                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#013220]">Final Interiors Quote:</td>
+                        <tr className="final-total row border-t-2 border-[#D4AF37]">
+                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#013220]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Final Interiors Quote:</td>
                           <td className="py-2 text-right font-mono text-lg font-bold text-[#013220]">{formatINR(interiorsFinalTotal)}</td>
                         </tr>
                       </tbody>
@@ -560,15 +568,6 @@ export default function Print() {
                     </div>
                   </div>
                 </div>
-
-                {/* Branded Footer */}
-                <div className="print-footer bg-gray-100 p-4 text-center text-sm text-gray-600 border-t-2 border-[#C9A74E] rounded-b-lg print:rounded-none">
-                  <div className="flex items-center justify-center gap-2">
-                    <span>© 2025 TRECASA DESIGN STUDIO</span>
-                    <div className="w-2 h-2 rounded-full bg-red-600"></div>
-                    <span>| www.trecasadesignstudio.com | @trecasa.designstudio</span>
-                  </div>
-                </div>
               </div>
             </TabsContent>
 
@@ -589,8 +588,8 @@ export default function Print() {
 
               {/* Print Content */}
               <div id="print-fc-root" className="print-content bg-white text-black" data-pdf-ready="true">
-                {/* Branded Header */}
-                <div className="print-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
+                {/* PDF Header - Fixed */}
+                <div className="pdf-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
@@ -599,16 +598,24 @@ export default function Print() {
                       </div>
                       <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
                     </div>
-                    <div className="text-right text-sm space-y-1">
-                      <p><strong>Client:</strong> {quotation.clientName || "N/A"}</p>
-                      <p><strong>Quote ID:</strong> {quotation.quoteId}</p>
-                      <p><strong>Date:</strong> {currentDate}</p>
+                    <div className="text-right text-sm space-y-1 header-meta">
+                      <div><strong>Client:</strong> {quotation.clientName || "N/A"}</div>
+                      <div><strong>Quote ID:</strong> {quotation.quoteId}</div>
+                      <div><strong>Date:</strong> {currentDate}</div>
+                      <div><strong>Project:</strong> {quotation.projectName || "N/A"}</div>
                     </div>
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="p-8 space-y-8">
+                {/* PDF Footer - Fixed */}
+                <div className="pdf-footer">
+                  <div>© 2025 TRECASA DESIGN STUDIO</div>
+                  <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
+                  <div className="dot" style={{width: '8px', height: '8px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block'}}></div>
+                </div>
+
+                {/* PDF Body - Content */}
+                <div className="pdf-body p-8 space-y-8">
                   {/* Title */}
                   <div className="text-center border-b-2 border-[#C9A74E] pb-4">
                     <h2 className="text-2xl font-bold text-[#013220]">FALSE CEILING QUOTATION</h2>
@@ -779,28 +786,28 @@ export default function Print() {
                   )}
 
                   {/* Section D: Summary */}
-                  <div className="space-y-3 break-inside-avoid">
+                  <div className="summary-totals space-y-3 break-inside-avoid">
                     <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">SUMMARY</h3>
                     <table className="w-full max-w-md ml-auto text-sm">
                       <tbody>
-                        <tr>
+                        <tr className="row">
                           <td className="py-1 text-right pr-4">False Ceiling Subtotal:</td>
                           <td className="py-1 text-right font-mono font-semibold">{formatINR(fcSubtotal)}</td>
                         </tr>
                         {fcDiscountAmount > 0 && (
-                          <tr>
+                          <tr className="row">
                             <td className="py-1 text-right pr-4">
                               Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
                             </td>
                             <td className="py-1 text-right font-mono text-red-600">-{formatINR(fcDiscountAmount)}</td>
                           </tr>
                         )}
-                        <tr>
+                        <tr className="row">
                           <td className="py-1 text-right pr-4">GST (18%):</td>
                           <td className="py-1 text-right font-mono">{formatINR(fcGst)}</td>
                         </tr>
-                        <tr className="border-t-2 border-[#C9A74E]">
-                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#013220]">Final False Ceiling Quote:</td>
+                        <tr className="final-total row border-t-2 border-[#D4AF37]">
+                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#013220]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Final False Ceiling Quote:</td>
                           <td className="py-2 text-right font-mono text-lg font-bold text-[#013220]">{formatINR(fcFinalTotal)}</td>
                         </tr>
                       </tbody>
@@ -882,15 +889,6 @@ export default function Print() {
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Branded Footer */}
-                <div className="print-footer bg-gray-100 p-4 text-center text-sm text-gray-600 border-t-2 border-[#C9A74E] rounded-b-lg print:rounded-none">
-                  <div className="flex items-center justify-center gap-2">
-                    <span>© 2025 TRECASA DESIGN STUDIO</span>
-                    <div className="w-2 h-2 rounded-full bg-red-600"></div>
-                    <span>| www.trecasadesignstudio.com | @trecasa.designstudio</span>
                   </div>
                 </div>
               </div>
