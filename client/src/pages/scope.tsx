@@ -648,7 +648,7 @@ export default function Scope() {
                                         value={item.description || ""}
                                         onChange={(e) => handleInteriorFieldChange(item.id, "description", e.target.value)}
                                         placeholder="Item description"
-                                        className="h-8"
+                                        className="h-12 min-w-[180px]"
                                         data-testid={`input-description-${item.id}`}
                                       />
                                     </TableCell>
@@ -932,7 +932,7 @@ export default function Scope() {
                                         value={item.description || ""}
                                         onChange={(e) => handleFalseCeilingFieldChange(item.id, "description", e.target.value)}
                                         placeholder="Ceiling description"
-                                        className="h-8"
+                                        className="h-12 min-w-[200px]"
                                         data-testid={`input-ceiling-description-${item.id}`}
                                       />
                                     </TableCell>
@@ -1072,7 +1072,7 @@ export default function Scope() {
                                       value={item.description || ""}
                                       onChange={(e) => updateOtherItem.mutate({ id: item.id, data: { description: e.target.value } })}
                                       placeholder="Description"
-                                      className="h-8"
+                                      className="h-12 min-w-[200px]"
                                       data-testid={`input-other-description-${item.id}`}
                                     />
                                   </TableCell>
