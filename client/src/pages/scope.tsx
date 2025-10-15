@@ -628,9 +628,9 @@ export default function Scope() {
                               <TableHeader>
                                 <TableRow>
                                   <TableHead className="w-auto px-2">Description</TableHead>
-                                  <TableHead className="w-[50px] px-0">L (ft)</TableHead>
-                                  <TableHead className="w-[50px] px-0">H (ft)</TableHead>
-                                  <TableHead className="w-[50px] px-0">W (ft)</TableHead>
+                                  <TableHead className="w-[50px] px-1">L (ft)</TableHead>
+                                  <TableHead className="w-[50px] px-1">H (ft)</TableHead>
+                                  <TableHead className="w-[50px] px-1">W (ft)</TableHead>
                                   <TableHead className="w-[60px] px-1">SQFT</TableHead>
                                   <TableHead className="w-[120px] px-2">Core Material</TableHead>
                                   <TableHead className="w-[120px] px-2">Finish</TableHead>
@@ -652,7 +652,7 @@ export default function Scope() {
                                         data-testid={`input-description-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell className="px-0">
+                                    <TableCell className="px-1">
                                       <Input
                                         key={`length-${item.id}-${item.length}`}
                                         type="text"
@@ -677,7 +677,7 @@ export default function Scope() {
                                         data-testid={`input-length-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell className="px-0">
+                                    <TableCell className="px-1">
                                       <Input
                                         key={`height-${item.id}-${item.height}`}
                                         type="text"
@@ -702,7 +702,7 @@ export default function Scope() {
                                         data-testid={`input-height-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell className="px-0">
+                                    <TableCell className="px-1">
                                       <Input
                                         key={`width-${item.id}-${item.width}`}
                                         type="text"
@@ -918,8 +918,8 @@ export default function Scope() {
                               <TableHeader>
                                 <TableRow>
                                   <TableHead className="w-auto px-2">Description</TableHead>
-                                  <TableHead className="w-[50px] px-0">Length (ft)</TableHead>
-                                  <TableHead className="w-[50px] px-0">Width (ft)</TableHead>
+                                  <TableHead className="w-[50px] px-1">Length (ft)</TableHead>
+                                  <TableHead className="w-[50px] px-1">Width (ft)</TableHead>
                                   <TableHead className="w-[80px] px-1">Area (SQFT)</TableHead>
                                   <TableHead className="w-[40px] px-1"></TableHead>
                                 </TableRow>
@@ -936,7 +936,7 @@ export default function Scope() {
                                         data-testid={`input-ceiling-description-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell className="px-0">
+                                    <TableCell className="px-1">
                                       <Input
                                         key={`ceiling-length-${item.id}-${item.length}`}
                                         type="text"
@@ -961,7 +961,7 @@ export default function Scope() {
                                         data-testid={`input-ceiling-length-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell className="px-0">
+                                    <TableCell className="px-1">
                                       <Input
                                         key={`ceiling-width-${item.id}-${item.width}`}
                                         type="text"
