@@ -373,35 +373,125 @@ export default function Scope() {
       updatedData.buildType = effectiveBuildType;
     }
 
+    // Auto-reset override when buildType/material/finish/hardware changes
+    const resetOverrideTriggers = ["material", "finish", "hardware", "description"];
+    const shouldResetOverride = resetOverrideTriggers.includes(field) && item.isRateOverridden;
+    
+    if (shouldResetOverride) {
+      updatedData.isRateOverridden = false;
+      updatedData.rateOverride = null;
+    }
+
     // Always recalculate sqft when dimensions change
     if (field === "length" || field === "height" || field === "width") {
       const calculatedSqft = calculateSqft(newLength, newHeight, newWidth);
       updatedData.sqft = calculatedSqft;
       
-      // Also recalculate rate and amount
+      // Also recalculate rateAuto and amount
       const sqftValue = parseFloat(calculatedSqft);
-      const rate = calculateRate(
+      const rateAuto = calculateRate(
         effectiveBuildType,
         newMaterial as CoreMaterial,
         newFinish as FinishMaterial,
         newHardware as HardwareBrand
       );
+      
+      // Compute effective rate (considering override)
+      const effectiveRate = item.isRateOverridden && item.rateOverride 
+        ? parseFloat(item.rateOverride.toString()) 
+        : rateAuto;
+      
       // Send as numbers, not strings
-      updatedData.unitPrice = rate;
-      updatedData.totalPrice = calculateAmount(rate, sqftValue);
+      updatedData.rateAuto = rateAuto;
+      updatedData.unitPrice = effectiveRate;
+      updatedData.totalPrice = calculateAmount(effectiveRate, sqftValue);
     } else if (field === "material" || field === "finish" || field === "hardware" || field === "description") {
       // Recalculate rate and amount when brand fields or description changes
       const sqft = parseFloat(item.sqft || "0");
-      const rate = calculateRate(
+      const rateAuto = calculateRate(
         effectiveBuildType,
         newMaterial as CoreMaterial,
         newFinish as FinishMaterial,
         newHardware as HardwareBrand
       );
+      
+      // Effective rate is always rateAuto after override reset
+      const effectiveRate = shouldResetOverride ? rateAuto : (
+        item.isRateOverridden && item.rateOverride 
+          ? parseFloat(item.rateOverride.toString()) 
+          : rateAuto
+      );
+      
       // Send as numbers, not strings
-      updatedData.unitPrice = rate;
-      updatedData.totalPrice = calculateAmount(rate, sqft);
+      updatedData.rateAuto = rateAuto;
+      updatedData.unitPrice = effectiveRate;
+      updatedData.totalPrice = calculateAmount(effectiveRate, sqft);
     }
+
+    updateInteriorItem.mutate({ id, data: updatedData });
+  };
+
+  // Handler for manual rate override
+  const handleRateOverride = (id: string, value: string) => {
+    const item = interiorItems.find((i) => i.id === id);
+    if (!item || item.calc !== 'SQFT') return;
+
+    // Empty value resets to auto
+    if (value === "" || value === null) {
+      const updatedData: any = {
+        isRateOverridden: false,
+        rateOverride: null,
+      };
+      
+      // Recalculate amount with auto rate
+      const sqft = parseFloat(item.sqft || "0");
+      const rateAuto = item.rateAuto ? parseFloat(item.rateAuto.toString()) : 0;
+      updatedData.unitPrice = rateAuto;
+      updatedData.totalPrice = calculateAmount(rateAuto, sqft);
+      
+      updateInteriorItem.mutate({ id, data: updatedData });
+      return;
+    }
+
+    // Parse and validate the override value
+    const overrideValue = parseFloat(value);
+    if (isNaN(overrideValue) || overrideValue < 0) {
+      toast({
+        title: "Invalid Rate",
+        description: "Please enter a valid positive number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedData: any = {
+      isRateOverridden: true,
+      rateOverride: overrideValue,
+      unitPrice: overrideValue,
+    };
+
+    // Recalculate total with new override rate
+    const sqft = parseFloat(item.sqft || "0");
+    updatedData.totalPrice = calculateAmount(overrideValue, sqft);
+
+    updateInteriorItem.mutate({ id, data: updatedData });
+  };
+
+  // Handler to reset rate override
+  const handleResetRateOverride = (id: string) => {
+    const item = interiorItems.find((i) => i.id === id);
+    if (!item) return;
+
+    const updatedData: any = {
+      isRateOverridden: false,
+      rateOverride: null,
+    };
+
+    // Recalculate amount with auto rate
+    const sqft = parseFloat(item.sqft || "0");
+    const rateAuto = item.rateAuto ? parseFloat(item.rateAuto.toString()) : 0;
+    updatedData.unitPrice = rateAuto;
+    updatedData.totalPrice = calculateAmount(rateAuto, sqft);
 
     updateInteriorItem.mutate({ id, data: updatedData });
   };
@@ -693,9 +783,44 @@ export default function Scope() {
                                       </Select>
                                     </TableCell>
                                     <TableCell>
-                                      <span className="font-mono text-sm font-semibold" data-testid={`text-rate-${item.id}`}>
-                                        ₹{item.unitPrice || "0"}
-                                      </span>
+                                      {item.calc === 'SQFT' ? (
+                                        <div className="flex items-center gap-2">
+                                          <Input
+                                            type="number"
+                                            value={item.isRateOverridden && item.rateOverride ? item.rateOverride.toString() : ""}
+                                            placeholder={item.rateAuto ? item.rateAuto.toString() : "0"}
+                                            onChange={(e) => handleRateOverride(item.id, e.target.value)}
+                                            onBlur={(e) => {
+                                              if (!e.target.value) {
+                                                handleResetRateOverride(item.id);
+                                              }
+                                            }}
+                                            min="0"
+                                            max="999999"
+                                            step="0.01"
+                                            className="h-8 w-28 text-right font-mono text-sm"
+                                            data-testid={`input-rate-${item.id}`}
+                                          />
+                                          {item.isRateOverridden && (
+                                            <>
+                                              <Badge variant="secondary" className="text-xs">Custom</Badge>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleResetRateOverride(item.id)}
+                                                className="h-6 px-2 text-xs"
+                                                data-testid={`button-reset-rate-${item.id}`}
+                                              >
+                                                ↺ Auto
+                                              </Button>
+                                            </>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <span className="font-mono text-sm text-muted-foreground">
+                                          —
+                                        </span>
+                                      )}
                                     </TableCell>
                                     <TableCell>
                                       <span className="font-mono text-sm font-semibold" data-testid={`text-amount-${item.id}`}>

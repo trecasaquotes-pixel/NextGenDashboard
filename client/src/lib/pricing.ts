@@ -52,6 +52,25 @@ export function calculateRatePerSqft(
 }
 
 /**
+ * Get the effective rate considering override
+ * 
+ * @param rateAuto - Auto-computed rate from buildType + brands
+ * @param rateOverride - User-entered manual rate (nullable)
+ * @param isRateOverridden - Whether override is active
+ * @returns Effective rate to use for calculations
+ */
+export function getEffectiveRate(
+  rateAuto: number,
+  rateOverride: number | null | undefined,
+  isRateOverridden: boolean
+): number {
+  if (isRateOverridden && rateOverride != null && rateOverride > 0) {
+    return rateOverride;
+  }
+  return rateAuto;
+}
+
+/**
  * Calculate total price for an interior item
  * 
  * @param buildType - Work type: handmade or factory
@@ -59,6 +78,8 @@ export function calculateRatePerSqft(
  * @param finish - Finish brand
  * @param hardware - Hardware brand
  * @param sqft - Area in square feet
+ * @param rateOverride - Optional user-entered manual rate
+ * @param isRateOverridden - Whether override is active
  * @returns Total price in rupees
  */
 export function calculateItemTotal(
@@ -66,10 +87,13 @@ export function calculateItemTotal(
   core: string,
   finish: string,
   hardware: string,
-  sqft: number
+  sqft: number,
+  rateOverride?: number | null,
+  isRateOverridden?: boolean
 ): number {
-  const ratePerSqft = calculateRatePerSqft(buildType, core, finish, hardware);
-  return ratePerSqft * sqft;
+  const rateAuto = calculateRatePerSqft(buildType, core, finish, hardware);
+  const effectiveRate = getEffectiveRate(rateAuto, rateOverride, isRateOverridden || false);
+  return effectiveRate * sqft;
 }
 
 /**
