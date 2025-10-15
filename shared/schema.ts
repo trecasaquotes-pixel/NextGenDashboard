@@ -145,6 +145,7 @@ export const quotationsRelations = relations(quotations, ({ one, many }) => ({
   interiorItems: many(interiorItems),
   falseCeilingItems: many(falseCeilingItems),
   otherItems: many(otherItems),
+  changeOrders: many(changeOrders),
 }));
 
 // Agreements table (generated when quote is approved)
@@ -686,6 +687,140 @@ export const insertGlobalRulesSchema = createInsertSchema(globalRules, {
 
 export type GlobalRulesRow = typeof globalRules.$inferSelect;
 export type NewGlobalRulesRow = z.infer<typeof insertGlobalRulesSchema>;
+
+// Change Orders table
+export const changeOrders = pgTable("change_orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  // Change Order ID (e.g., TRE_CO_250115_X1Y2)
+  changeOrderId: varchar("change_order_id").notNull().unique(),
+  
+  // Change Order Info
+  title: varchar("title").notNull(), // e.g., "Additional Kitchen Cabinets"
+  description: text("description"), // Detailed explanation of changes
+  
+  // Status workflow
+  status: varchar("status").notNull().default("draft"), // draft, sent, approved, rejected
+  
+  // Approval tracking
+  approvedAt: bigint("approved_at", { mode: "number" }), // Unix timestamp
+  approvedBy: varchar("approved_by"), // User who approved
+  
+  // Totals (calculated)
+  totals: jsonb("totals").$type<{
+    interiorsSubtotal: number; // Total for interior items
+    fcSubtotal: number; // Total for FC items
+    grandSubtotal: number; // Combined subtotal
+    updatedAt: number;
+  }>(),
+  
+  // Discount (optional for change orders)
+  discountType: varchar("discount_type").default("percent"), // percent or amount
+  discountValue: decimal("discount_value", { precision: 10, scale: 2 }).default("0"),
+  
+  // Revised total (original quote + all approved change orders)
+  revisedTotal: decimal("revised_total", { precision: 10, scale: 2 }),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const changeOrdersRelations = relations(changeOrders, ({ one, many }) => ({
+  quotation: one(quotations, {
+    fields: [changeOrders.quotationId],
+    references: [quotations.id],
+  }),
+  user: one(users, {
+    fields: [changeOrders.userId],
+    references: [users.id],
+  }),
+  items: many(changeOrderItems),
+}));
+
+// Change Order Items (similar to interior items but tracks additions/deletions)
+export const changeOrderItems = pgTable("change_order_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  changeOrderId: varchar("change_order_id").notNull().references(() => changeOrders.id, { onDelete: 'cascade' }),
+  
+  // Item type (interior or false ceiling)
+  itemType: varchar("item_type").notNull().default("interior"), // interior, falseCeiling, other
+  
+  // Change type (addition or credit/deletion)
+  changeType: varchar("change_type").notNull().default("addition"), // addition, credit
+  
+  // Room and description
+  roomType: varchar("room_type").notNull(), // Kitchen, Living, etc.
+  description: text("description"),
+  
+  // Calculation type
+  calc: varchar("calc").notNull().default("SQFT"), // SQFT, COUNT, LSUM
+  
+  // Dimensions
+  length: decimal("length", { precision: 10, scale: 2 }),
+  height: decimal("height", { precision: 10, scale: 2 }),
+  width: decimal("width", { precision: 10, scale: 2 }),
+  sqft: decimal("sqft", { precision: 10, scale: 2 }),
+  
+  // Build Type
+  buildType: varchar("build_type").notNull().default("handmade"),
+  
+  // Materials/Finishes/Hardware
+  material: varchar("material").notNull().default("Generic Ply"),
+  finish: varchar("finish").notNull().default("Generic Laminate"),
+  hardware: varchar("hardware").notNull().default("Nimmi"),
+  
+  // Pricing
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }),
+  
+  // Rate override
+  rateAuto: decimal("rate_auto", { precision: 10, scale: 2 }),
+  rateOverride: decimal("rate_override", { precision: 10, scale: 2 }),
+  isRateOverridden: boolean("is_rate_overridden").default(false),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const changeOrderItemsRelations = relations(changeOrderItems, ({ one }) => ({
+  changeOrder: one(changeOrders, {
+    fields: [changeOrderItems.changeOrderId],
+    references: [changeOrders.id],
+  }),
+}));
+
+export const insertChangeOrderSchema = createInsertSchema(changeOrders, {
+  title: z.string().min(1, "Title is required").max(200),
+  description: z.string().optional(),
+  status: z.enum(["draft", "sent", "approved", "rejected"]),
+  discountType: z.enum(["percent", "amount"]),
+  discountValue: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
+}).omit({
+  id: true,
+  changeOrderId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type ChangeOrder = typeof changeOrders.$inferSelect;
+export type NewChangeOrder = z.infer<typeof insertChangeOrderSchema>;
+
+export const insertChangeOrderItemSchema = createInsertSchema(changeOrderItems, {
+  itemType: z.enum(["interior", "falseCeiling", "other"]),
+  changeType: z.enum(["addition", "credit"]),
+  roomType: z.string().min(1),
+  description: z.string().optional(),
+  calc: z.enum(["SQFT", "COUNT", "LSUM"]),
+  buildType: z.enum(["handmade", "factory"]),
+}).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type ChangeOrderItem = typeof changeOrderItems.$inferSelect;
+export type NewChangeOrderItem = z.infer<typeof insertChangeOrderItemSchema>;
 
 // Audit Log table
 export const auditLog = pgTable("audit_log", {

@@ -3,7 +3,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog, brands } from "@shared/schema";
+import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog, brands, insertChangeOrderSchema, insertChangeOrderItemSchema, changeOrders, changeOrderItems } from "@shared/schema";
 import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles, buildQuoteZip } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
@@ -1110,6 +1110,226 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error saving snapshot:", error);
       res.status(500).json({ message: "Failed to save snapshot" });
+    }
+  });
+
+  // Change Order routes
+  app.get('/api/change-orders', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const changeOrdersList = await db.query.changeOrders.findMany({
+        where: eq(changeOrders.userId, userId),
+        with: {
+          quotation: true,
+          items: true,
+        },
+        orderBy: (changeOrders, { desc }) => [desc(changeOrders.createdAt)],
+      });
+      res.json(changeOrdersList);
+    } catch (error) {
+      console.error("Error fetching change orders:", error);
+      res.status(500).json({ message: "Failed to fetch change orders" });
+    }
+  });
+
+  app.get('/api/quotations/:quotationId/change-orders', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const quotationId = req.params.quotationId;
+      
+      // Verify quotation belongs to user
+      const quotation = await storage.getQuotation(quotationId);
+      if (!quotation || quotation.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const changeOrdersList = await db.query.changeOrders.findMany({
+        where: eq(changeOrders.quotationId, quotationId),
+        with: {
+          items: true,
+        },
+        orderBy: (changeOrders, { desc }) => [desc(changeOrders.createdAt)],
+      });
+      res.json(changeOrdersList);
+    } catch (error) {
+      console.error("Error fetching change orders:", error);
+      res.status(500).json({ message: "Failed to fetch change orders" });
+    }
+  });
+
+  app.get('/api/change-orders/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const changeOrder = await db.query.changeOrders.findFirst({
+        where: eq(changeOrders.id, req.params.id),
+        with: {
+          quotation: true,
+          items: true,
+        },
+      });
+      
+      if (!changeOrder) {
+        return res.status(404).json({ message: "Change order not found" });
+      }
+      
+      // Ensure user owns this change order
+      if (changeOrder.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      res.json(changeOrder);
+    } catch (error) {
+      console.error("Error fetching change order:", error);
+      res.status(500).json({ message: "Failed to fetch change order" });
+    }
+  });
+
+  app.post('/api/change-orders', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validated = insertChangeOrderSchema.parse(req.body);
+      
+      // Verify quotation exists and belongs to user
+      const quotation = await storage.getQuotation(validated.quotationId);
+      if (!quotation || quotation.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      // Generate Change Order ID (TRE_CO_YYMMDD_XXXX)
+      const changeOrderId = generateQuoteId().replace('TRE_QT_', 'TRE_CO_');
+      
+      const [newChangeOrder] = await db.insert(changeOrders).values({
+        ...validated,
+        userId,
+        changeOrderId,
+      }).returning();
+      
+      res.json(newChangeOrder);
+    } catch (error) {
+      console.error("Error creating change order:", error);
+      res.status(500).json({ message: "Failed to create change order" });
+    }
+  });
+
+  app.patch('/api/change-orders/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const changeOrder = await db.query.changeOrders.findFirst({
+        where: eq(changeOrders.id, req.params.id),
+      });
+      
+      if (!changeOrder) {
+        return res.status(404).json({ message: "Change order not found" });
+      }
+      
+      if (changeOrder.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const [updated] = await db.update(changeOrders)
+        .set({ ...req.body, updatedAt: new Date() })
+        .where(eq(changeOrders.id, req.params.id))
+        .returning();
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating change order:", error);
+      res.status(500).json({ message: "Failed to update change order" });
+    }
+  });
+
+  app.delete('/api/change-orders/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const changeOrder = await db.query.changeOrders.findFirst({
+        where: eq(changeOrders.id, req.params.id),
+      });
+      
+      if (!changeOrder) {
+        return res.status(404).json({ message: "Change order not found" });
+      }
+      
+      if (changeOrder.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      await db.delete(changeOrders).where(eq(changeOrders.id, req.params.id));
+      res.json({ ok: true });
+    } catch (error) {
+      console.error("Error deleting change order:", error);
+      res.status(500).json({ message: "Failed to delete change order" });
+    }
+  });
+
+  // Change Order Items routes
+  app.post('/api/change-orders/:changeOrderId/items', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const changeOrderId = req.params.changeOrderId;
+      
+      // Verify change order exists and belongs to user
+      const changeOrder = await db.query.changeOrders.findFirst({
+        where: eq(changeOrders.id, changeOrderId),
+      });
+      
+      if (!changeOrder || changeOrder.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const validated = insertChangeOrderItemSchema.parse(req.body);
+      const [newItem] = await db.insert(changeOrderItems).values({
+        ...validated,
+        changeOrderId,
+      }).returning();
+      
+      res.json(newItem);
+    } catch (error) {
+      console.error("Error creating change order item:", error);
+      res.status(500).json({ message: "Failed to create change order item" });
+    }
+  });
+
+  app.patch('/api/change-order-items/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const item = await db.query.changeOrderItems.findFirst({
+        where: eq(changeOrderItems.id, req.params.id),
+        with: { changeOrder: true },
+      });
+      
+      if (!item || item.changeOrder.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const [updated] = await db.update(changeOrderItems)
+        .set(req.body)
+        .where(eq(changeOrderItems.id, req.params.id))
+        .returning();
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating change order item:", error);
+      res.status(500).json({ message: "Failed to update change order item" });
+    }
+  });
+
+  app.delete('/api/change-order-items/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const item = await db.query.changeOrderItems.findFirst({
+        where: eq(changeOrderItems.id, req.params.id),
+        with: { changeOrder: true },
+      });
+      
+      if (!item || item.changeOrder.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      await db.delete(changeOrderItems).where(eq(changeOrderItems.id, req.params.id));
+      res.json({ ok: true });
+    } catch (error) {
+      console.error("Error deleting change order item:", error);
+      res.status(500).json({ message: "Failed to delete change order item" });
     }
   });
 
