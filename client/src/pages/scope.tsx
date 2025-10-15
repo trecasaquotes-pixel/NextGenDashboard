@@ -628,16 +628,16 @@ export default function Scope() {
                               <TableHeader>
                                 <TableRow>
                                   <TableHead className="w-auto px-2">Description</TableHead>
-                                  <TableHead className="w-[65px] px-2">L (ft)</TableHead>
-                                  <TableHead className="w-[65px] px-2">H (ft)</TableHead>
-                                  <TableHead className="w-[65px] px-2">W (ft)</TableHead>
-                                  <TableHead className="w-[70px] px-2">SQFT</TableHead>
-                                  <TableHead className="w-[130px] px-2">Core Material</TableHead>
-                                  <TableHead className="w-[130px] px-2">Finish</TableHead>
-                                  <TableHead className="w-[110px] px-2">Hardware</TableHead>
-                                  <TableHead className="w-[90px] px-2">Rate (₹/sft)</TableHead>
-                                  <TableHead className="w-[100px] px-2">Amount (₹)</TableHead>
-                                  <TableHead className="w-[45px] px-1"></TableHead>
+                                  <TableHead className="w-[55px] px-1">L (ft)</TableHead>
+                                  <TableHead className="w-[55px] px-1">H (ft)</TableHead>
+                                  <TableHead className="w-[55px] px-1">W (ft)</TableHead>
+                                  <TableHead className="w-[65px] px-1">SQFT</TableHead>
+                                  <TableHead className="w-[125px] px-2">Core Material</TableHead>
+                                  <TableHead className="w-[125px] px-2">Finish</TableHead>
+                                  <TableHead className="w-[105px] px-2">Hardware</TableHead>
+                                  <TableHead className="w-[85px] px-1">Rate (₹/sft)</TableHead>
+                                  <TableHead className="w-[95px] px-1">Amount (₹)</TableHead>
+                                  <TableHead className="w-[40px] px-1"></TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -652,7 +652,7 @@ export default function Scope() {
                                         data-testid={`input-description-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell className="px-2">
+                                    <TableCell className="px-1">
                                       <Input
                                         key={`length-${item.id}-${item.length}`}
                                         type="text"
@@ -677,7 +677,7 @@ export default function Scope() {
                                         data-testid={`input-length-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell className="px-2">
+                                    <TableCell className="px-1">
                                       <Input
                                         key={`height-${item.id}-${item.height}`}
                                         type="text"
@@ -702,7 +702,7 @@ export default function Scope() {
                                         data-testid={`input-height-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell className="px-2">
+                                    <TableCell className="px-1">
                                       <Input
                                         key={`width-${item.id}-${item.width}`}
                                         type="text"
@@ -727,7 +727,7 @@ export default function Scope() {
                                         data-testid={`input-width-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell className="px-2">
+                                    <TableCell className="px-1">
                                       <span className="font-mono text-sm font-semibold" data-testid={`text-sqft-${item.id}`}>
                                         {item.sqft || "0.00"}
                                       </span>
@@ -829,7 +829,7 @@ export default function Scope() {
                                         </span>
                                       )}
                                     </TableCell>
-                                    <TableCell className="px-2">
+                                    <TableCell className="px-1">
                                       <span className="font-mono text-sm font-semibold" data-testid={`text-amount-${item.id}`}>
                                         ₹{item.totalPrice || "0"}
                                       </span>
@@ -917,17 +917,17 @@ export default function Scope() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead className="w-auto">Description</TableHead>
-                                  <TableHead className="w-[70px]">Length (ft)</TableHead>
-                                  <TableHead className="w-[70px]">Width (ft)</TableHead>
-                                  <TableHead className="w-[100px]">Area (SQFT)</TableHead>
-                                  <TableHead className="w-[50px]"></TableHead>
+                                  <TableHead className="w-auto px-2">Description</TableHead>
+                                  <TableHead className="w-[55px] px-1">Length (ft)</TableHead>
+                                  <TableHead className="w-[55px] px-1">Width (ft)</TableHead>
+                                  <TableHead className="w-[85px] px-1">Area (SQFT)</TableHead>
+                                  <TableHead className="w-[40px] px-1"></TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
                                 {roomItems.map((item) => (
                                   <TableRow key={item.id}>
-                                    <TableCell>
+                                    <TableCell className="px-2">
                                       <Input
                                         value={item.description || ""}
                                         onChange={(e) => handleFalseCeilingFieldChange(item.id, "description", e.target.value)}
@@ -936,7 +936,7 @@ export default function Scope() {
                                         data-testid={`input-ceiling-description-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-1">
                                       <Input
                                         key={`ceiling-length-${item.id}-${item.length}`}
                                         type="text"
@@ -961,7 +961,7 @@ export default function Scope() {
                                         data-testid={`input-ceiling-length-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-1">
                                       <Input
                                         key={`ceiling-width-${item.id}-${item.width}`}
                                         type="text"
@@ -986,12 +986,12 @@ export default function Scope() {
                                         data-testid={`input-ceiling-width-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-1">
                                       <span className="font-mono text-sm font-semibold" data-testid={`text-ceiling-area-${item.id}`}>
                                         {item.area || "0.00"}
                                       </span>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-1">
                                       <Button
                                         variant="ghost"
                                         size="icon"
