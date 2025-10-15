@@ -151,39 +151,7 @@ export default function Print() {
     return null;
   }
 
-  // Calculate totals for each PDF separately
-  const interiorsSubtotal = safeN(quotation.totals?.interiorsSubtotal);
-  const fcSubtotal = safeN(quotation.totals?.fcSubtotal);
-  const grandSubtotal = safeN(quotation.totals?.grandSubtotal);
-  const discountValue = safeN(quotation.discountValue);
-  
-  // Calculate discount allocation for each tab
-  let interiorsDiscountAmount = 0;
-  let fcDiscountAmount = 0;
-  
-  if (quotation.discountType === 'percent') {
-    // Percentage discount: apply same percentage to each tab
-    interiorsDiscountAmount = (interiorsSubtotal * discountValue) / 100;
-    fcDiscountAmount = (fcSubtotal * discountValue) / 100;
-  } else {
-    // Fixed discount: allocate proportionally based on each tab's share of grand total
-    if (grandSubtotal > 0) {
-      const interiorsShare = interiorsSubtotal / grandSubtotal;
-      const fcShare = fcSubtotal / grandSubtotal;
-      interiorsDiscountAmount = discountValue * interiorsShare;
-      fcDiscountAmount = discountValue * fcShare;
-    }
-  }
-  
-  // Interiors PDF calculations
-  const interiorsDiscounted = Math.max(0, interiorsSubtotal - interiorsDiscountAmount);
-  const interiorsGst = interiorsDiscounted * 0.18;
-  const interiorsFinalTotal = interiorsDiscounted + interiorsGst;
-  
-  // False Ceiling PDF calculations
-  const fcDiscounted = Math.max(0, fcSubtotal - fcDiscountAmount);
-  const fcGst = fcDiscounted * 0.18;
-  const fcFinalTotal = fcDiscounted + fcGst;
+  // Note: We'll calculate actual subtotals after grouping items by room (see below)
 
   // Group items by room
   const interiorsByRoom = interiorItems.reduce((acc, item) => {
@@ -214,6 +182,45 @@ export default function Print() {
       total: items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0)
     }))
   );
+
+  // Calculate actual subtotals from room totals (use actual data, not stale database values)
+  const actualInteriorsSubtotal = interiorsRoomTotals.reduce((sum, { total }) => sum + total, 0);
+  const actualFcSubtotal = fcRoomTotals.reduce((sum, { total }) => sum + total, 0);
+  const actualGrandSubtotal = actualInteriorsSubtotal + actualFcSubtotal;
+
+  // Use actual subtotals for all calculations
+  const interiorsSubtotal = actualInteriorsSubtotal;
+  const fcSubtotal = actualFcSubtotal;
+  const grandSubtotal = actualGrandSubtotal;
+  const discountValue = safeN(quotation.discountValue);
+  
+  // Calculate discount allocation for each tab
+  let interiorsDiscountAmount = 0;
+  let fcDiscountAmount = 0;
+  
+  if (quotation.discountType === 'percent') {
+    // Percentage discount: apply same percentage to each tab
+    interiorsDiscountAmount = (interiorsSubtotal * discountValue) / 100;
+    fcDiscountAmount = (fcSubtotal * discountValue) / 100;
+  } else {
+    // Fixed discount: allocate proportionally based on each tab's share of grand total
+    if (grandSubtotal > 0) {
+      const interiorsShare = interiorsSubtotal / grandSubtotal;
+      const fcShare = fcSubtotal / grandSubtotal;
+      interiorsDiscountAmount = discountValue * interiorsShare;
+      fcDiscountAmount = discountValue * fcShare;
+    }
+  }
+  
+  // Interiors PDF calculations
+  const interiorsDiscounted = Math.max(0, interiorsSubtotal - interiorsDiscountAmount);
+  const interiorsGst = interiorsDiscounted * 0.18;
+  const interiorsFinalTotal = interiorsDiscounted + interiorsGst;
+  
+  // False Ceiling PDF calculations
+  const fcDiscounted = Math.max(0, fcSubtotal - fcDiscountAmount);
+  const fcGst = fcDiscounted * 0.18;
+  const fcFinalTotal = fcDiscounted + fcGst;
 
   const currentDate = new Date().toLocaleDateString('en-IN', {
     day: '2-digit',
