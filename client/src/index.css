@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,70 +16,77 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 0 0% 98%;
+  /* Trecasa Brand Colors */
+  --trecasa-green: 144 54% 12%;       /* Deep Green #0E2F1B */
+  --trecasa-gold: 42 49% 65%;         /* Gold #D1B77C */
+  --trecasa-red: 360 72% 45%;         /* Red Dot #C42021 */
+  --trecasa-offwhite: 60 33% 98%;     /* Off-white #FAFAF8 */
+  --trecasa-gray: 0 0% 23%;           /* Warm Gray #3B3B3B */
 
-  --foreground: 220 15% 15%;
+  --background: 60 33% 98%;            /* Off-white background */
 
-  --border: 220 13% 88%;
+  --foreground: 0 0% 23%;              /* Warm Gray text */
+
+  --border: 144 20% 85%;               /* Light green tint */
 
   --card: 0 0% 100%;
 
-  --card-foreground: 220 15% 15%;
+  --card-foreground: 0 0% 23%;
 
-  --card-border: 220 13% 91%;
+  --card-border: 144 15% 88%;
 
   --sidebar: 0 0% 100%;
 
-  --sidebar-foreground: 220 15% 15%;
+  --sidebar-foreground: 0 0% 23%;
 
-  --sidebar-border: 220 13% 91%;
+  --sidebar-border: 144 15% 88%;
 
-  --sidebar-primary: 15 75% 25%;
+  --sidebar-primary: 144 54% 12%;       /* Trecasa Green */
 
   --sidebar-primary-foreground: 0 0% 100%;
 
-  --sidebar-accent: 220 13% 94%;
+  --sidebar-accent: 42 30% 92%;         /* Light gold tint */
 
-  --sidebar-accent-foreground: 15 75% 25%;
+  --sidebar-accent-foreground: 144 54% 12%;
 
-  --sidebar-ring: 15 75% 25%;
+  --sidebar-ring: 144 54% 12%;
 
   --popover: 0 0% 100%;
 
-  --popover-foreground: 220 15% 15%;
+  --popover-foreground: 0 0% 23%;
 
-  --popover-border: 220 13% 88%;
+  --popover-border: 144 20% 85%;
 
-  --primary: 15 75% 25%;
+  --primary: 144 54% 12%;               /* Trecasa Green */
 
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 220 13% 94%;
+  --secondary: 42 49% 65%;              /* Trecasa Gold */
 
-  --secondary-foreground: 220 15% 15%;
+  --secondary-foreground: 144 54% 12%;  /* Green text on gold */
 
-  --muted: 220 13% 92%;
+  --muted: 144 20% 90%;
 
-  --muted-foreground: 220 10% 45%;
+  --muted-foreground: 0 0% 45%;
 
-  --accent: 220 13% 94%;
+  --accent: 42 49% 65%;                 /* Trecasa Gold */
 
-  --accent-foreground: 15 75% 25%;
+  --accent-foreground: 144 54% 12%;
 
-  --destructive: 0 84% 60%;
+  --destructive: 360 72% 45%;           /* Trecasa Red */
 
   --destructive-foreground: 0 0% 100%;
 
-  --input: 220 13% 75%;
-  --ring: 15 75% 25%;
-  --chart-1: 15 75% 25%;
-  --chart-2: 142 76% 36%;
-  --chart-3: 38 92% 50%;
-  --chart-4: 220 15% 35%;
-  --chart-5: 45 90% 55%;
+  --input: 144 15% 75%;
+  --ring: 144 54% 12%;
+  --chart-1: 144 54% 12%;
+  --chart-2: 42 49% 65%;
+  --chart-3: 360 72% 45%;
+  --chart-4: 0 0% 23%;
+  --chart-5: 142 50% 50%;
 
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-serif: Georgia, serif;
+  --font-sans: 'Montserrat', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
   --font-mono: 'JetBrains Mono', monospace;
   --radius: .5rem;
   --shadow-2xs: 0px 1px 2px 0px hsl(220 15% 15% / 0.05);
@@ -132,67 +141,67 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 220 15% 8%;
+  --background: 144 30% 8%;             /* Dark green tint */
 
   --foreground: 0 0% 95%;
 
-  --border: 220 15% 20%;
+  --border: 144 20% 20%;
 
-  --card: 220 15% 12%;
+  --card: 144 25% 12%;
 
   --card-foreground: 0 0% 95%;
 
-  --card-border: 220 15% 18%;
+  --card-border: 144 20% 18%;
 
-  --sidebar: 220 15% 12%;
+  --sidebar: 144 25% 12%;
 
   --sidebar-foreground: 0 0% 95%;
 
-  --sidebar-border: 220 15% 18%;
+  --sidebar-border: 144 20% 18%;
 
-  --sidebar-primary: 15 75% 45%;
+  --sidebar-primary: 144 54% 25%;       /* Lighter green for dark mode */
 
   --sidebar-primary-foreground: 0 0% 100%;
 
-  --sidebar-accent: 220 15% 16%;
+  --sidebar-accent: 144 20% 16%;
 
-  --sidebar-accent-foreground: 15 75% 55%;
+  --sidebar-accent-foreground: 42 49% 70%;  /* Lighter gold */
 
-  --sidebar-ring: 15 75% 45%;
+  --sidebar-ring: 144 54% 25%;
 
-  --popover: 220 15% 12%;
+  --popover: 144 25% 12%;
 
   --popover-foreground: 0 0% 95%;
 
-  --popover-border: 220 15% 18%;
+  --popover-border: 144 20% 18%;
 
-  --primary: 15 75% 35%;
+  --primary: 144 54% 25%;               /* Lighter green for dark mode */
 
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 220 15% 16%;
+  --secondary: 42 49% 70%;              /* Lighter gold for dark mode */
 
-  --secondary-foreground: 0 0% 95%;
+  --secondary-foreground: 144 54% 12%;
 
-  --muted: 220 15% 14%;
+  --muted: 144 20% 14%;
 
-  --muted-foreground: 220 10% 65%;
+  --muted-foreground: 0 0% 65%;
 
-  --accent: 220 15% 16%;
+  --accent: 42 49% 70%;                 /* Lighter gold for dark mode */
 
-  --accent-foreground: 15 75% 55%;
+  --accent-foreground: 144 54% 12%;
 
-  --destructive: 0 84% 60%;
+  --destructive: 360 72% 55%;           /* Lighter red for dark mode */
 
   --destructive-foreground: 0 0% 100%;
 
-  --input: 220 15% 28%;
-  --ring: 15 75% 45%;
-  --chart-1: 15 75% 55%;
-  --chart-2: 142 76% 55%;
-  --chart-3: 38 92% 65%;
-  --chart-4: 220 15% 70%;
-  --chart-5: 45 90% 70%;
+  --input: 144 20% 28%;
+  --ring: 144 54% 25%;
+  --chart-1: 144 54% 35%;
+  --chart-2: 42 49% 65%;
+  --chart-3: 360 72% 55%;
+  --chart-4: 0 0% 70%;
+  --chart-5: 142 50% 60%;
 
   --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.15);
   --shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.2);
@@ -247,6 +256,40 @@
     content: attr(data-placeholder);
     color: hsl(var(--muted-foreground));
     pointer-events: none;
+  }
+
+  /* Trecasa Brand Utilities */
+  .tc-green {
+    color: hsl(var(--trecasa-green));
+  }
+  
+  .bg-tc-green {
+    background-color: hsl(var(--trecasa-green));
+  }
+  
+  .tc-gold {
+    color: hsl(var(--trecasa-gold));
+  }
+  
+  .bg-tc-gold {
+    background-color: hsl(var(--trecasa-gold));
+  }
+  
+  .border-tc-gold {
+    border-color: hsl(var(--trecasa-gold));
+  }
+  
+  .tc-red {
+    color: hsl(var(--trecasa-red));
+  }
+  
+  .bg-soft {
+    background-color: hsl(var(--trecasa-offwhite));
+  }
+
+  /* Tabular numbers for financial data */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 
   /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of

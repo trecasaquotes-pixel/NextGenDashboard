@@ -11,6 +11,14 @@ export default {
         sm: ".1875rem", /* 3px */
       },
       colors: {
+        // Trecasa Brand Colors
+        trecasa: {
+          green: "hsl(var(--trecasa-green) / <alpha-value>)",
+          gold: "hsl(var(--trecasa-gold) / <alpha-value>)",
+          red: "hsl(var(--trecasa-red) / <alpha-value>)",
+          offwhite: "hsl(var(--trecasa-offwhite) / <alpha-value>)",
+          gray: "hsl(var(--trecasa-gray) / <alpha-value>)",
+        },
         // Flat / base colors (regular buttons)
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",

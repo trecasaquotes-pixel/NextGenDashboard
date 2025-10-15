@@ -1,0 +1,148 @@
+TASK: Apply Trecasa brand polish to both the web app UI and all generated PDFs (Interiors + False Ceiling).
+
+0) Context
+
+Brand: Deep Green #0E2F1B, Gold #D1B77C, Red Dot #C42021, Off-white #FAFAF8, Warm Gray #3B3B3B.
+
+Fonts: Playfair Display (600/700) for headings and totals; Montserrat (400/500) for body/labels.
+
+Remove every maroon/burgundy tone across code and PDFs.
+
+1) Colors & Fonts (global)
+
+Find all CSS/Tailwind/theme files (e.g., client/src/styles/*, tailwind.config.*, any theme.ts).
+
+Replace any maroon/burgundy hex (e.g., #5a201d, #6c1f1a) with our palette.
+
+Ensure Google Fonts load app-wide:
+
+Add in HTML root (or global CSS import):
+https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500&display=swap
+
+Set base stack:
+
+Headings: font-family: "Playfair Display", serif;
+
+Body/labels/tables: font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+
+Create/adjust utility classes (or Tailwind theme) so these are available:
+
+.tc-green { color:#0E2F1B }, .bg-tc-green { background:#0E2F1B }
+
+.tc-gold { color:#D1B77C }, .border-tc-gold { border-color:#D1B77C }
+
+.tc-red { color:#C42021 }
+
+.bg-soft { background:#FAFAF8 }
+
+For numbers: font-variant-numeric: tabular-nums;
+
+Acceptance: No maroon remains. Headers/buttons/tabs use green/gold. Body text Montserrat; headings Playfair.
+
+2) Buttons, Tabs, Cards (web UI)
+
+Primary buttons: bg green, white text; hover a darker green.
+
+Secondary/accent: gold bg, green text; hover darker gold.
+
+Any “danger”/currency highlight text: red dot.
+
+Active tab underline/border: gold, text green.
+
+Cards/sections get white bg on off-white page background and subtle shadow.
+
+Acceptance: All action colors are green/gold; nothing maroon. Background of app is off-white.
+
+3) Quote pages — show Project Name
+
+In the PDFs (Interiors + False Ceiling) and the “Print” screen header block: add Project Name next to Client/Quote ID/Date.
+
+If a project name is missing, fall back to quotation title.
+
+Acceptance: PDF headers display Client, Project Name, Quote ID, Date.
+
+4) PDF header & footer (both PDFs)
+
+Header: deep-green band; white text; thin gold divider below. Keep Trecasa logo with red dot.
+
+Footer on every page (fixed): thin gold top border; content centered in Montserrat 400:
+TRECASA DESIGN STUDIO • Luxury Interiors | Architecture | Build • www.trecasadesignstudio.com • @trecasa.designstudio
+(Use the red dot between brand name and the rest.)
+
+Acceptance: Every page shows the footer; header matches brand.
+
+5) Room Totals + layout (Interiors PDF)
+
+Page 1 must have a Room Totals table before the detailed breakdown:
+Columns: Room | Area (SQFT) | Amount (₹).
+Alternate row background with soft off-white; values right-aligned with tabular numbers.
+
+Detailed tables can flow across pages; add 8–10px vertical spacing between rooms.
+
+Add a Room Subtotal row per room with green bg, white text, semi-bold.
+
+Acceptance: Room Totals table appears on page 1; each room ends with a green subtotal row.
+
+6) Totals styling (all PDFs)
+
+Above the final total, add a gold top border and a tiny label “Final Interiors Quote” (or “Final False Ceiling Quote”) in green; amount in Playfair 700 with ₹ colored red.
+
+Add a small note under totals: “Rounded off to nearest rupee.”
+
+Acceptance: Final total area looks premium (gold divider, Playfair amount, red ₹).
+
+7) Terms & Signatures (all PDFs)
+
+Add a thin gold rule above “Terms & Conditions”.
+
+Signature section: two columns (Client / Trecasa) with equal widths; labels Montserrat 500; spacing consistent.
+
+Acceptance: Balanced signature boxes; gold rule above terms.
+
+8) False Ceiling extras
+
+Room order: Living/Dining → Kitchen → Bedrooms → Bathrooms.
+
+“Others” block: align numbers right; show ₹ consistently; hide any 0-qty/0-amount rows.
+
+Add a Total SFT column in the summary on page 1.
+
+Acceptance: Clean FC summary with SFT totals; Others block is tidy and right-aligned.
+
+9) Currency, numbers, dates
+
+Right-align all numeric columns (rate, amount, sqft). Use font-variant-numeric: tabular-nums.
+
+Date format everywhere: DD MMM YYYY (e.g., 15 Oct 2025).
+
+Ensure all amounts print ₹ and two decimals.
+
+Acceptance: Numbers line up perfectly; dates are consistent.
+
+10) Remove all maroon leftovers
+
+Global search for maroon hex or class names that map to it (e.g., maroon, --brand-burgundy, #5a201d, #6c1f1a) and replace using the palette above.
+
+Acceptance: Design system uses only green/gold/red/gray/off-white.
+
+11) QA checklist to run
+
+Generate a sample Interior + FC quote with multiple rooms.
+
+Verify:
+
+Project name visible in header.
+
+Page footers on every page.
+
+Page 1 shows Room Totals table.
+
+Each room shows Room Subtotal row (green).
+
+Final total block: gold divider, Playfair, red ₹.
+
+Fonts correct (Playfair + Montserrat).
+
+No maroon anywhere.
+
+Numbers right-aligned; dates DD MMM YYYY.
