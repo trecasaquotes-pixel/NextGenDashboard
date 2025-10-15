@@ -364,83 +364,90 @@ export default function Print() {
               {/* Print Content */}
               <div id="print-interiors-root" className="print-content bg-white text-black" data-pdf-ready="true">
                 {/* PDF Header - Fixed */}
-                <div className="pdf-header bg-[#0E2F1B] text-white p-6 rounded-t-lg print:rounded-none">
-                  <div className="brand-row flex items-center justify-between">
-                    <div className="brand-left">
-                      <h1 className="text-2xl font-bold">TRECASA DESIGN STUDIO</h1>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right text-[8px] space-y-1 header-meta">
-                        <div><strong>Client:</strong> {quotation.clientName || "N/A"}</div>
-                        <div><strong>Quote ID:</strong> {quotation.quoteId}</div>
-                        <div><strong>Date:</strong> {currentDate}</div>
-                        <div><strong>Project:</strong> {quotation.projectName || "N/A"}</div>
+                <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none">
+                  {/* Top bar with company name and address */}
+                  <div className="p-3 border-b border-white/20" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <div>
+                        <div className="font-medium">TRECASA ARCHITECTURE AND INTERIORS <span className="text-[#C7A948]">|</span> Trecasa Interiors</div>
+                        <div className="text-[9px] mt-0.5">H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049</div>
                       </div>
-                      <div className="brand-right">
-                        <span className="status-dot" aria-hidden="true" style={{width: '10px', height: '10px', background: '#C42021', borderRadius: '50%', display: 'inline-block', transform: 'translateY(1px)'}}></span>
+                      <div className="text-right text-[9px]">
+                        <div>contact@trecasainfra.com</div>
+                        <div>+91 9059784422</div>
                       </div>
                     </div>
+                  </div>
+                  
+                  {/* Metadata grid */}
+                  <div className="px-3 py-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                    <div className="flex items-start justify-between">
+                      <div className="text-[10px] space-y-1">
+                        <div><span className="font-medium">Client Name:</span> <span className="text-gray-300">{quotation.clientName || "N/A"}</span></div>
+                        <div><span className="font-medium">Project Address:</span> <span className="text-gray-300">{quotation.projectAddress || "N/A"}</span></div>
+                      </div>
+                      <div className="text-right text-[9.5px] space-y-1">
+                        <div><span className="font-medium">Issue Date:</span> <span className="text-gray-300">{currentDate}</span></div>
+                        <div><span className="font-medium">Quote ID:</span> <span className="text-gray-300">{quotation.quoteId}</span></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Greeting line */}
+                  <div className="px-3 pb-3 pt-1">
+                    <p className="text-[11px] text-gray-300 italic" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
+                      Hi {quotation.clientName || "Valued Client"} & Family
+                    </p>
                   </div>
                 </div>
 
                 {/* PDF Footer - Fixed */}
-                <div className="pdf-footer">
-                  <div>
-                    <div>© 2025 TRECASA DESIGN STUDIO</div>
-                    <div className="text-[8px] mt-0.5">H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049 · +91 9059784422</div>
+                <div className="pdf-footer text-[8.5px] text-gray-600 border-t border-gray-200" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                  <div className="text-center">
+                    © 2025 Trecasa Design Studio <span className="text-red-600">•</span> www.trecasainfra.com <span className="text-red-600">•</span> contact@trecasainfra.com
                   </div>
                   <div className="page-num"></div>
-                  <div className="text-right">
-                    <div>www.trecasadesignstudio.com</div>
-                    <div className="text-[8px] mt-0.5">@trecasa.designstudio</div>
-                  </div>
                 </div>
 
                 {/* PDF Body - Content */}
-                <div className="pdf-body print-body-content p-3 space-y-2">
-                  {/* Title */}
-                  <div className="text-center border-b-2 border-[#D1B77C] pb-1">
-                    <h2 className="text-lg font-bold text-[#0E2F1B]">INTERIORS QUOTATION</h2>
-                  </div>
-
-                  {/* Room Totals Summary - Part 2A */}
-                  <section className="summary-section space-y-1">
-                    <h2 className="text-base font-bold text-[#0F3A2B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>ROOM TOTALS — INTERIORS</h2>
-                    <table className="summary-table w-full border-collapse text-xs">
+                <div className="pdf-body print-body-content" style={{padding: '10px 14px', fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                  
+                  {/* Room Totals Summary - Professional */}
+                  <section className="summary-section" style={{marginTop: '10px'}}>
+                    <div className="bg-[#154734] text-white px-3 py-1.5 font-semibold text-[11px]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                      Roomwise Summary — Interiors
+                    </div>
+                    <table className="summary-table w-full border-collapse text-[9.5px]">
                       <thead>
-                        <tr className="bg-[#F3F6F5]">
-                          <th className="border-b border-[#E6E6E6] px-3 py-2 text-left font-semibold">Room</th>
-                          <th className="border-b border-[#E6E6E6] px-3 py-2 text-right font-semibold">Subtotal (₹)</th>
+                        <tr className="bg-[#154734] text-white">
+                          <th className="px-3 py-1.5 text-center font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Room</th>
+                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Modular</th>
+                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Accessories</th>
+                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Appliances</th>
+                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Services</th>
+                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {interiorsRoomTotals.map(({room, total}) => (
-                          <tr key={room}>
-                            <td className="border-b border-[#E6E6E6] px-3 py-2">{room}</td>
-                            <td className="border-b border-[#E6E6E6] px-3 py-2 text-right font-mono">{formatINR(total)}</td>
+                        {interiorsRoomTotals.map(({room, total}, idx) => (
+                          <tr key={room} className="border-b border-gray-200">
+                            <td className="px-2 py-1 text-left" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{room}</td>
+                            <td className="px-2 py-1 text-right">-</td>
+                            <td className="px-2 py-1 text-right">-</td>
+                            <td className="px-2 py-1 text-right">-</td>
+                            <td className="px-2 py-1 text-right">-</td>
+                            <td className="px-2 py-1 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(total)}</td>
                           </tr>
                         ))}
                       </tbody>
                       <tfoot>
-                        <tr className="summary-grand">
-                          <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-bold">Interiors Subtotal</td>
-                          <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-mono font-bold">{formatINR(interiorsSubtotal)}</td>
-                        </tr>
-                        {interiorsDiscountAmount > 0 && (
-                          <tr>
-                            <td className="px-3 py-2 text-right">
-                              Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
-                            </td>
-                            <td className="px-3 py-2 text-right font-mono text-red-600">-{formatINR(interiorsDiscountAmount)}</td>
-                          </tr>
-                        )}
-                        <tr>
-                          <td className="px-3 py-2 text-right">GST (18%):</td>
-                          <td className="px-3 py-2 text-right font-mono">{formatINR(interiorsGst)}</td>
-                        </tr>
-                        <tr className="bg-[#0E2F1B] text-white">
-                          <td className="px-3 py-2 text-right font-bold">Final Interiors Quote</td>
-                          <td className="px-3 py-2 text-right font-mono font-bold">{formatINR(interiorsFinalTotal)}</td>
+                        <tr className="bg-[#FAF8F1] border-t border-[#C7A948]">
+                          <td className="px-2 py-2 text-left font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total</td>
+                          <td className="px-2 py-2 text-right">-</td>
+                          <td className="px-2 py-2 text-right">-</td>
+                          <td className="px-2 py-2 text-right">-</td>
+                          <td className="px-2 py-2 text-right">-</td>
+                          <td className="px-2 py-2 text-right font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(interiorsSubtotal)}</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -688,16 +695,11 @@ export default function Print() {
                 </div>
 
                 {/* PDF Footer - Fixed */}
-                <div className="pdf-footer">
-                  <div>
-                    <div>© 2025 TRECASA DESIGN STUDIO</div>
-                    <div className="text-[8px] mt-0.5">H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049 · +91 9059784422</div>
+                <div className="pdf-footer text-[8.5px] text-gray-600 border-t border-gray-200" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                  <div className="text-center">
+                    © 2025 Trecasa Design Studio <span className="text-red-600">•</span> www.trecasainfra.com <span className="text-red-600">•</span> contact@trecasainfra.com
                   </div>
                   <div className="page-num"></div>
-                  <div className="text-right">
-                    <div>www.trecasadesignstudio.com</div>
-                    <div className="text-[8px] mt-0.5">@trecasa.designstudio</div>
-                  </div>
                 </div>
 
                 {/* PDF Body - Content */}

@@ -1,0 +1,151 @@
+TASK: Recreate the PDF summary layout exactly as shown below, using Montserrat (Medium + Regular) and Playfair Display fonts. Maintain alignment, spacing, and hierarchy identical to the reference.
+
+---------------------------------
+🔹 OVERALL PAGE DESIGN
+---------------------------------
+- Page size: A4 portrait (8.27 × 11.69 inches)
+- Margins: 0.5 inch (top, bottom, left, right)
+- Background: White
+- Font family:
+  - Primary: Montserrat (Regular 400, Medium 500, SemiBold 600)
+  - Accent headings: Playfair Display (Bold 700)
+- Font color: #1A1A1A (body text)
+- Primary accent color: Dark green (#154734)
+- Secondary accent (highlight): Gold (#C7A948)
+- Alignment: Left-aligned text for labels; right-aligned for monetary values.
+
+---------------------------------
+🔹 HEADER SECTION
+---------------------------------
+Top Bar:
+- Background color: Dark Green (#154734)
+- Height: ~60px
+- Padding: 10px 20px
+- Font: Montserrat 400, 11pt, color: White (#FFFFFF)
+- Content: Company name and address in two lines.
+
+Logo/Header text block:
+- "TRECASA ARCHITECTURE AND INTERIORS | Trecasa Interiors" 
+  - Font: Montserrat Medium, 13pt
+  - Color: Gold highlight separator "|"
+- Company address in smaller font (Montserrat Regular, 9pt)
+- Contact info: Email + phone right-aligned in same line (9pt)
+
+Header metadata (below address bar):
+- Two-column grid:
+  - Left: Client info
+  - Right: Project info
+- Padding between lines: 4px
+- Labels (Client Name, Project Address, etc.): Montserrat 500, 10pt, black
+- Values: Montserrat 400, 10pt, dark gray (#333)
+- “Issue Date” and “Quote ID” right-aligned on top right corner (Montserrat 500, 9.5pt, color #000)
+
+Greeting Line:
+- “Hi Mr. Sireesha & Mr. Rajesh & Family” in italic Playfair Display 11pt, color #444, with 6px bottom margin.
+
+---------------------------------
+🔹 TABLE 1 — Roomwise Summary (Interiors)
+---------------------------------
+Heading:
+- “Roomwise Summary — Interiors”
+  - Font: Montserrat SemiBold, 11pt, color: White (#FFFFFF)
+  - Background: Dark green (#154734)
+  - Height: 28px
+  - Padding: 6px 10px
+  - Top margin before table: 10px
+
+Table Layout:
+- Header row (Room, Modular, Accessories, Appliances, Services, Total)
+  - Font: Montserrat Medium, 10pt, color: White (#FFFFFF)
+  - Background: Dark green (#154734)
+  - Height: 25px
+  - Padding (each cell): 6px vertical, 10px horizontal
+  - Border radius: none (rectangular grid)
+- Row height: ~22–25px
+- Body rows:
+  - Alternating fill: none (white)
+  - Font: Montserrat Regular, 9.5pt, color #111
+  - Cell padding: 4px 8px
+  - Column alignment:
+    - # (center)
+    - Room (left)
+    - Numbers (right)
+- Currency format: ₹#,##0.00
+- Total row:
+  - Background: Light beige (#FAF8F1)
+  - Font: Montserrat SemiBold, 10pt
+  - Text color: #154734 (green)
+  - Border-top: 1px solid #C7A948 (gold)
+  - Padding: 8px 10px
+
+---------------------------------
+🔹 TABLE 2 — Price Summary (Interiors)
+---------------------------------
+Heading Bar:
+- Background: Dark Green (#154734)
+- Text: “Price Summary (Interiors)”
+- Font: Montserrat Medium, 10.5pt, color: Gold (#C7A948)
+- Height: 25px
+- Padding: 5px 10px
+
+Price Summary Body:
+- Line spacing: 6px
+- Font: Montserrat Regular, 9.5pt, color #111
+- Label column left-aligned; value column right-aligned.
+- Values formatted as ₹#,##0.00 (two decimals)
+- Subtotal / GST / Grand total grouped.
+
+Final Quote Value (highlight bar):
+- Background color: Beige/Light Gold (#F8F3D9)
+- Font: Montserrat SemiBold, 11.5pt
+- Text color: Dark Green (#154734)
+- Padding: 6px 10px
+- Border-top: 2px solid #154734
+- Border-bottom: 1px solid #C7A948
+
+---------------------------------
+🔹 PAYMENT BREAKDOWN
+---------------------------------
+Heading:
+- “Payment Breakdown” — Font: Montserrat Medium, 10pt, color: #154734
+- Padding-top: 12px
+
+Body:
+- Four rows:
+  - Token Advance – 10%
+  - Design Finalisation – 60%
+  - Mid Execution – 25%
+  - After Handover – 5%
+- Font: Montserrat Regular 9.5pt
+- Each row label left-aligned, value right-aligned.
+- Padding vertical: 4px
+- Row spacing: 2px
+
+---------------------------------
+🔹 FOOTER
+---------------------------------
+Bottom border: 1px solid #E0E0E0
+Footer text:
+- Font: Montserrat Regular, 8.5pt
+- Text: © 2025 Trecasa Design Studio | www.trecasainfra.com | contact@trecasainfra.com
+- Color: #666
+- Alignment: center
+- Include a small red dot "•" between brand name and links for Trecasa visual identity.
+
+---------------------------------
+🔹 SPACING & STRUCTURE RECAP
+---------------------------------
+- Section spacing (between blocks): 14px
+- Inside-section padding: 8–10px
+- Consistent table cell vertical padding: 4–6px
+- Page margins: 0.5 inch
+- Line height (body): 1.3×
+- Line height (headers): 1.2×
+
+---------------------------------
+🔹 PDF NOTES
+---------------------------------
+- Render all numeric values right-aligned with thousand separators.
+- Round to two decimals; ensure Indian currency formatting.
+- Ensure no content overflows A4 page height; if needed, break to next page with same header/footer repeated.
+- Header background + top table header bars should align perfectly with full width (no side margins inside table).
