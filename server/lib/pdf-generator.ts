@@ -78,27 +78,29 @@ export async function generateQuotationPDF(
       throw new Error(`Element ${selector} not found on page`);
     }
 
-    // Inject PDF-optimized CSS with Google Fonts and Part 2 enhancements
+    // Inject PDF-optimized CSS with Google Fonts and professional specifications
     await page.addStyleTag({
       content: `
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Montserrat:wght@400;500;600&display=swap');
         
         @page {
-          size: A4;
-          margin: 18mm 14mm 22mm;
+          size: A4 portrait;
+          margin: 12.7mm;
         }
         
         @media print {
           body {
             font-family: 'Montserrat', Arial, sans-serif;
-            font-size: 11px;
-            color: #1E2F28;
+            font-size: 9.5pt;
+            color: #1A1A1A;
             margin: 0;
             padding: 0;
+            line-height: 1.3;
           }
           
-          h1, h2, h3, h4, .final-total {
+          h1, h2, h3, h4 {
             font-family: 'Playfair Display', Georgia, serif;
+            line-height: 1.2;
           }
           
           /* Fixed header & footer that repeat across pages */
@@ -115,22 +117,23 @@ export async function generateQuotationPDF(
             bottom: 0;
             left: 0;
             right: 0;
-            height: 18mm;
+            height: 15mm;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             font-family: 'Montserrat', Arial, sans-serif;
-            font-size: 10px;
-            color: #1E2F28;
-            padding: 0 14mm;
-            border-top: 2px solid #D1B77C;
+            font-size: 8.5pt;
+            color: #666666;
+            padding: 0 12.7mm;
+            border-top: 1px solid #E0E0E0;
             background: white;
             z-index: 1000;
           }
           
-          /* Part 2D: Page numbers in footer */
+          /* Page numbers in footer */
           .pdf-footer .page-num::after {
             content: "Page " counter(page) " of " counter(pages);
+            margin: 0 8px;
           }
           
           .pdf-body {

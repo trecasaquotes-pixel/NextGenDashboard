@@ -420,34 +420,22 @@ export default function Print() {
                     <table className="summary-table w-full border-collapse text-[9.5px]">
                       <thead>
                         <tr className="bg-[#154734] text-white">
-                          <th className="px-3 py-1.5 text-center font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Room</th>
-                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Modular</th>
-                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Accessories</th>
-                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Appliances</th>
-                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Services</th>
-                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total</th>
+                          <th className="px-3 py-1.5 text-left font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Room</th>
+                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total (₹)</th>
                         </tr>
                       </thead>
                       <tbody>
                         {interiorsRoomTotals.map(({room, total}, idx) => (
                           <tr key={room} className="border-b border-gray-200">
-                            <td className="px-2 py-1 text-left" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{room}</td>
-                            <td className="px-2 py-1 text-right">-</td>
-                            <td className="px-2 py-1 text-right">-</td>
-                            <td className="px-2 py-1 text-right">-</td>
-                            <td className="px-2 py-1 text-right">-</td>
-                            <td className="px-2 py-1 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(total)}</td>
+                            <td className="px-3 py-1.5 text-left" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{room}</td>
+                            <td className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(total)}</td>
                           </tr>
                         ))}
                       </tbody>
                       <tfoot>
                         <tr className="bg-[#FAF8F1] border-t border-[#C7A948]">
-                          <td className="px-2 py-2 text-left font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total</td>
-                          <td className="px-2 py-2 text-right">-</td>
-                          <td className="px-2 py-2 text-right">-</td>
-                          <td className="px-2 py-2 text-right">-</td>
-                          <td className="px-2 py-2 text-right">-</td>
-                          <td className="px-2 py-2 text-right font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(interiorsSubtotal)}</td>
+                          <td className="px-3 py-2 text-left font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total</td>
+                          <td className="px-3 py-2 text-right font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(interiorsSubtotal)}</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -513,7 +501,7 @@ export default function Print() {
                       
                       return (
                         <section key={room} className="room-block">
-                          <h4 className="room-title font-semibold text-[#0E2F1B] mb-1" style={{margin: '2mm 0 1mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
+                          <h4 className="room-title font-semibold text-[#154734] mb-1" style={{margin: '2mm 0 1mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
                           <table className="room-table w-full text-xs zebra-table">
                             <thead>
                               <tr className="bg-gray-100">
@@ -597,7 +585,7 @@ export default function Print() {
 
                   {/* Signatures */}
                   <div className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid" data-testid="signature-block-interiors">
-                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
+                    <h3 className="text-sm font-semibold text-[#154734] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Client Signature */}
                       <div className="space-y-2 break-inside-avoid">
@@ -720,52 +708,34 @@ export default function Print() {
                 </div>
 
                 {/* PDF Body - Content */}
-                <div className="pdf-body print-body-content p-3 space-y-2">
-                  {/* Title */}
-                  <div className="text-center border-b-2 border-[#D1B77C] pb-1">
-                    <h2 className="text-lg font-bold text-[#0E2F1B]">FALSE CEILING QUOTATION</h2>
-                  </div>
-
-                  {/* Room Totals Summary - Part 2A */}
+                <div className="pdf-body print-body-content" style={{padding: '10px 14px', fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                  
+                  {/* Room Totals Summary - Professional */}
                   {fcRoomTotals.length > 0 && (
                     <>
-                      <section className="summary-section space-y-3">
-                        <h2 className="text-base font-bold text-[#0F3A2B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>ROOM TOTALS — FALSE CEILING</h2>
-                        <table className="summary-table w-full border-collapse text-xs">
+                      <section className="summary-section" style={{marginTop: '10px'}}>
+                        <div className="bg-[#154734] text-white px-3 py-1.5 font-semibold text-[11px]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                          Roomwise Summary — False Ceiling
+                        </div>
+                        <table className="summary-table w-full border-collapse text-[9.5px]">
                           <thead>
-                            <tr className="bg-[#F3F6F5]">
-                              <th className="border-b border-[#E6E6E6] px-3 py-2 text-left font-semibold">Room</th>
-                              <th className="border-b border-[#E6E6E6] px-3 py-2 text-right font-semibold">Subtotal (₹)</th>
+                            <tr className="bg-[#154734] text-white">
+                              <th className="px-3 py-1.5 text-center font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Room</th>
+                              <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total</th>
                             </tr>
                           </thead>
                           <tbody>
                             {fcRoomTotals.map(({room, total}) => (
-                              <tr key={room}>
-                                <td className="border-b border-[#E6E6E6] px-3 py-2">{room}</td>
-                                <td className="border-b border-[#E6E6E6] px-3 py-2 text-right font-mono">{formatINR(total)}</td>
+                              <tr key={room} className="border-b border-gray-200">
+                                <td className="px-2 py-1 text-left" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{room}</td>
+                                <td className="px-2 py-1 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(total)}</td>
                               </tr>
                             ))}
                           </tbody>
                           <tfoot>
-                            <tr className="summary-grand">
-                              <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-bold">False Ceiling Subtotal</td>
-                              <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-mono font-bold">{formatINR(fcSubtotal)}</td>
-                            </tr>
-                            {fcDiscountAmount > 0 && (
-                              <tr>
-                                <td className="px-3 py-2 text-right">
-                                  Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
-                                </td>
-                                <td className="px-3 py-2 text-right font-mono text-red-600">-{formatINR(fcDiscountAmount)}</td>
-                              </tr>
-                            )}
-                            <tr>
-                              <td className="px-3 py-2 text-right">GST (18%):</td>
-                              <td className="px-3 py-2 text-right font-mono">{formatINR(fcGst)}</td>
-                            </tr>
-                            <tr className="bg-[#0E2F1B] text-white">
-                              <td className="px-3 py-2 text-right font-bold">Final False Ceiling Quote</td>
-                              <td className="px-3 py-2 text-right font-mono font-bold">{formatINR(fcFinalTotal)}</td>
+                            <tr className="bg-[#FAF8F1] border-t border-[#C7A948]">
+                              <td className="px-2 py-2 text-left font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total</td>
+                              <td className="px-2 py-2 text-right font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(fcSubtotal)}</td>
                             </tr>
                           </tfoot>
                         </table>
@@ -773,24 +743,64 @@ export default function Print() {
                     </>
                   )}
 
-                  {/* Section A: Project Summary */}
-                  <div className="space-y-1">
-                    <h3 className="section-title text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">PROJECT SUMMARY</h3>
-                    <div className="grid grid-cols-2 gap-4 text-xs">
-                      <div>
-                        <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
-                        <p><strong>Project Category:</strong> {quotation.projectType || "N/A"}</p>
+                  {/* Price Summary Section */}
+                  {fcRoomTotals.length > 0 && (
+                    <section className="price-summary-section" style={{marginTop: '14px'}}>
+                      <div className="bg-[#154734] text-[#C7A948] px-3 py-1 font-medium text-[10.5px]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                        Price Summary (False Ceiling)
                       </div>
-                      <div>
-                        <p><strong>Address:</strong> {quotation.projectAddress || "N/A"}</p>
+                      <div className="border border-gray-200 px-3 py-2 text-[9.5px] space-y-1.5" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                        <div className="flex justify-between">
+                          <span>Subtotal:</span>
+                          <span className="font-medium">{formatINR(fcSubtotal)}</span>
+                        </div>
+                        {fcDiscountAmount > 0 && (
+                          <div className="flex justify-between text-red-600">
+                            <span>Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):</span>
+                            <span className="font-medium">-{formatINR(fcDiscountAmount)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between">
+                          <span>GST (18%):</span>
+                          <span className="font-medium">{formatINR(fcGst)}</span>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                      <div className="bg-[#F8F3D9] border-t-2 border-[#154734] border-b border-[#C7A948] px-3 py-1.5 flex justify-between text-[11.5px] font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                        <span>Final Quote Value:</span>
+                        <span>{formatINR(fcFinalTotal)}</span>
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Payment Breakdown Section */}
+                  {fcRoomTotals.length > 0 && (
+                    <section className="payment-breakdown-section" style={{marginTop: '14px'}}>
+                      <h3 className="text-[10pt] font-medium text-[#154734] mb-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Payment Breakdown</h3>
+                      <div className="text-[9.5px] space-y-0.5" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                        <div className="flex justify-between py-1">
+                          <span>Token Advance – 10%</span>
+                          <span className="font-medium">{formatINR(fcFinalTotal * 0.10)}</span>
+                        </div>
+                        <div className="flex justify-between py-1">
+                          <span>Design Finalisation – 60%</span>
+                          <span className="font-medium">{formatINR(fcFinalTotal * 0.60)}</span>
+                        </div>
+                        <div className="flex justify-between py-1">
+                          <span>Mid Execution – 25%</span>
+                          <span className="font-medium">{formatINR(fcFinalTotal * 0.25)}</span>
+                        </div>
+                        <div className="flex justify-between py-1">
+                          <span>After Handover – 5%</span>
+                          <span className="font-medium">{formatINR(fcFinalTotal * 0.05)}</span>
+                        </div>
+                      </div>
+                    </section>
+                  )}
                   
                   {/* Section C: Room-wise False Ceiling Breakdown */}
                   {falseCeilingItems.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="section-title text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
+                    <div className="space-y-3" style={{marginTop: '14px'}}>
+                      <h3 className="text-[10pt] font-medium text-[#154734] mb-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Detailed Room-wise Breakdown</h3>
                       
                       {sortRoomEntries(Object.entries(falseCeilingByRoom)).map(([room, items], roomIdx) => {
                         const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
@@ -798,7 +808,7 @@ export default function Print() {
                         
                         return (
                           <section key={room} className="room-block">
-                            <h4 className="room-title font-semibold text-[#0E2F1B] mb-2" style={{margin: '2mm 0 1mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
+                            <h4 className="room-title font-semibold text-[#154734] mb-2" style={{margin: '2mm 0 1mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
                             <table className="room-table w-full text-xs zebra-table">
                               <thead>
                                 <tr className="bg-gray-100">
@@ -817,7 +827,7 @@ export default function Print() {
                                     <td className="px-2 py-0.5 text-center font-mono tabular-nums font-semibold">{item.area || "0.00"}</td>
                                   </tr>
                                 ))}
-                                <tr className="bg-[#0E2F1B] text-white font-semibold border-t-2 border-[#D1B77C]">
+                                <tr className="bg-[#154734] text-white font-semibold border-t-2 border-[#C7A948]">
                                   <td colSpan={3} className="px-2 py-2 text-right">Room Area:</td>
                                   <td className="px-2 py-2 text-center font-mono tabular-nums">{roomArea.toFixed(2)} SQFT</td>
                                 </tr>
@@ -832,7 +842,7 @@ export default function Print() {
                   {/* Section C: OTHERS */}
                   {otherItems.length > 0 && (
                     <div className="space-y-1 break-inside-avoid">
-                      <h3 className="text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">OTHERS</h3>
+                      <h3 className="text-sm font-semibold text-[#154734] border-b border-gray-300 pb-1">OTHERS</h3>
                       <table className="w-full text-xs zebra-table">
                         <thead>
                           <tr className="bg-gray-100">
@@ -858,7 +868,7 @@ export default function Print() {
 
                   {/* Section D: Summary */}
                   <div className="summary-totals space-y-1 break-inside-avoid">
-                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">SUMMARY</h3>
+                    <h3 className="text-sm font-semibold text-[#154734] border-b border-gray-300 pb-1">SUMMARY</h3>
                     <table className="w-full max-w-md ml-auto text-xs">
                       <tbody>
                         <tr className="row">
@@ -879,12 +889,12 @@ export default function Print() {
                         </tr>
                         <tr className="final-total row border-t-2 border-[#D1B77C]">
                           <td className="py-3 text-right pr-4">
-                            <div className="text-[8px] text-[#0E2F1B] mb-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Final False Ceiling Quote</div>
+                            <div className="text-[8px] text-[#154734] mb-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Final False Ceiling Quote</div>
                           </td>
                           <td className="py-3 text-right">
                             <div className="text-sm font-bold tabular-nums" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
                               <span className="text-[#C42021]">₹</span>
-                              <span className="text-[#0E2F1B]">{formatINR(fcFinalTotal).replace('₹', '')}</span>
+                              <span className="text-[#154734]">{formatINR(fcFinalTotal).replace('₹', '')}</span>
                             </div>
                             <div className="text-[8px] text-gray-500 mt-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Rounded off to nearest rupee</div>
                           </td>
@@ -894,9 +904,9 @@ export default function Print() {
                   </div>
 
                   {/* Notes/Terms */}
-                  <div className="space-y-2 break-inside-avoid">
-                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
-                    <ul className="text-xs space-y-1 list-disc list-inside text-gray-700">
+                  <div className="space-y-1 break-inside-avoid" style={{marginTop: '14px'}}>
+                    <h3 className="text-[10pt] font-medium text-[#154734] mb-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>TERMS & CONDITIONS</h3>
+                    <ul className="text-[9.5px] space-y-1 list-disc list-inside text-gray-700" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
                       {(() => {
                         const terms = quotation.terms?.falseCeiling;
                         
@@ -932,7 +942,7 @@ export default function Print() {
 
                   {/* Signatures */}
                   <div className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid" data-testid="signature-block-false-ceiling">
-                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
+                    <h3 className="text-sm font-semibold text-[#154734] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Client Signature */}
                       <div className="space-y-2 break-inside-avoid">
