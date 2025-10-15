@@ -367,11 +367,11 @@ export default function Print() {
                 <div className="pdf-header bg-[#0E2F1B] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="brand-row flex items-center justify-between">
                     <div className="brand-left">
-                      <h1 className="text-3xl font-bold mb-2">TRECASA DESIGN STUDIO</h1>
-                      <p className="text-[#D1B77C] text-sm">Luxury Interiors | Architecture | Build</p>
+                      <h1 className="text-2xl font-bold mb-2">TRECASA DESIGN STUDIO</h1>
+                      <p className="text-[#D1B77C] text-xs">Luxury Interiors | Architecture | Build</p>
                     </div>
                     <div className="flex items-center gap-6">
-                      <div className="text-right text-sm space-y-1 header-meta">
+                      <div className="text-right text-[8px] space-y-1 header-meta">
                         <div><strong>Client:</strong> {quotation.clientName || "N/A"}</div>
                         <div><strong>Quote ID:</strong> {quotation.quoteId}</div>
                         <div><strong>Date:</strong> {currentDate}</div>
@@ -394,13 +394,13 @@ export default function Print() {
                 <div className="pdf-body print-body-content p-3 space-y-2">
                   {/* Title */}
                   <div className="text-center border-b-2 border-[#D1B77C] pb-1">
-                    <h2 className="text-2xl font-bold text-[#0E2F1B]">INTERIORS QUOTATION</h2>
+                    <h2 className="text-lg font-bold text-[#0E2F1B]">INTERIORS QUOTATION</h2>
                   </div>
 
                   {/* Room Totals Summary - Part 2A */}
                   <section className="summary-section space-y-1">
-                    <h2 className="text-xl font-bold text-[#0F3A2B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>ROOM TOTALS — INTERIORS</h2>
-                    <table className="summary-table w-full border-collapse text-sm">
+                    <h2 className="text-base font-bold text-[#0F3A2B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>ROOM TOTALS — INTERIORS</h2>
+                    <table className="summary-table w-full border-collapse text-xs">
                       <thead>
                         <tr className="bg-[#F3F6F5]">
                           <th className="border-b border-[#E6E6E6] px-3 py-2 text-left font-semibold">Room</th>
@@ -426,8 +426,8 @@ export default function Print() {
 
                   {/* Section A: Project Summary */}
                   <div className="space-y-1">
-                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">PROJECT SUMMARY</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <h3 className="section-title text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">PROJECT SUMMARY</h3>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
                       <div>
                         <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
                         <p><strong>Project Category:</strong> {quotation.projectType || "N/A"}</p>
@@ -440,7 +440,7 @@ export default function Print() {
                   
                   {/* Section C: Room-wise Breakdown */}
                   <div className="space-y-1">
-                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">ROOM-WISE BREAKDOWN</h3>
+                    <h3 className="section-title text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">ROOM-WISE BREAKDOWN</h3>
                     
                     {sortRoomEntries(Object.entries(interiorsByRoom)).map(([room, items], roomIdx) => {
                       const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
@@ -449,7 +449,7 @@ export default function Print() {
                       return (
                         <section key={room} className="room-block">
                           <h4 className="room-title font-semibold text-[#0E2F1B] mb-1" style={{margin: '2mm 0 1mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
-                          <table className="room-table w-full text-sm zebra-table">
+                          <table className="room-table w-full text-xs zebra-table">
                             <thead>
                               <tr className="bg-gray-100">
                                 <th className="px-2 py-1 text-left">Description</th>
@@ -488,15 +488,15 @@ export default function Print() {
 
                   {/* Custom Rate Legend (if any rates are overridden) */}
                   {interiorItems.some(item => item.isRateOverridden) && (
-                    <div className="text-xs text-gray-600 mt-2 mb-4 break-inside-avoid">
+                    <div className="text-[8px] text-gray-600 mt-2 mb-4 break-inside-avoid">
                       <span className="font-semibold">*</span> Custom rate applied
                     </div>
                   )}
 
                   {/* Section C: Summary */}
                   <div className="summary-totals space-y-3 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">SUMMARY</h3>
-                    <table className="w-full max-w-md ml-auto text-sm">
+                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">SUMMARY</h3>
+                    <table className="w-full max-w-md ml-auto text-xs">
                       <tbody>
                         <tr className="row">
                           <td className="py-1 text-right pr-4">Interiors Subtotal:</td>
@@ -516,14 +516,14 @@ export default function Print() {
                         </tr>
                         <tr className="final-total row border-t-2 border-[#D1B77C]">
                           <td className="py-3 text-right pr-4">
-                            <div className="text-xs text-[#0E2F1B] mb-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Final Interiors Quote</div>
+                            <div className="text-[8px] text-[#0E2F1B] mb-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Final Interiors Quote</div>
                           </td>
                           <td className="py-3 text-right">
-                            <div className="text-lg font-bold tabular-nums" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
+                            <div className="text-sm font-bold tabular-nums" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
                               <span className="text-[#C42021]">₹</span>
                               <span className="text-[#0E2F1B]">{formatINR(interiorsFinalTotal).replace('₹', '')}</span>
                             </div>
-                            <div className="text-xs text-gray-500 mt-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Rounded off to nearest rupee</div>
+                            <div className="text-[8px] text-gray-500 mt-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Rounded off to nearest rupee</div>
                           </td>
                         </tr>
                       </tbody>
@@ -532,8 +532,8 @@ export default function Print() {
 
                   {/* Section D: Notes/Terms */}
                   <div className="space-y-1 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
-                    <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
+                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
+                    <ul className="text-xs space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.interiors;
                         const lines = terms?.useDefault
@@ -551,27 +551,27 @@ export default function Print() {
 
                   {/* Signatures */}
                   <div className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid" data-testid="signature-block-interiors">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
+                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Client Signature */}
                       <div className="space-y-2 break-inside-avoid">
-                        <p className="text-xs uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>Client</p>
+                        <p className="text-[8px] uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>Client</p>
                         <div className="space-y-2">
                           <div>
-                            <p className="text-xs text-gray-500">Name:</p>
-                            <p className="text-sm font-medium">{quotation.signoff?.client?.name || quotation.clientName || "_____________"}</p>
+                            <p className="text-[8px] text-gray-500">Name:</p>
+                            <p className="text-xs font-medium">{quotation.signoff?.client?.name || quotation.clientName || "_____________"}</p>
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500">Signature:</p>
+                            <p className="text-[8px] text-gray-500">Signature:</p>
                             {quotation.signoff?.client?.signature ? (
-                              <p className="text-lg font-serif italic text-gray-800">{quotation.signoff.client.signature}</p>
+                              <p className="text-sm font-serif italic text-gray-800">{quotation.signoff.client.signature}</p>
                             ) : (
-                              <p className="text-sm text-gray-400">_____________</p>
+                              <p className="text-xs text-gray-400">_____________</p>
                             )}
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500">Date:</p>
-                            <p className="text-sm">
+                            <p className="text-[8px] text-gray-500">Date:</p>
+                            <p className="text-xs">
                               {quotation.signoff?.client?.signedAt ? dateFormat(quotation.signoff.client.signedAt) : "_____________"}
                             </p>
                           </div>
@@ -580,25 +580,25 @@ export default function Print() {
 
                       {/* Trecasa Signature */}
                       <div className="space-y-3 break-inside-avoid">
-                        <p className="text-xs uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>
+                        <p className="text-[8px] uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>
                           {quotation.signoff?.trecasa?.title || "For TRECASA DESIGN STUDIO"}
                         </p>
                         <div className="space-y-2">
                           <div>
-                            <p className="text-xs text-gray-500">Name:</p>
-                            <p className="text-sm font-medium">{quotation.signoff?.trecasa?.name || "Authorized Signatory"}</p>
+                            <p className="text-[8px] text-gray-500">Name:</p>
+                            <p className="text-xs font-medium">{quotation.signoff?.trecasa?.name || "Authorized Signatory"}</p>
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500">Signature:</p>
+                            <p className="text-[8px] text-gray-500">Signature:</p>
                             {quotation.signoff?.trecasa?.signature ? (
-                              <p className="text-lg font-serif italic text-gray-800">{quotation.signoff.trecasa.signature}</p>
+                              <p className="text-sm font-serif italic text-gray-800">{quotation.signoff.trecasa.signature}</p>
                             ) : (
-                              <p className="text-sm text-gray-400">_____________</p>
+                              <p className="text-xs text-gray-400">_____________</p>
                             )}
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500">Date:</p>
-                            <p className="text-sm">
+                            <p className="text-[8px] text-gray-500">Date:</p>
+                            <p className="text-xs">
                               {quotation.signoff?.trecasa?.signedAt ? dateFormat(quotation.signoff.trecasa.signedAt) : "_____________"}
                             </p>
                           </div>
@@ -631,11 +631,11 @@ export default function Print() {
                 <div className="pdf-header bg-[#0E2F1B] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="brand-row flex items-center justify-between">
                     <div className="brand-left">
-                      <h1 className="text-3xl font-bold mb-2">TRECASA DESIGN STUDIO</h1>
-                      <p className="text-[#D1B77C] text-sm">Luxury Interiors | Architecture | Build</p>
+                      <h1 className="text-2xl font-bold mb-2">TRECASA DESIGN STUDIO</h1>
+                      <p className="text-[#D1B77C] text-xs">Luxury Interiors | Architecture | Build</p>
                     </div>
                     <div className="flex items-center gap-6">
-                      <div className="text-right text-sm space-y-1 header-meta">
+                      <div className="text-right text-[8px] space-y-1 header-meta">
                         <div><strong>Client:</strong> {quotation.clientName || "N/A"}</div>
                         <div><strong>Quote ID:</strong> {quotation.quoteId}</div>
                         <div><strong>Date:</strong> {currentDate}</div>
@@ -658,15 +658,15 @@ export default function Print() {
                 <div className="pdf-body print-body-content p-3 space-y-2">
                   {/* Title */}
                   <div className="text-center border-b-2 border-[#D1B77C] pb-1">
-                    <h2 className="text-2xl font-bold text-[#0E2F1B]">FALSE CEILING QUOTATION</h2>
+                    <h2 className="text-lg font-bold text-[#0E2F1B]">FALSE CEILING QUOTATION</h2>
                   </div>
 
                   {/* Room Totals Summary - Part 2A */}
                   {fcRoomTotals.length > 0 && (
                     <>
                       <section className="summary-section space-y-3">
-                        <h2 className="text-xl font-bold text-[#0F3A2B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>ROOM TOTALS — FALSE CEILING</h2>
-                        <table className="summary-table w-full border-collapse text-sm">
+                        <h2 className="text-base font-bold text-[#0F3A2B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>ROOM TOTALS — FALSE CEILING</h2>
+                        <table className="summary-table w-full border-collapse text-xs">
                           <thead>
                             <tr className="bg-[#F3F6F5]">
                               <th className="border-b border-[#E6E6E6] px-3 py-2 text-left font-semibold">Room</th>
@@ -694,8 +694,8 @@ export default function Print() {
 
                   {/* Section A: Project Summary */}
                   <div className="space-y-1">
-                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">PROJECT SUMMARY</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <h3 className="section-title text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">PROJECT SUMMARY</h3>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
                       <div>
                         <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
                         <p><strong>Project Category:</strong> {quotation.projectType || "N/A"}</p>
@@ -709,7 +709,7 @@ export default function Print() {
                   {/* Section C: Room-wise False Ceiling Breakdown */}
                   {falseCeilingItems.length > 0 && (
                     <div className="space-y-3">
-                      <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
+                      <h3 className="section-title text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
                       
                       {sortRoomEntries(Object.entries(falseCeilingByRoom)).map(([room, items], roomIdx) => {
                         const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
@@ -717,8 +717,8 @@ export default function Print() {
                         
                         return (
                           <section key={room} className="room-block">
-                            <h4 className="room-title font-semibold text-[#0E2F1B] mb-2" style={{margin: '5mm 0 2mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
-                            <table className="room-table w-full text-sm zebra-table">
+                            <h4 className="room-title font-semibold text-[#0E2F1B] mb-2" style={{margin: '2mm 0 1mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
+                            <table className="room-table w-full text-xs zebra-table">
                               <thead>
                                 <tr className="bg-gray-100">
                                   <th className="px-2 py-1 text-left">Description</th>
@@ -751,8 +751,8 @@ export default function Print() {
                   {/* Section C: OTHERS */}
                   {otherItems.length > 0 && (
                     <div className="space-y-1 break-inside-avoid">
-                      <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">OTHERS</h3>
-                      <table className="w-full text-sm zebra-table">
+                      <h3 className="text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">OTHERS</h3>
+                      <table className="w-full text-xs zebra-table">
                         <thead>
                           <tr className="bg-gray-100">
                             <th className="px-2 py-1 text-left">Item Type</th>
@@ -777,8 +777,8 @@ export default function Print() {
 
                   {/* Section D: Summary */}
                   <div className="summary-totals space-y-1 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">SUMMARY</h3>
-                    <table className="w-full max-w-md ml-auto text-sm">
+                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">SUMMARY</h3>
+                    <table className="w-full max-w-md ml-auto text-xs">
                       <tbody>
                         <tr className="row">
                           <td className="py-1 text-right pr-4">False Ceiling Subtotal:</td>
@@ -798,14 +798,14 @@ export default function Print() {
                         </tr>
                         <tr className="final-total row border-t-2 border-[#D1B77C]">
                           <td className="py-3 text-right pr-4">
-                            <div className="text-xs text-[#0E2F1B] mb-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Final False Ceiling Quote</div>
+                            <div className="text-[8px] text-[#0E2F1B] mb-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Final False Ceiling Quote</div>
                           </td>
                           <td className="py-3 text-right">
-                            <div className="text-lg font-bold tabular-nums" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
+                            <div className="text-sm font-bold tabular-nums" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
                               <span className="text-[#C42021]">₹</span>
                               <span className="text-[#0E2F1B]">{formatINR(fcFinalTotal).replace('₹', '')}</span>
                             </div>
-                            <div className="text-xs text-gray-500 mt-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Rounded off to nearest rupee</div>
+                            <div className="text-[8px] text-gray-500 mt-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Rounded off to nearest rupee</div>
                           </td>
                         </tr>
                       </tbody>
@@ -814,8 +814,8 @@ export default function Print() {
 
                   {/* Notes/Terms */}
                   <div className="space-y-2 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
-                    <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
+                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
+                    <ul className="text-xs space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.falseCeiling;
                         const lines = terms?.useDefault
@@ -833,27 +833,27 @@ export default function Print() {
 
                   {/* Signatures */}
                   <div className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid" data-testid="signature-block-false-ceiling">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
+                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Client Signature */}
                       <div className="space-y-2 break-inside-avoid">
-                        <p className="text-xs uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>Client</p>
+                        <p className="text-[8px] uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>Client</p>
                         <div className="space-y-2">
                           <div>
-                            <p className="text-xs text-gray-500">Name:</p>
-                            <p className="text-sm font-medium">{quotation.signoff?.client?.name || quotation.clientName || "_____________"}</p>
+                            <p className="text-[8px] text-gray-500">Name:</p>
+                            <p className="text-xs font-medium">{quotation.signoff?.client?.name || quotation.clientName || "_____________"}</p>
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500">Signature:</p>
+                            <p className="text-[8px] text-gray-500">Signature:</p>
                             {quotation.signoff?.client?.signature ? (
-                              <p className="text-lg font-serif italic text-gray-800">{quotation.signoff.client.signature}</p>
+                              <p className="text-sm font-serif italic text-gray-800">{quotation.signoff.client.signature}</p>
                             ) : (
-                              <p className="text-sm text-gray-400">_____________</p>
+                              <p className="text-xs text-gray-400">_____________</p>
                             )}
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500">Date:</p>
-                            <p className="text-sm">
+                            <p className="text-[8px] text-gray-500">Date:</p>
+                            <p className="text-xs">
                               {quotation.signoff?.client?.signedAt ? dateFormat(quotation.signoff.client.signedAt) : "_____________"}
                             </p>
                           </div>
@@ -862,25 +862,25 @@ export default function Print() {
 
                       {/* Trecasa Signature */}
                       <div className="space-y-3 break-inside-avoid">
-                        <p className="text-xs uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>
+                        <p className="text-[8px] uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>
                           {quotation.signoff?.trecasa?.title || "For TRECASA DESIGN STUDIO"}
                         </p>
                         <div className="space-y-2">
                           <div>
-                            <p className="text-xs text-gray-500">Name:</p>
-                            <p className="text-sm font-medium">{quotation.signoff?.trecasa?.name || "Authorized Signatory"}</p>
+                            <p className="text-[8px] text-gray-500">Name:</p>
+                            <p className="text-xs font-medium">{quotation.signoff?.trecasa?.name || "Authorized Signatory"}</p>
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500">Signature:</p>
+                            <p className="text-[8px] text-gray-500">Signature:</p>
                             {quotation.signoff?.trecasa?.signature ? (
-                              <p className="text-lg font-serif italic text-gray-800">{quotation.signoff.trecasa.signature}</p>
+                              <p className="text-sm font-serif italic text-gray-800">{quotation.signoff.trecasa.signature}</p>
                             ) : (
-                              <p className="text-sm text-gray-400">_____________</p>
+                              <p className="text-xs text-gray-400">_____________</p>
                             )}
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500">Date:</p>
-                            <p className="text-sm">
+                            <p className="text-[8px] text-gray-500">Date:</p>
+                            <p className="text-xs">
                               {quotation.signoff?.trecasa?.signedAt ? dateFormat(quotation.signoff.trecasa.signedAt) : "_____________"}
                             </p>
                           </div>
