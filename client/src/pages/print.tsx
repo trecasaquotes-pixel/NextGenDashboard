@@ -453,23 +453,59 @@ export default function Print() {
                     </table>
                   </section>
 
-                  {/* Section A: Project Summary */}
-                  <div className="space-y-1">
-                    <h3 className="section-title text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">PROJECT SUMMARY</h3>
-                    <div className="grid grid-cols-2 gap-4 text-xs">
-                      <div>
-                        <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
-                        <p><strong>Project Category:</strong> {quotation.projectType || "N/A"}</p>
+                  {/* Price Summary Section */}
+                  <section className="price-summary-section" style={{marginTop: '14px'}}>
+                    <div className="bg-[#154734] text-[#C7A948] px-3 py-1 font-medium text-[10.5px]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                      Price Summary (Interiors)
+                    </div>
+                    <div className="border border-gray-200 px-3 py-2 text-[9.5px] space-y-1.5" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                      <div className="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span className="font-medium">{formatINR(interiorsSubtotal)}</span>
                       </div>
-                      <div>
-                        <p><strong>Address:</strong> {quotation.projectAddress || "N/A"}</p>
+                      {interiorsDiscountAmount > 0 && (
+                        <div className="flex justify-between text-red-600">
+                          <span>Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):</span>
+                          <span className="font-medium">-{formatINR(interiorsDiscountAmount)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span>GST (18%):</span>
+                        <span className="font-medium">{formatINR(interiorsGst)}</span>
                       </div>
                     </div>
-                  </div>
+                    <div className="bg-[#F8F3D9] border-t-2 border-[#154734] border-b border-[#C7A948] px-3 py-1.5 flex justify-between text-[11.5px] font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                      <span>Final Quote Value:</span>
+                      <span>{formatINR(interiorsFinalTotal)}</span>
+                    </div>
+                  </section>
+
+                  {/* Payment Breakdown Section */}
+                  <section className="payment-breakdown-section" style={{marginTop: '14px'}}>
+                    <h3 className="text-[10pt] font-medium text-[#154734] mb-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Payment Breakdown</h3>
+                    <div className="text-[9.5px] space-y-0.5" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                      <div className="flex justify-between py-1">
+                        <span>Token Advance – 10%</span>
+                        <span className="font-medium">{formatINR(interiorsFinalTotal * 0.10)}</span>
+                      </div>
+                      <div className="flex justify-between py-1">
+                        <span>Design Finalisation – 60%</span>
+                        <span className="font-medium">{formatINR(interiorsFinalTotal * 0.60)}</span>
+                      </div>
+                      <div className="flex justify-between py-1">
+                        <span>Mid Execution – 25%</span>
+                        <span className="font-medium">{formatINR(interiorsFinalTotal * 0.25)}</span>
+                      </div>
+                      <div className="flex justify-between py-1">
+                        <span>After Handover – 5%</span>
+                        <span className="font-medium">{formatINR(interiorsFinalTotal * 0.05)}</span>
+                      </div>
+                    </div>
+                  </section>
                   
                   {/* Section C: Room-wise Breakdown */}
-                  <div className="space-y-1">
-                    <h3 className="section-title text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">ROOM-WISE BREAKDOWN</h3>
+                  <div className="space-y-1" style={{marginTop: '14px'}}>
+                    <h3 className="text-[10pt] font-medium text-[#154734] mb-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Detailed Room-wise Breakdown</h3>
                     
                     {sortRoomEntries(Object.entries(interiorsByRoom)).map(([room, items], roomIdx) => {
                       const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
@@ -504,7 +540,7 @@ export default function Print() {
                                   <td className="px-2 py-0.5 text-right font-mono tabular-nums font-semibold">₹{item.totalPrice || "0"}</td>
                                 </tr>
                               ))}
-                              <tr className="room-subtotal bg-[#0F3A2B] text-white font-semibold border-t-2 border-[#D1B77C]">
+                              <tr className="room-subtotal bg-[#154734] text-white font-semibold border-t-2 border-[#C7A948]">
                                 <td colSpan={6} className="px-2 py-2 text-right">Room Subtotal:</td>
                                 <td className="px-2 py-2 text-right font-mono tabular-nums">{formatINR(roomTotal)}</td>
                               </tr>
@@ -522,47 +558,10 @@ export default function Print() {
                     </div>
                   )}
 
-                  {/* Section C: Summary */}
-                  <div className="summary-totals space-y-3 break-inside-avoid">
-                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">SUMMARY</h3>
-                    <table className="w-full max-w-md ml-auto text-xs">
-                      <tbody>
-                        <tr className="row">
-                          <td className="py-1 text-right pr-4">Interiors Subtotal:</td>
-                          <td className="py-1 text-right font-mono tabular-nums font-semibold">{formatINR(interiorsSubtotal)}</td>
-                        </tr>
-                        {interiorsDiscountAmount > 0 && (
-                          <tr className="row">
-                            <td className="py-1 text-right pr-4">
-                              Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
-                            </td>
-                            <td className="py-1 text-right font-mono tabular-nums text-red-600">-{formatINR(interiorsDiscountAmount)}</td>
-                          </tr>
-                        )}
-                        <tr className="row">
-                          <td className="py-1 text-right pr-4">GST (18%):</td>
-                          <td className="py-1 text-right font-mono tabular-nums">{formatINR(interiorsGst)}</td>
-                        </tr>
-                        <tr className="final-total row border-t-2 border-[#D1B77C]">
-                          <td className="py-3 text-right pr-4">
-                            <div className="text-[8px] text-[#0E2F1B] mb-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Final Interiors Quote</div>
-                          </td>
-                          <td className="py-3 text-right">
-                            <div className="text-sm font-bold tabular-nums" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
-                              <span className="text-[#C42021]">₹</span>
-                              <span className="text-[#0E2F1B]">{formatINR(interiorsFinalTotal).replace('₹', '')}</span>
-                            </div>
-                            <div className="text-[8px] text-gray-500 mt-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Rounded off to nearest rupee</div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
                   {/* Section D: Notes/Terms */}
-                  <div className="space-y-1 break-inside-avoid">
-                    <h3 className="text-sm font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
-                    <ul className="text-xs space-y-1 list-disc list-inside text-gray-700">
+                  <div className="space-y-1 break-inside-avoid" style={{marginTop: '14px'}}>
+                    <h3 className="text-[10pt] font-medium text-[#154734] mb-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>TERMS & CONDITIONS</h3>
+                    <ul className="text-[9.5px] space-y-1 list-disc list-inside text-gray-700" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
                       {(() => {
                         const terms = quotation.terms?.interiors;
                         
@@ -675,22 +674,40 @@ export default function Print() {
               {/* Print Content */}
               <div id="print-fc-root" className="print-content bg-white text-black" data-pdf-ready="true">
                 {/* PDF Header - Fixed */}
-                <div className="pdf-header bg-[#0E2F1B] text-white p-6 rounded-t-lg print:rounded-none">
-                  <div className="brand-row flex items-center justify-between">
-                    <div className="brand-left">
-                      <h1 className="text-2xl font-bold">TRECASA DESIGN STUDIO</h1>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right text-[8px] space-y-1 header-meta">
-                        <div><strong>Client:</strong> {quotation.clientName || "N/A"}</div>
-                        <div><strong>Quote ID:</strong> {quotation.quoteId}</div>
-                        <div><strong>Date:</strong> {currentDate}</div>
-                        <div><strong>Project:</strong> {quotation.projectName || "N/A"}</div>
+                <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none">
+                  {/* Top bar with company name and address */}
+                  <div className="p-3 border-b border-white/20" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <div>
+                        <div className="font-medium">TRECASA ARCHITECTURE AND INTERIORS <span className="text-[#C7A948]">|</span> Trecasa Interiors</div>
+                        <div className="text-[9px] mt-0.5">H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049</div>
                       </div>
-                      <div className="brand-right">
-                        <span className="status-dot" aria-hidden="true" style={{width: '10px', height: '10px', background: '#C42021', borderRadius: '50%', display: 'inline-block', transform: 'translateY(1px)'}}></span>
+                      <div className="text-right text-[9px]">
+                        <div>contact@trecasainfra.com</div>
+                        <div>+91 9059784422</div>
                       </div>
                     </div>
+                  </div>
+                  
+                  {/* Metadata grid */}
+                  <div className="px-3 py-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                    <div className="flex items-start justify-between">
+                      <div className="text-[10px] space-y-1">
+                        <div><span className="font-medium">Client Name:</span> <span className="text-gray-300">{quotation.clientName || "N/A"}</span></div>
+                        <div><span className="font-medium">Project Address:</span> <span className="text-gray-300">{quotation.projectAddress || "N/A"}</span></div>
+                      </div>
+                      <div className="text-right text-[9.5px] space-y-1">
+                        <div><span className="font-medium">Issue Date:</span> <span className="text-gray-300">{currentDate}</span></div>
+                        <div><span className="font-medium">Quote ID:</span> <span className="text-gray-300">{quotation.quoteId}</span></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Greeting line */}
+                  <div className="px-3 pb-3 pt-1">
+                    <p className="text-[11px] text-gray-300 italic" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
+                      Hi {quotation.clientName || "Valued Client"} & Family
+                    </p>
                   </div>
                 </div>
 
