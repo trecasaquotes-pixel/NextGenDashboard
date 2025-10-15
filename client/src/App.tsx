@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import QuotesList from "@/pages/quotes-list";
+import ChangeOrdersList from "@/pages/change-orders-list";
 import ProjectInfo from "@/pages/project-info";
 import Scope from "@/pages/scope";
 import Estimate from "@/pages/estimate";
@@ -37,6 +38,7 @@ function Router() {
           <Route path="/dashboard" component={() => <Redirect to="/quotes" />} />
           <Route path="/quotations" component={() => <Redirect to="/quotes" />} />
           <Route path="/quotes" component={QuotesList} />
+          <Route path="/change-orders" component={ChangeOrdersList} />
           <Route path="/quotation/:id/info" component={ProjectInfo} />
           <Route path="/quotation/:id/scope" component={Scope} />
           <Route path="/quotation/:id/estimate" component={Estimate} />
