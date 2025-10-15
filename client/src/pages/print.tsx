@@ -391,14 +391,14 @@ export default function Print() {
                 </div>
 
                 {/* PDF Body - Content */}
-                <div className="pdf-body print-body-content p-4 space-y-4">
+                <div className="pdf-body print-body-content p-3 space-y-2">
                   {/* Title */}
-                  <div className="text-center border-b-2 border-[#D1B77C] pb-2">
+                  <div className="text-center border-b-2 border-[#D1B77C] pb-1">
                     <h2 className="text-2xl font-bold text-[#0E2F1B]">INTERIORS QUOTATION</h2>
                   </div>
 
                   {/* Room Totals Summary - Part 2A */}
-                  <section className="summary-section space-y-3">
+                  <section className="summary-section space-y-1">
                     <h2 className="text-xl font-bold text-[#0F3A2B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>ROOM TOTALS — INTERIORS</h2>
                     <table className="summary-table w-full border-collapse text-sm">
                       <thead>
@@ -425,8 +425,8 @@ export default function Print() {
                   </section>
 
                   {/* Section A: Project Summary */}
-                  <div className="space-y-2">
-                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
+                  <div className="space-y-1">
+                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">PROJECT SUMMARY</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
@@ -439,8 +439,8 @@ export default function Print() {
                   </div>
                   
                   {/* Section C: Room-wise Breakdown */}
-                  <div className="space-y-3">
-                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM-WISE BREAKDOWN</h3>
+                  <div className="space-y-1">
+                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">ROOM-WISE BREAKDOWN</h3>
                     
                     {sortRoomEntries(Object.entries(interiorsByRoom)).map(([room, items], roomIdx) => {
                       const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
@@ -448,7 +448,7 @@ export default function Print() {
                       
                       return (
                         <section key={room} className="room-block">
-                          <h4 className="room-title font-semibold text-[#0E2F1B] mb-2" style={{margin: '5mm 0 2mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
+                          <h4 className="room-title font-semibold text-[#0E2F1B] mb-1" style={{margin: '2mm 0 1mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
                           <table className="room-table w-full text-sm zebra-table">
                             <thead>
                               <tr className="bg-gray-100">
@@ -495,7 +495,7 @@ export default function Print() {
 
                   {/* Section C: Summary */}
                   <div className="summary-totals space-y-3 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">SUMMARY</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">SUMMARY</h3>
                     <table className="w-full max-w-md ml-auto text-sm">
                       <tbody>
                         <tr className="row">
@@ -531,8 +531,8 @@ export default function Print() {
                   </div>
 
                   {/* Section D: Notes/Terms */}
-                  <div className="space-y-2 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
+                  <div className="space-y-1 break-inside-avoid">
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
                     <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.interiors;
@@ -550,11 +550,11 @@ export default function Print() {
                   </div>
 
                   {/* Signatures */}
-                  <div className="mt-4 border border-gray-300 rounded-lg p-4 space-y-3 break-inside-avoid" data-testid="signature-block-interiors">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-4 border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid" data-testid="signature-block-interiors">
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Client Signature */}
-                      <div className="space-y-3 break-inside-avoid">
+                      <div className="space-y-2 break-inside-avoid">
                         <p className="text-xs uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>Client</p>
                         <div className="space-y-2">
                           <div>
@@ -655,9 +655,9 @@ export default function Print() {
                 </div>
 
                 {/* PDF Body - Content */}
-                <div className="pdf-body print-body-content p-4 space-y-4">
+                <div className="pdf-body print-body-content p-3 space-y-2">
                   {/* Title */}
-                  <div className="text-center border-b-2 border-[#D1B77C] pb-2">
+                  <div className="text-center border-b-2 border-[#D1B77C] pb-1">
                     <h2 className="text-2xl font-bold text-[#0E2F1B]">FALSE CEILING QUOTATION</h2>
                   </div>
 
@@ -693,8 +693,8 @@ export default function Print() {
                   )}
 
                   {/* Section A: Project Summary */}
-                  <div className="space-y-2">
-                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
+                  <div className="space-y-1">
+                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">PROJECT SUMMARY</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
@@ -709,7 +709,7 @@ export default function Print() {
                   {/* Section C: Room-wise False Ceiling Breakdown */}
                   {falseCeilingItems.length > 0 && (
                     <div className="space-y-3">
-                      <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
+                      <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
                       
                       {sortRoomEntries(Object.entries(falseCeilingByRoom)).map(([room, items], roomIdx) => {
                         const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
@@ -750,8 +750,8 @@ export default function Print() {
 
                   {/* Section C: OTHERS */}
                   {otherItems.length > 0 && (
-                    <div className="space-y-2 break-inside-avoid">
-                      <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">OTHERS</h3>
+                    <div className="space-y-1 break-inside-avoid">
+                      <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">OTHERS</h3>
                       <table className="w-full text-sm zebra-table">
                         <thead>
                           <tr className="bg-gray-100">
@@ -776,8 +776,8 @@ export default function Print() {
                   )}
 
                   {/* Section D: Summary */}
-                  <div className="summary-totals space-y-2 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">SUMMARY</h3>
+                  <div className="summary-totals space-y-1 break-inside-avoid">
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1">SUMMARY</h3>
                     <table className="w-full max-w-md ml-auto text-sm">
                       <tbody>
                         <tr className="row">
@@ -814,7 +814,7 @@ export default function Print() {
 
                   {/* Notes/Terms */}
                   <div className="space-y-2 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
                     <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.falseCeiling;
@@ -832,11 +832,11 @@ export default function Print() {
                   </div>
 
                   {/* Signatures */}
-                  <div className="mt-4 border border-gray-300 rounded-lg p-4 space-y-3 break-inside-avoid" data-testid="signature-block-false-ceiling">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-4 border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid" data-testid="signature-block-false-ceiling">
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Client Signature */}
-                      <div className="space-y-3 break-inside-avoid">
+                      <div className="space-y-2 break-inside-avoid">
                         <p className="text-xs uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>Client</p>
                         <div className="space-y-2">
                           <div>
