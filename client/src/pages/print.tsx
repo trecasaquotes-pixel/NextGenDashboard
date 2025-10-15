@@ -386,6 +386,7 @@ export default function Print() {
                 {/* PDF Footer - Fixed */}
                 <div className="pdf-footer">
                   <div>© 2025 TRECASA DESIGN STUDIO</div>
+                  <div className="page-num"></div>
                   <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
                 </div>
 
@@ -557,7 +558,7 @@ export default function Print() {
                         const quoteDate = quotation.createdAt ? new Date(quotation.createdAt) : new Date();
                         const expiryDate = new Date(quoteDate);
                         expiryDate.setDate(expiryDate.getDate() + validDays);
-                        const validUntilDate = dateFormat(expiryDate.toISOString());
+                        const validUntilDate = dateFormat(expiryDate.getTime());
                         
                         const lines = terms?.useDefault
                           ? renderTerms(defaultTerms.default_interiors, {
@@ -683,6 +684,7 @@ export default function Print() {
                 {/* PDF Footer - Fixed */}
                 <div className="pdf-footer">
                   <div>© 2025 TRECASA DESIGN STUDIO</div>
+                  <div className="page-num"></div>
                   <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
                 </div>
 
@@ -872,7 +874,7 @@ export default function Print() {
                         const quoteDate = quotation.createdAt ? new Date(quotation.createdAt) : new Date();
                         const expiryDate = new Date(quoteDate);
                         expiryDate.setDate(expiryDate.getDate() + validDays);
-                        const validUntilDate = dateFormat(expiryDate.toISOString());
+                        const validUntilDate = dateFormat(expiryDate.getTime());
                         
                         const lines = terms?.useDefault
                           ? renderTerms(defaultTerms.default_false_ceiling, {
