@@ -6,7 +6,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download, Settings, LayoutTemplate, Tag, Paintbrush, Sliders, History, Trash2 } from "lucide-react";
+import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download, Settings, LayoutTemplate, Tag, Paintbrush, Sliders, History, Trash2, TrendingUp, Briefcase } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -217,6 +217,15 @@ export default function QuotesList() {
                   <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                 </div>
               </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/change-orders")} data-testid="button-change-orders">
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Change Orders</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/projects")} data-testid="button-projects">
+                <Briefcase className="mr-2 h-4 w-4" />
+                <span>Projects & Expenses</span>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/admin/rates")} data-testid="button-admin-rates">
                 <Settings className="mr-2 h-4 w-4" />

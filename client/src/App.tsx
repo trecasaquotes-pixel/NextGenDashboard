@@ -9,6 +9,8 @@ import Landing from "@/pages/landing";
 import QuotesList from "@/pages/quotes-list";
 import ChangeOrdersList from "@/pages/change-orders-list";
 import ChangeOrderDetail from "@/pages/change-order-detail";
+import ProjectsList from "@/pages/projects-list";
+import ProjectDetail from "@/pages/project-detail";
 import ProjectInfo from "@/pages/project-info";
 import Scope from "@/pages/scope";
 import Estimate from "@/pages/estimate";
@@ -42,6 +44,8 @@ function Router() {
           <Route path="/change-orders" component={ChangeOrdersList} />
           <Route path="/change-orders/:id" component={ChangeOrderDetail} />
           <Route path="/quotation/:quotationId/change-orders/new" component={ChangeOrderDetail} />
+          <Route path="/projects" component={ProjectsList} />
+          <Route path="/projects/:id" component={ProjectDetail} />
           <Route path="/quotation/:id/info" component={ProjectInfo} />
           <Route path="/quotation/:id/scope" component={Scope} />
           <Route path="/quotation/:id/estimate" component={Estimate} />
