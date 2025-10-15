@@ -822,6 +822,115 @@ export const insertChangeOrderItemSchema = createInsertSchema(changeOrderItems, 
 export type ChangeOrderItem = typeof changeOrderItems.$inferSelect;
 export type NewChangeOrderItem = z.infer<typeof insertChangeOrderItemSchema>;
 
+// Projects table (created when quotation is approved)
+export const projects = pgTable("projects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }).unique(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  // Project ID (e.g., TRE_PRJ_250115_X1Y2)
+  projectId: varchar("project_id").notNull().unique(),
+  
+  // Project Info (snapshot from quotation)
+  projectName: varchar("project_name").notNull(),
+  clientName: varchar("client_name").notNull(),
+  projectAddress: text("project_address"),
+  
+  // Financial tracking
+  contractAmount: decimal("contract_amount", { precision: 12, scale: 2 }).notNull(), // Original quote final total
+  totalExpenses: decimal("total_expenses", { precision: 12, scale: 2 }).default("0"), // Sum of all expenses
+  profitLoss: decimal("profit_loss", { precision: 12, scale: 2 }).default("0"), // Contract - Expenses
+  
+  // Status
+  status: varchar("status").notNull().default("active"), // active, completed, on-hold, cancelled
+  
+  // Dates
+  startDate: timestamp("start_date"),
+  completionDate: timestamp("completion_date"),
+  
+  // Notes
+  notes: text("notes"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+  quotation: one(quotations, {
+    fields: [projects.quotationId],
+    references: [quotations.id],
+  }),
+  user: one(users, {
+    fields: [projects.userId],
+    references: [users.id],
+  }),
+  expenses: many(projectExpenses),
+}));
+
+// Project Expenses table
+export const projectExpenses = pgTable("project_expenses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  
+  // Expense details
+  category: varchar("category").notNull(), // Materials, Labor, Transport, Equipment, Miscellaneous, etc.
+  description: text("description").notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  
+  // Vendor/Payment info
+  vendorName: varchar("vendor_name"),
+  paymentMode: varchar("payment_mode"), // Cash, UPI, Cheque, Bank Transfer
+  paymentDate: timestamp("payment_date"),
+  
+  // Receipt/Invoice
+  receiptNumber: varchar("receipt_number"),
+  attachmentUrl: text("attachment_url"), // For future file upload
+  
+  // Notes
+  notes: text("notes"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const projectExpensesRelations = relations(projectExpenses, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectExpenses.projectId],
+    references: [projects.id],
+  }),
+}));
+
+export const insertProjectSchema = createInsertSchema(projects, {
+  projectName: z.string().min(1, "Project name is required").max(200),
+  clientName: z.string().min(1, "Client name is required").max(200),
+  contractAmount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount"),
+  status: z.enum(["active", "completed", "on-hold", "cancelled"]),
+}).omit({
+  id: true,
+  projectId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type Project = typeof projects.$inferSelect;
+export type NewProject = z.infer<typeof insertProjectSchema>;
+
+export const insertProjectExpenseSchema = createInsertSchema(projectExpenses, {
+  category: z.string().min(1, "Category is required"),
+  description: z.string().min(1, "Description is required").max(500),
+  amount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount"),
+  paymentMode: z.enum(["Cash", "UPI", "Cheque", "Bank Transfer", "Other"]).optional(),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type ProjectExpense = typeof projectExpenses.$inferSelect;
+export type NewProjectExpense = z.infer<typeof insertProjectExpenseSchema>;
+
 // Audit Log table
 export const auditLog = pgTable("audit_log", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -837,7 +946,7 @@ export const auditLog = pgTable("audit_log", {
 });
 
 export const insertAuditLogSchema = createInsertSchema(auditLog, {
-  section: z.enum(["Rates", "Templates", "Brands", "Painting&FC", "GlobalRules", "Quotes", "Agreement"]),
+  section: z.enum(["Rates", "Templates", "Brands", "Painting&FC", "GlobalRules", "Quotes", "Agreement", "Projects"]),
   action: z.enum(["CREATE", "UPDATE", "DELETE"]),
   summary: z.string().min(1).max(500),
 }).omit({

@@ -3,7 +3,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog, brands, insertChangeOrderSchema, insertChangeOrderItemSchema, changeOrders, changeOrderItems } from "@shared/schema";
+import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog, brands, insertChangeOrderSchema, insertChangeOrderItemSchema, changeOrders, changeOrderItems, insertProjectSchema, insertProjectExpenseSchema, projects, projectExpenses } from "@shared/schema";
 import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles, buildQuoteZip } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
@@ -912,10 +912,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         afterJson: JSON.stringify({ quotationId, grandTotal }),
       });
       
+      // Auto-create project for expense tracking
+      const projectId = generateQuoteId().replace('TRE_QT_', 'TRE_PRJ_');
+      const [newProject] = await db.insert(projects).values({
+        quotationId,
+        userId: req.user.claims.sub,
+        projectId,
+        projectName: quotation.projectName,
+        clientName: quotation.clientName,
+        projectAddress: quotation.projectAddress || "",
+        contractAmount: grandTotal.toFixed(2),
+        totalExpenses: "0",
+        profitLoss: grandTotal.toFixed(2),
+        status: "active",
+        startDate: new Date(),
+      }).returning();
+      
+      // Log project creation
+      await db.insert(auditLog).values({
+        userId: req.user.claims.sub,
+        userEmail: req.user.claims.email || "",
+        section: "Projects",
+        action: "CREATE",
+        targetId: newProject.id,
+        summary: `Project ${projectId} created from quote ${quotation.quoteId}`,
+        beforeJson: null,
+        afterJson: JSON.stringify({ quotationId, projectId, contractAmount: grandTotal }),
+      });
+      
       res.json({
         ok: true,
         quotation: updatedQuotation,
         agreement,
+        project: newProject,
       });
     } catch (error) {
       console.error("Error approving quotation:", error);
@@ -1330,6 +1359,230 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting change order item:", error);
       res.status(500).json({ message: "Failed to delete change order item" });
+    }
+  });
+
+  // Project routes
+  app.get('/api/projects', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const projectsList = await db.query.projects.findMany({
+        where: eq(projects.userId, userId),
+        with: {
+          quotation: true,
+          expenses: true,
+        },
+        orderBy: (projects, { desc }) => [desc(projects.createdAt)],
+      });
+      res.json(projectsList);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      res.status(500).json({ message: "Failed to fetch projects" });
+    }
+  });
+
+  app.get('/api/projects/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const project = await db.query.projects.findFirst({
+        where: eq(projects.id, req.params.id),
+        with: {
+          quotation: true,
+          expenses: true,
+        },
+      });
+      
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      if (project.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      res.json(project);
+    } catch (error) {
+      console.error("Error fetching project:", error);
+      res.status(500).json({ message: "Failed to fetch project" });
+    }
+  });
+
+  app.get('/api/quotations/:quotationId/project', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const quotationId = req.params.quotationId;
+      
+      const project = await db.query.projects.findFirst({
+        where: eq(projects.quotationId, quotationId),
+        with: {
+          expenses: true,
+        },
+      });
+      
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      if (project.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      res.json(project);
+    } catch (error) {
+      console.error("Error fetching project:", error);
+      res.status(500).json({ message: "Failed to fetch project" });
+    }
+  });
+
+  app.patch('/api/projects/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const project = await db.query.projects.findFirst({
+        where: eq(projects.id, req.params.id),
+      });
+      
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      if (project.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const [updated] = await db.update(projects)
+        .set({ ...req.body, updatedAt: new Date() })
+        .where(eq(projects.id, req.params.id))
+        .returning();
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      res.status(500).json({ message: "Failed to update project" });
+    }
+  });
+
+  // Project Expenses routes
+  app.post('/api/projects/:projectId/expenses', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const projectId = req.params.projectId;
+      
+      // Verify project exists and belongs to user
+      const project = await db.query.projects.findFirst({
+        where: eq(projects.id, projectId),
+      });
+      
+      if (!project || project.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const validated = insertProjectExpenseSchema.parse(req.body);
+      const [newExpense] = await db.insert(projectExpenses).values({
+        ...validated,
+        projectId,
+      }).returning();
+      
+      // Update project totals
+      const allExpenses = await db.query.projectExpenses.findMany({
+        where: eq(projectExpenses.projectId, projectId),
+      });
+      
+      const totalExpenses = allExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount || "0"), 0);
+      const contractAmount = parseFloat(project.contractAmount || "0");
+      const profitLoss = contractAmount - totalExpenses;
+      
+      await db.update(projects)
+        .set({
+          totalExpenses: totalExpenses.toFixed(2),
+          profitLoss: profitLoss.toFixed(2),
+          updatedAt: new Date(),
+        })
+        .where(eq(projects.id, projectId));
+      
+      res.json(newExpense);
+    } catch (error) {
+      console.error("Error creating expense:", error);
+      res.status(500).json({ message: "Failed to create expense" });
+    }
+  });
+
+  app.patch('/api/project-expenses/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const expense = await db.query.projectExpenses.findFirst({
+        where: eq(projectExpenses.id, req.params.id),
+        with: { project: true },
+      });
+      
+      if (!expense || expense.project.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const [updated] = await db.update(projectExpenses)
+        .set({ ...req.body, updatedAt: new Date() })
+        .where(eq(projectExpenses.id, req.params.id))
+        .returning();
+      
+      // Recalculate project totals
+      const allExpenses = await db.query.projectExpenses.findMany({
+        where: eq(projectExpenses.projectId, expense.projectId),
+      });
+      
+      const totalExpenses = allExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount || "0"), 0);
+      const contractAmount = parseFloat(expense.project.contractAmount || "0");
+      const profitLoss = contractAmount - totalExpenses;
+      
+      await db.update(projects)
+        .set({
+          totalExpenses: totalExpenses.toFixed(2),
+          profitLoss: profitLoss.toFixed(2),
+          updatedAt: new Date(),
+        })
+        .where(eq(projects.id, expense.projectId));
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating expense:", error);
+      res.status(500).json({ message: "Failed to update expense" });
+    }
+  });
+
+  app.delete('/api/project-expenses/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const expense = await db.query.projectExpenses.findFirst({
+        where: eq(projectExpenses.id, req.params.id),
+        with: { project: true },
+      });
+      
+      if (!expense || expense.project.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const projectId = expense.projectId;
+      await db.delete(projectExpenses).where(eq(projectExpenses.id, req.params.id));
+      
+      // Recalculate project totals
+      const allExpenses = await db.query.projectExpenses.findMany({
+        where: eq(projectExpenses.projectId, projectId),
+      });
+      
+      const totalExpenses = allExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount || "0"), 0);
+      const contractAmount = parseFloat(expense.project.contractAmount || "0");
+      const profitLoss = contractAmount - totalExpenses;
+      
+      await db.update(projects)
+        .set({
+          totalExpenses: totalExpenses.toFixed(2),
+          profitLoss: profitLoss.toFixed(2),
+          updatedAt: new Date(),
+        })
+        .where(eq(projects.id, projectId));
+      
+      res.json({ ok: true });
+    } catch (error) {
+      console.error("Error deleting expense:", error);
+      res.status(500).json({ message: "Failed to delete expense" });
     }
   });
 
