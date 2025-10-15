@@ -250,13 +250,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
           
           if (!exists) {
-            // Create new interior item
+            // Create new interior item with quotation's buildType
+            // Wall highlights/paneling always use handmade, others use quotation's buildType
+            const itemBuildType = templateItem.isWallHighlightOrPanel 
+              ? "handmade" 
+              : (quotation.buildType || "handmade");
+            
             await db.insert(interiorItems).values({
               quotationId,
               roomType: roomName,
               description: templateItem.displayName,
               calc: templateItem.unit, // Map unit to calc (SFT→SQFT handled by schema default)
-              buildType: "handmade", // Default
+              buildType: itemBuildType,
               material: "Generic Ply", // Default
               finish: "Generic Laminate", // Default
               hardware: "Nimmi", // Default

@@ -227,6 +227,49 @@ export default function Scope() {
     onError: handleMutationError,
   });
 
+  // Update all interior items when quotation buildType changes
+  useEffect(() => {
+    if (!quotation?.buildType || interiorItems.length === 0) {
+      return;
+    }
+
+    const projectBuildType = quotation.buildType as BuildType;
+    
+    // Track which items need updating to batch them
+    const itemsToUpdate: Array<{ id: string; data: any }> = [];
+    
+    interiorItems.forEach((item) => {
+      const description = item.description || "";
+      const expectedBuildType = getEffectiveBuildType(projectBuildType, description);
+      
+      // Only update if buildType doesn't match (pricing will be recalculated correctly)
+      if (item.buildType !== expectedBuildType) {
+        const sqft = parseFloat(item.sqft || "0");
+        const expectedRate = calculateRate(
+          expectedBuildType,
+          (item.material || "Generic Ply") as CoreMaterial,
+          (item.finish || "Generic Laminate") as FinishMaterial,
+          (item.hardware || "Nimmi") as HardwareBrand
+        );
+        const expectedTotal = calculateAmount(expectedRate, sqft);
+        
+        itemsToUpdate.push({
+          id: item.id,
+          data: {
+            buildType: expectedBuildType,
+            unitPrice: expectedRate,
+            totalPrice: expectedTotal,
+          },
+        });
+      }
+    });
+    
+    // Update items sequentially to avoid race conditions
+    itemsToUpdate.forEach(({ id, data }) => {
+      updateInteriorItem.mutate({ id, data });
+    });
+  }, [quotation?.buildType]);
+
   // Recalculate totals whenever items change
   useEffect(() => {
     if (interiorItems.length === 0 && falseCeilingItems.length === 0 && otherItems.length === 0) {
