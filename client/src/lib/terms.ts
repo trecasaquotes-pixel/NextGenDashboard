@@ -5,6 +5,7 @@ export type TermsVars = {
   projectName?: string;
   quoteId?: string;
   validDays?: number;
+  validUntilDate?: string;
   warrantyMonths?: number;
   paymentSchedule?: string;
 };
@@ -12,7 +13,7 @@ export type TermsVars = {
 export const defaultTerms: Record<TermsTemplateId, string[]> = {
   default_interiors: [
     "PRICING & TAXES: All prices are inclusive of design, material, fabrication, installation, and margin. GST at applicable rates will be charged extra on the total invoice value.",
-    "QUOTE VALIDITY: This quotation is valid for {validDays} days from the date of issue. Prices are subject to change thereafter based on material cost fluctuations and market conditions.",
+    "QUOTE VALIDITY: This quotation is valid until {validUntilDate}. Prices are subject to change thereafter based on material cost fluctuations and market conditions.",
     "PAYMENT SCHEDULE: {paymentSchedule}. Payments must be made as per the agreed schedule. Delays in payment may result in work suspension and revised timelines.",
     "WARRANTY COVERAGE: {warrantyMonths} months warranty on modular components against manufacturing defects only. Warranty excludes damage due to misuse, water exposure, termite/borer attack, natural wear and tear, or unauthorized modifications.",
     "SCOPE OF WORK: The quotation covers only items explicitly mentioned. Civil work, false ceiling, electrical, plumbing, HVAC, painting (unless specified), site cleaning, disposal of debris, and structural modifications are excluded unless specifically itemized.",
@@ -30,7 +31,7 @@ export const defaultTerms: Record<TermsTemplateId, string[]> = {
     "SCOPE & INCLUSIONS: Rates include framework (MS/GI channels), boards/grids as per selected brand, standard jointing compound, taping, and basic finishing. Premium finishes, custom designs, and decorative elements are excluded unless specified.",
     "EXCLUSIONS: Painting, POP/gypsum work, lighting fixtures, fan hook rods, electrical conduit routing, AC ducts, fire safety equipment, and hidden service routing (HVAC/electrical/plumbing) are billed separately under 'OTHERS' or excluded.",
     "PRICING & TAXES: All prices are inclusive of material, labor, installation, and margin. GST at applicable rates will be charged extra. Prices are subject to change based on material cost fluctuations.",
-    "QUOTE VALIDITY: This quotation is valid for {validDays} days from date of issue. Post expiry, prices and availability are subject to reconfirmation.",
+    "QUOTE VALIDITY: This quotation is valid until {validUntilDate}. Post expiry, prices and availability are subject to reconfirmation.",
     "PAYMENT TERMS: {paymentSchedule}. Timely payment is essential for uninterrupted project execution. Payment delays may extend timelines.",
     "WARRANTY: {warrantyMonths} months warranty against sagging, cracks, and joint failures under normal usage conditions. Warranty excludes water seepage damage, impact damage, structural issues, unauthorized modifications, or natural calamities.",
     "HEIGHT & ACCESS: Quoted rates assume standard ceiling heights (9-10 feet). Work requiring scaffolding above 10 feet, stilt/tower scaffolding, or specialized access equipment will be charged extra as per actual requirements.",
@@ -50,6 +51,7 @@ export const defaultTerms: Record<TermsTemplateId, string[]> = {
 export function renderTerms(lines: string[], vars: TermsVars = {}): string[] {
   const v = {
     validDays: 15,
+    validUntilDate: "",
     warrantyMonths: 12,
     paymentSchedule: "50% booking, 40% mid, 10% handover",
     ...vars
@@ -61,6 +63,7 @@ export function renderTerms(lines: string[], vars: TermsVars = {}): string[] {
       .replaceAll("{projectName}", v.projectName ?? "")
       .replaceAll("{quoteId}", v.quoteId ?? "")
       .replaceAll("{validDays}", String(v.validDays))
+      .replaceAll("{validUntilDate}", v.validUntilDate)
       .replaceAll("{warrantyMonths}", String(v.warrantyMonths))
       .replaceAll("{paymentSchedule}", v.paymentSchedule)
   );

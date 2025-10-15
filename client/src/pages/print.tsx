@@ -551,11 +551,20 @@ export default function Print() {
                     <ul className="text-xs space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.interiors;
+                        
+                        // Calculate validity expiration date
+                        const validDays = Number(terms?.vars?.validDays || 15);
+                        const quoteDate = quotation.createdAt ? new Date(quotation.createdAt) : new Date();
+                        const expiryDate = new Date(quoteDate);
+                        expiryDate.setDate(expiryDate.getDate() + validDays);
+                        const validUntilDate = dateFormat(expiryDate.toISOString());
+                        
                         const lines = terms?.useDefault
                           ? renderTerms(defaultTerms.default_interiors, {
                               clientName: quotation.clientName,
                               projectName: quotation.projectName,
                               quoteId: quotation.quoteId,
+                              validUntilDate,
                               ...terms.vars
                             })
                           : (terms?.customText || "").split('\n').filter(line => line.trim());
@@ -857,11 +866,20 @@ export default function Print() {
                     <ul className="text-xs space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.falseCeiling;
+                        
+                        // Calculate validity expiration date
+                        const validDays = Number(terms?.vars?.validDays || 15);
+                        const quoteDate = quotation.createdAt ? new Date(quotation.createdAt) : new Date();
+                        const expiryDate = new Date(quoteDate);
+                        expiryDate.setDate(expiryDate.getDate() + validDays);
+                        const validUntilDate = dateFormat(expiryDate.toISOString());
+                        
                         const lines = terms?.useDefault
                           ? renderTerms(defaultTerms.default_false_ceiling, {
                               clientName: quotation.clientName,
                               projectName: quotation.projectName,
                               quoteId: quotation.quoteId,
+                              validUntilDate,
                               ...terms.vars
                             })
                           : (terms?.customText || "").split('\n').filter(line => line.trim());
