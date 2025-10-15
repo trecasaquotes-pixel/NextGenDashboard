@@ -3,7 +3,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog, brands, insertChangeOrderSchema, insertChangeOrderItemSchema, changeOrders, changeOrderItems, insertProjectSchema, insertProjectExpenseSchema, projects, projectExpenses } from "@shared/schema";
+import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog, brands, insertChangeOrderSchema, insertChangeOrderItemSchema, changeOrders, changeOrderItems, insertProjectSchema, insertProjectExpenseSchema, projects, projectExpenses, insertBusinessExpenseSchema, businessExpenses } from "@shared/schema";
 import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles, buildQuoteZip } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
