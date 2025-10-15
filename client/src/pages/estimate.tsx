@@ -21,6 +21,7 @@ import { AgreementCard } from "@/components/agreement-card";
 import { formatINR, safeN } from "@/lib/money";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { sortRoomNames } from "@/lib/roomOrder";
 
 export default function Estimate() {
   const [match, params] = useRoute("/quotation/:id/estimate");
@@ -201,9 +202,9 @@ export default function Estimate() {
   // Calculate final total
   const finalTotal = discounted + gstAmount;
 
-  // Extract unique room types from items
-  const interiorRoomTypes = Array.from(new Set(interiorItems.map(item => item.roomType)));
-  const fcRoomTypes = Array.from(new Set(falseCeilingItems.map(item => item.roomType)));
+  // Extract unique room types from items and sort them
+  const interiorRoomTypes = sortRoomNames(Array.from(new Set(interiorItems.map(item => item.roomType))));
+  const fcRoomTypes = sortRoomNames(Array.from(new Set(falseCeilingItems.map(item => item.roomType))));
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

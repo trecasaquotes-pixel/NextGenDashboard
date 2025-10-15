@@ -17,6 +17,7 @@ import { defaultTerms, renderTerms } from "@/lib/terms";
 import { dateFormat } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { htmlToPdfBytes, downloadBytesAs } from "@/lib/pdf";
+import { sortByRoom, sortRoomEntries } from "@/lib/roomOrder";
 
 export default function Print() {
   const [match, params] = useRoute("/quotation/:id/print");
@@ -200,15 +201,19 @@ export default function Print() {
   }, {} as Record<string, FalseCeilingItem[]>);
 
   // Compute room totals for summary tables (Part 2A requirement)
-  const interiorsRoomTotals = Object.entries(interiorsByRoom).map(([room, items]) => ({
-    room,
-    total: items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0)
-  }));
+  const interiorsRoomTotals = sortByRoom(
+    Object.entries(interiorsByRoom).map(([room, items]) => ({
+      room,
+      total: items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0)
+    }))
+  );
 
-  const fcRoomTotals = Object.entries(falseCeilingByRoom).map(([room, items]) => ({
-    room,
-    total: items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0)
-  }));
+  const fcRoomTotals = sortByRoom(
+    Object.entries(falseCeilingByRoom).map(([room, items]) => ({
+      room,
+      total: items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0)
+    }))
+  );
 
   const currentDate = new Date().toLocaleDateString('en-IN', {
     day: '2-digit',
@@ -426,9 +431,9 @@ export default function Print() {
                   <div className="space-y-6">
                     <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM-WISE BREAKDOWN</h3>
                     
-                    {Object.entries(interiorsByRoom).sort(([a], [b]) => a.localeCompare(b)).map(([room, items], roomIdx) => {
+                    {sortRoomEntries(Object.entries(interiorsByRoom)).map(([room, items], roomIdx) => {
                       const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
-                      const isLastRoom = roomIdx === Object.entries(interiorsByRoom).length - 1;
+                      const isLastRoom = roomIdx === sortRoomEntries(Object.entries(interiorsByRoom)).length - 1;
                       
                       return (
                         <section key={room} className="room-block">
@@ -709,9 +714,9 @@ export default function Print() {
                     <div className="space-y-6">
                       <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
                       
-                      {Object.entries(falseCeilingByRoom).sort(([a], [b]) => a.localeCompare(b)).map(([room, items], roomIdx) => {
+                      {sortRoomEntries(Object.entries(falseCeilingByRoom)).map(([room, items], roomIdx) => {
                         const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
-                        const isLastRoom = roomIdx === Object.entries(falseCeilingByRoom).length - 1;
+                        const isLastRoom = roomIdx === sortRoomEntries(Object.entries(falseCeilingByRoom)).length - 1;
                         
                         return (
                           <section key={room} className="room-block">
