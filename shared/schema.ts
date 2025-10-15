@@ -221,6 +221,11 @@ export const interiorItems = pgTable("interior_items", {
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }), // Rate per sqft
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }), // Amount = Rate × Area
   
+  // Rate override functionality
+  rateAuto: decimal("rate_auto", { precision: 10, scale: 2 }), // Auto-computed rate from buildType + brands
+  rateOverride: decimal("rate_override", { precision: 10, scale: 2 }), // User-entered manual rate (nullable)
+  isRateOverridden: boolean("is_rate_overridden").default(false), // true when override is active
+  
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -247,6 +252,11 @@ export const falseCeilingItems = pgTable("false_ceiling_items", {
   // Pricing (optional for future)
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }),
+  
+  // Rate override functionality
+  rateAuto: decimal("rate_auto", { precision: 10, scale: 2 }), // Auto-computed rate from buildType + brands
+  rateOverride: decimal("rate_override", { precision: 10, scale: 2 }), // User-entered manual rate (nullable)
+  isRateOverridden: boolean("is_rate_overridden").default(false), // true when override is active
   
   createdAt: timestamp("created_at").defaultNow(),
 });

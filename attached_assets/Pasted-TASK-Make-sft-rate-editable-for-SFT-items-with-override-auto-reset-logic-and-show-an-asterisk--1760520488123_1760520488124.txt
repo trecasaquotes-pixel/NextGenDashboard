@@ -1,0 +1,140 @@
+TASK: Make ₹/sft rate editable for SFT items with override + auto-reset logic, and show an asterisk (*) for overridden rates in PDFs.
+
+Context:
+- Interiors/FC items have unit: 'SFT' | 'COUNT' | 'LSUM'
+- Rates currently computed from buildType + brands (core/finish/hardware)
+- We need per-row manual override for SFT rate, but if the user later changes buildType/brand, the row should auto-reset to the new auto rate.
+
+--------------------------------
+1) TYPES & (OPTIONAL) DB FIELDS
+--------------------------------
+Update item type (shared front-end + back-end model):
+
+type QuoteItem = {
+  id: string;
+  room: string;
+  description: string;
+  unit: 'SFT'|'COUNT'|'LSUM';
+  l?: number; h?: number; w?: number;
+  sqft?: number;           // derived for SFT
+  core?: string; finish?: string; hardware?: string;
+  buildType?: 'HANDMADE'|'FACTORY'; // optional if you inherit from project
+  // NEW:
+  rateAuto?: number;       // last computed automatic rate for this row (₹/sft)
+  rateOverride?: number|null; // user-entered manual rate (₹/sft) or null
+  isRateOverridden?: boolean; // true when rateOverride != null
+};
+
+If we persist items in DB, add nullable columns:
+- rate_auto REAL
+- rate_override REAL
+- is_rate_overridden INTEGER (0/1)
+
+Migration can be best-effort; default new fields to null/0.
+
+--------------------------------
+2) PRICING ENGINE CHANGES
+--------------------------------
+Wherever we compute a row's rate and amount:
+
+A) Always compute the current automatic rate:
+  const auto = calcRateSft(effectiveBuildType, core, finish, hardware);
+
+B) Update item.rateAuto = auto.
+
+C) Determine effective rate:
+  const rate = item.isRateOverridden && item.rateOverride != null ? item.rateOverride : item.rateAuto;
+
+D) For SFT rows:
+  - sqft = derived (L×H) or (L×W)
+  - amount = sqft * rate
+
+E) COUNT/LSUM rows:
+  - unchanged (no ₹/sft input)
+
+--------------------------------
+3) AUTO-RESET RULES (IMPORTANT)
+--------------------------------
+User requirement: if any of these change, the row should abandon override and auto-update:
+
+Triggers that clear override:
+- project buildType
+- item.core / item.finish / item.hardware
+
+On such change:
+- item.isRateOverridden = false
+- item.rateOverride = null
+- Recompute item.rateAuto and amount
+
+(Length/Height/Width edits DO NOT clear override; they should multiply whatever the current rate is.)
+
+--------------------------------
+4) UI — RATE CELL (ONLY FOR SFT ITEMS)
+--------------------------------
+In the Scope table:
+- If item.unit === 'SFT', show an editable number input for rate (₹/sft).
+- Placeholder = item.rateAuto.toFixed(2)
+- Value = item.isRateOverridden ? item.rateOverride : '' (empty shows placeholder)
+- Right-align the input; 2 decimal; min 0; max 999999.
+
+Events:
+- On focus or input: if user types a number → set:
+    item.rateOverride = parsedNumber
+    item.isRateOverridden = true
+    Recompute amount
+- Show a tiny "↺ Auto" text-button next to the input when isRateOverridden===true:
+    onClick:
+      item.isRateOverridden = false
+      item.rateOverride = null
+      Recompute rateAuto + amount
+
+Visual cues:
+- When overridden, show a small badge "Overridden" (muted color) next to the field.
+
+COUNT/LSUM rows:
+- Keep rate cell disabled/blank.
+
+--------------------------------
+5) RESPONSIVE LAYOUT (ties to our earlier no-horizontal-scroll decision)
+--------------------------------
+- Keep the rate input within the main compact line for SFT items.
+- Ensure input uses min-width: 90px; max-width: 140px; text-align: right.
+- Work with the existing grid/flex so no horizontal scrollbar appears.
+
+--------------------------------
+6) PDF INDICATOR FOR OVERRIDDEN RATES
+--------------------------------
+In both Interiors & False Ceiling PDFs:
+- When rendering each line item:
+  - Use the effective rate (override if present, else auto)
+  - If item.isRateOverridden === true, append an asterisk after the rate:
+      e.g., "₹1,450.00*"
+- At the bottom of each room table (or once per document footer), add a tiny legend line:
+  "* custom rate applied on marked items"
+
+Style:
+- Asterisk and legend in Montserrat 400, 9–10px, muted grey (#666).
+
+--------------------------------
+7) EDGE CASES & VALIDATION
+--------------------------------
+- If the user clears the rate input, treat as no override (revert to auto) on blur.
+- Coerce invalid inputs (NaN/negative) back to auto on blur with a toast/snackbar.
+- Rounding: keep 2 decimals for rate; amounts use Indian currency formatting; final totals still "rounded off to nearest rupee" as configured.
+
+--------------------------------
+8) QA / TEST CASES
+--------------------------------
+1) Change rate on a SFT row to 1425.50 → amount updates; "Overridden" + "↺ Auto" visible.
+2) Change core or finish → override is cleared automatically; rate snaps to new auto; "Overridden" disappears.
+3) Change L/H/W → SQFT changes; amount recalculates using the current rate (override if present).
+4) COUNT/LSUM rows never show the rate input.
+5) PDFs show "*" by overridden rate lines; "* custom rate applied" legend is present.
+6) Global Build Type toggle (Handmade/Factory) clears overrides and recomputes all SFT rows.
+
+Deliverables:
+- Updated item type & (optional) DB migration
+- Revised pricing compute function(s)
+- Scope UI rate input + ↺ Auto button + "Overridden" badge
+- PDF template change to print "*" and the legend
+- Unit tests or quick manual tests for the above
