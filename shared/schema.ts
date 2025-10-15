@@ -56,6 +56,9 @@ export const quotations = pgTable("quotations", {
   clientPhone: varchar("client_phone"),
   projectAddress: text("project_address"),
   
+  // Build Type (Project-level: determines base pricing for all interior items)
+  buildType: varchar("build_type").notNull().default("handmade"), // handmade, factory
+  
   // Status
   status: varchar("status").notNull().default("draft"), // draft, sent, accepted, rejected, approved, cancelled
   

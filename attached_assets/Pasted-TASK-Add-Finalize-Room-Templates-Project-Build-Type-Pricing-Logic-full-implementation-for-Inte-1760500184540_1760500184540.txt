@@ -1,0 +1,55 @@
+TASK: Add/Finalize Room Templates + Project Build Type + Pricing Logic (full implementation for Interiors Quote system)
+
+──────────────────────────────
+0) FILES TO MODIFY / CREATE
+──────────────────────────────
+- client/pages/quotation/[id]/scope.tsx  → UI for rooms/items
+- client/lib/templates.ts                → room templates & categories
+- client/lib/pricing.ts                  → rate calculation logic
+- data/brands.ts                         → brand lists for dropdowns
+- server/routes/quotes.ts (or similar)   → ensure backend stores items
+
+──────────────────────────────
+1️⃣ PROJECT “BUILD TYPE” DROPDOWN
+──────────────────────────────
+In Project Info page:
+- Add dropdown field `buildType` = "HANDMADE" | "FACTORY"
+- Default: "HANDMADE"
+- Persist in project record
+- When user changes build type, recompute all SFT-based item totals live.
+
+⚙️ Rule: All “Custom Wall Highlights / Paneling” items are always treated as HANDMADE even if project is Factory build.
+
+──────────────────────────────
+2️⃣ RATE MODEL (SFT only; no RFT)
+──────────────────────────────
+Every interior item uses SFT unless explicitly COUNT or LSUM.
+No RFT anywhere.
+
+Base Rate:
+- HANDMADE → ₹1300/sft
+- FACTORY  → ₹1500/sft
+
+Brand/Finish adjustments (additive):
+- Core material: if NOT “Generic Ply” → +₹100
+- Finish: if NOT “Generic Laminate” → +₹100
+- If Finish = “Acrylic” or “Duco” → +₹200 (replaces +₹100)
+- Hardware: if NOT “Nimmi” → +₹100
+
+So:
+ratePerSft = base + coreAdj + finishAdj + hardwareAdj
+
+Example helper:
+```ts
+type BuildType = 'HANDMADE' | 'FACTORY';
+type Brand = 'Generic Ply' | 'Century/GreenPly' | 'Greenlam';
+type Finish = 'Generic Laminate' | 'Acrylic' | 'Duco';
+type Hardware = 'Nimmi' | 'Hettich' | 'Hafele' | 'Ebco' | 'Sleek';
+
+export function calcRateSft(buildType: BuildType, core: Brand, finish: Finish, hardware: Hardware) {
+  const base = buildType === 'HANDMADE' ? 1300 : 1500;
+  const coreAdj = core === 'Generic Ply' ? 0 : 100;
+  const finishAdj = finish === 'Acrylic' || finish === 'Duco' ? 200 : finish === 'Generic Laminate' ? 0 : 100;
+  const hardwareAdj = hardware === 'Nimmi' ? 0 : 100;
+  return base + coreAdj + finishAdj + hardwareAdj;
+}
