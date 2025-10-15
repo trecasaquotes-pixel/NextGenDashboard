@@ -958,3 +958,59 @@ export const insertAuditLogSchema = createInsertSchema(auditLog, {
 
 export type AuditLogRow = typeof auditLog.$inferSelect;
 export type NewAuditLogRow = z.infer<typeof insertAuditLogSchema>;
+
+// Business Expenses table (monthly overhead costs)
+export const businessExpenses = pgTable("business_expenses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  // Expense details
+  category: varchar("category").notNull(), // Rent, Salaries, Utilities, Office Supplies, Marketing, Insurance, Maintenance, Subscriptions, Professional Fees, etc.
+  description: text("description").notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  
+  // Vendor/Payment info
+  vendorName: varchar("vendor_name"),
+  paymentMode: varchar("payment_mode"), // Cash, UPI, Cheque, Bank Transfer
+  paymentDate: timestamp("payment_date"),
+  
+  // Receipt/Invoice
+  receiptNumber: varchar("receipt_number"),
+  attachmentUrl: text("attachment_url"), // For future file upload
+  
+  // Recurring expense tracking
+  isRecurring: boolean("is_recurring").default(false),
+  recurringFrequency: varchar("recurring_frequency"), // Monthly, Quarterly, Yearly
+  
+  // Notes
+  notes: text("notes"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const businessExpensesRelations = relations(businessExpenses, ({ one }) => ({
+  user: one(users, {
+    fields: [businessExpenses.userId],
+    references: [users.id],
+  }),
+}));
+
+export const insertBusinessExpenseSchema = createInsertSchema(businessExpenses, {
+  category: z.string().min(1, "Category is required"),
+  description: z.string().min(1, "Description is required").max(500),
+  amount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount"),
+  paymentMode: z.enum(["Cash", "UPI", "Cheque", "Bank Transfer", "Other"]).optional(),
+  paymentDate: z.string().optional(), // Accept as string, convert in backend
+  isRecurring: z.boolean().optional(),
+  recurringFrequency: z.enum(["Monthly", "Quarterly", "Yearly"]).optional(),
+}).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type BusinessExpense = typeof businessExpenses.$inferSelect;
+export type NewBusinessExpense = z.infer<typeof insertBusinessExpenseSchema>;
