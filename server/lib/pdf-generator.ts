@@ -81,25 +81,56 @@ export async function generateQuotationPDF(
     // Inject PDF-optimized CSS with Google Fonts
     await page.addStyleTag({
       content: `
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600&display=swap');
+        
+        @page {
+          size: A4;
+          margin: 18mm 14mm 22mm;
+        }
         
         @media print {
           body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Montserrat', Arial, sans-serif;
             font-size: 11px;
-            color: #111;
+            color: #1E2F28;
             margin: 0;
             padding: 0;
           }
           
-          h1, h2, h3, h4 {
-            font-family: 'Playfair Display', serif;
-            margin: 0;
+          h1, h2, h3, h4, .final-total {
+            font-family: 'Playfair Display', Georgia, serif;
           }
           
-          .print-content {
-            padding-top: 35mm !important;
-            padding-bottom: 25mm !important;
+          /* Fixed header & footer that repeat across pages */
+          .pdf-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+          }
+          
+          .pdf-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 18mm;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-size: 10px;
+            color: #1E2F28;
+            padding: 0 14mm;
+            border-top: 2px solid #D4AF37;
+            background: white;
+            z-index: 1000;
+          }
+          
+          .pdf-body {
+            margin-top: 32mm;
+            margin-bottom: 26mm;
           }
           
           /* Page breaks */
@@ -129,9 +160,36 @@ export async function generateQuotationPDF(
             page-break-after: auto;
           }
           
+          /* Room subtotal styling */
+          .room-subtotal {
+            background: #0F3A2B;
+            color: #FFFFFF;
+            font-weight: 600;
+          }
+          
+          .room-subtotal td {
+            padding-top: 8px;
+            padding-bottom: 8px;
+            border-top: 1px solid #0A2A1F;
+          }
+          
+          /* Summary totals styling */
+          .summary-totals {
+            margin-top: 10mm;
+          }
+          
+          .summary-totals .final-total {
+            border-top: 2px solid #D4AF37;
+            padding-top: 6px;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Playfair Display', Georgia, serif;
+            color: #0F3A2B;
+          }
+          
           /* Typography refinements */
           .room-title {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Playfair Display', Georgia, serif;
             font-size: 14pt;
             font-weight: 700;
             color: #013220;
@@ -139,7 +197,7 @@ export async function generateQuotationPDF(
           }
           
           .section-title {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Playfair Display', Georgia, serif;
             font-size: 12pt;
             font-weight: 700;
             color: #013220;
@@ -147,50 +205,29 @@ export async function generateQuotationPDF(
           
           .summary-table th,
           .summary-table td {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Montserrat', Arial, sans-serif;
             font-size: 10px;
           }
           
-          .pdf-footer-content {
-            font-size: 9px;
-            color: #555;
-            font-family: 'Montserrat', sans-serif;
+          .header-meta {
+            font-family: 'Montserrat', Arial, sans-serif;
           }
         }
       `
     });
 
-    // Generate PDF with professional margins and header/footer
+    // Generate PDF with professional margins (CSS handles header/footer)
     console.log(`[PDF Generator] Generating PDF for ${type}`);
     const pdfBytes = await page.pdf({
       format: 'A4',
       printBackground: true,
       margin: {
-        top: '25mm',
-        right: '15mm',
-        bottom: '18mm',
-        left: '15mm',
+        top: '18mm',
+        right: '14mm',
+        bottom: '22mm',
+        left: '14mm',
       },
-      displayHeaderFooter: true,
-      headerTemplate: `
-        <div style="width: 100%; font-size: 10px; padding: 0 15mm; margin-top: 10mm; display: flex; justify-content: space-between; align-items: center; font-family: 'Montserrat', sans-serif;">
-          <div style="font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #013220;">
-            TRECASA DESIGN STUDIO
-          </div>
-          <div style="text-align: right; color: #333; line-height: 1.3;">
-            <div style="font-size: 9px; color: #666;">Quote ID: <span class="quoteId"></span></div>
-          </div>
-        </div>
-      `,
-      footerTemplate: `
-        <div style="width: 100%; font-size: 9px; padding: 0 15mm 10mm; display: flex; justify-content: space-between; align-items: center; border-top: 0.2pt solid #ddd; padding-top: 4px; color: #555; font-family: 'Montserrat', sans-serif;">
-          <div>TRECASA Design Studio | Luxury Interiors | Architecture | Build</div>
-          <div style="display: flex; align-items: center; gap: 4px;">
-            <span style="color: #d92027; font-size: 12px;">●</span>
-          </div>
-          <div>www.trecasadesignstudio.com | Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
-        </div>
-      `,
+      displayHeaderFooter: false,
     });
 
     // Convert Uint8Array to Buffer
