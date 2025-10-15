@@ -1,0 +1,178 @@
+💬 Instruction for Replit AI:
+
+We’re improving the PDF layout in the Fast Interiors Quote app. Apply the following changes to `server/lib/pdf-generator.ts` and related style templates (used in Puppeteer rendering):
+
+───────────────────────────────
+1️⃣ HEADER: Add Project Name
+───────────────────────────────
+Inside the header meta section (where Client, Quote ID, Date are shown), add:
+
+<div class="header-meta">
+  <div><strong>Client:</strong> {{clientName}}</div>
+  <div><strong>Quote ID:</strong> {{quoteId}}</div>
+  <div><strong>Date:</strong> {{quoteDate}}</div>
+  <div><strong>Project:</strong> {{projectName}}</div> <!-- NEW -->
+</div>
+
+Ensure `projectName` is passed into the PDF render payload (same as clientName and quoteId).
+
+───────────────────────────────
+2️⃣ FOOTER: Fixed and Repeated on Every Page
+───────────────────────────────
+Add a fixed footer so it repeats across all pages.
+
+Use this CSS in the PDF stylesheet:
+
+@page {
+  size: A4;
+  margin: 18mm 14mm 22mm;
+}
+
+/* Header & footer repeat across pages */
+.pdf-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.pdf-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 18mm;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 10px;
+  color: #1E2F28;
+  padding: 0 14mm;
+  border-top: 2px solid #D4AF37;
+}
+
+.pdf-body {
+  margin-top: 32mm;
+  margin-bottom: 26mm;
+}
+
+Then wrap the document like this:
+
+<body>
+  <div class="pdf-header">
+    <!-- Existing header (green band + logo + metadata) -->
+  </div>
+
+  <div class="pdf-footer">
+    <div>© 2025 TRECASA DESIGN STUDIO</div>
+    <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
+    <div class="dot" style="width:8px;height:8px;background:#B02A2A;border-radius:50%;display:inline-block;"></div>
+  </div>
+
+  <div class="pdf-body">
+    <!-- All quotation content -->
+  </div>
+</body>
+
+───────────────────────────────
+3️⃣ MARGINS & SPACING
+───────────────────────────────
+Keep @page and pdf-body margins as above to prevent footer overlap:
+@page { margin: 18mm 14mm 22mm; }
+.pdf-body { margin-top: 32mm; margin-bottom: 26mm; }
+
+───────────────────────────────
+4️⃣ ROOM SUBTOTAL ROW STYLING
+───────────────────────────────
+Add these styles:
+
+.room-subtotal {
+  background: #0F3A2B;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+.room-subtotal td {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-top: 1px solid #0A2A1F;
+}
+
+Subtotal HTML example:
+
+<tr class="room-subtotal">
+  <td colspan="5" style="text-align:right;">Room Subtotal:</td>
+  <td style="text-align:right;">₹{{roomTotal}}</td>
+</tr>
+
+───────────────────────────────
+5️⃣ SUMMARY TOTAL DIVIDER
+───────────────────────────────
+Add a gold divider line above “Final Interiors Quote”.
+
+CSS:
+
+.summary-totals {
+  margin-top: 10mm;
+}
+
+.summary-totals .final-total {
+  border-top: 2px solid #D4AF37;
+  padding-top: 6px;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'Playfair Display', Georgia, serif;
+  color: #0F3A2B;
+}
+
+HTML:
+
+<div class="summary-totals">
+  <div class="row">
+    <div>Interiors Subtotal:</div>
+    <div>₹{{interiorsSubtotal}}</div>
+  </div>
+  <div class="row">
+    <div>GST (18%):</div>
+    <div>₹{{gst}}</div>
+  </div>
+  <div class="final-total row">
+    <div>Final Interiors Quote:</div>
+    <div>₹{{finalTotal}}</div>
+  </div>
+</div>
+
+───────────────────────────────
+6️⃣ BRAND FONTS
+───────────────────────────────
+Ensure PDF loads “Playfair Display” and “Montserrat”.
+
+Add this near the top of the PDF template:
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  h1,h2,h3,.final-total {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+  body, table, .header-meta, .pdf-footer {
+    font-family: 'Montserrat', Arial, sans-serif;
+  }
+</style>
+
+───────────────────────────────
+✅ RESULT EXPECTATION
+───────────────────────────────
+After applying all above:
+- Project Name appears in header.
+- Footer with red dot repeats on every page.
+- Margins fixed (no overlap).
+- Room subtotals darker green and bold.
+- Gold divider above final total.
+- Fonts consistent with brand: Playfair Display (titles) + Montserrat (content).
+
+───────────────────────────────
+END OF INSTRUCTION
+───────────────────────────────
