@@ -36,6 +36,7 @@ import {
 import { calculateRate, calculateAmount, type BuildType, type CoreMaterial, type FinishMaterial, type HardwareBrand } from "@/lib/rates";
 import { calculateQuoteTotals } from "@/lib/calculateTotals";
 import { formatINR } from "@/lib/money";
+import { getEffectiveBuildType } from "@/lib/pricing";
 
 // Brand options for dropdowns
 const CORE_MATERIALS: CoreMaterial[] = [
@@ -315,10 +316,19 @@ export default function Scope() {
     const newLength = field === "length" ? normalizedValue : item.length;
     const newHeight = field === "height" ? normalizedValue : item.height;
     const newWidth = field === "width" ? normalizedValue : item.width;
-    const newBuildType = (field === "buildType" ? normalizedValue : item.buildType) || "handmade";
     const newMaterial = (field === "material" ? normalizedValue : item.material) || "Generic Ply";
     const newFinish = (field === "finish" ? normalizedValue : item.finish) || "Generic Laminate";
     const newHardware = (field === "hardware" ? normalizedValue : item.hardware) || "Nimmi";
+    
+    // Get project-level buildType with special handling for wall highlights/paneling
+    const projectBuildType = (quotation?.buildType as BuildType) || "handmade";
+    const description = (field === "description" ? normalizedValue : item.description) || "";
+    const effectiveBuildType = getEffectiveBuildType(projectBuildType, description);
+    
+    // Update item's buildType to match project (with special cases)
+    if (field === "description" || !item.buildType || item.buildType !== effectiveBuildType) {
+      updatedData.buildType = effectiveBuildType;
+    }
 
     // Always recalculate sqft when dimensions change
     if (field === "length" || field === "height" || field === "width") {
@@ -328,7 +338,7 @@ export default function Scope() {
       // Also recalculate rate and amount
       const sqftValue = parseFloat(calculatedSqft);
       const rate = calculateRate(
-        newBuildType as BuildType,
+        effectiveBuildType,
         newMaterial as CoreMaterial,
         newFinish as FinishMaterial,
         newHardware as HardwareBrand
@@ -336,11 +346,11 @@ export default function Scope() {
       // Send as numbers, not strings
       updatedData.unitPrice = rate;
       updatedData.totalPrice = calculateAmount(rate, sqftValue);
-    } else if (field === "buildType" || field === "material" || field === "finish" || field === "hardware") {
-      // Recalculate rate and amount when brand fields change
+    } else if (field === "material" || field === "finish" || field === "hardware" || field === "description") {
+      // Recalculate rate and amount when brand fields or description changes
       const sqft = parseFloat(item.sqft || "0");
       const rate = calculateRate(
-        newBuildType as BuildType,
+        effectiveBuildType,
         newMaterial as CoreMaterial,
         newFinish as FinishMaterial,
         newHardware as HardwareBrand
@@ -466,7 +476,7 @@ export default function Scope() {
                             onClick={() => addInteriorItem.mutate({
                               quotationId: quotationId!,
                               roomType,
-                              buildType: "handmade",
+                              buildType: (quotation?.buildType as BuildType) || "handmade",
                               material: "Generic Ply",
                               finish: "Generic Laminate",
                               hardware: "Nimmi",
@@ -488,7 +498,6 @@ export default function Scope() {
                                   <TableHead className="w-[140px]">H (ft)</TableHead>
                                   <TableHead className="w-[140px]">W (ft)</TableHead>
                                   <TableHead className="w-[90px]">SQFT</TableHead>
-                                  <TableHead className="w-[150px]">Build Type</TableHead>
                                   <TableHead className="w-[140px]">Core Material</TableHead>
                                   <TableHead className="w-[160px]">Finish</TableHead>
                                   <TableHead className="w-[120px]">Hardware</TableHead>
@@ -588,23 +597,6 @@ export default function Scope() {
                                       <span className="font-mono text-sm font-semibold" data-testid={`text-sqft-${item.id}`}>
                                         {item.sqft || "0.00"}
                                       </span>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Select
-                                        value={item.buildType || "handmade"}
-                                        onValueChange={(value) => handleInteriorFieldChange(item.id, "buildType", value)}
-                                      >
-                                        <SelectTrigger className="h-8" data-testid={`select-buildtype-${item.id}`}>
-                                          <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {BUILD_TYPES.map((type) => (
-                                            <SelectItem key={type.value} value={type.value}>
-                                              {type.label}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
                                     </TableCell>
                                     <TableCell>
                                       <Select

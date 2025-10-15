@@ -33,6 +33,7 @@ const projectInfoSchema = z.object({
   projectName: z.string().min(1, "Required"),
   projectType: z.string().min(1, "Required"),
   projectTypeOther: z.string().optional(),
+  buildType: z.enum(["handmade", "factory"]),
   clientName: z.string().min(1, "Required"),
   clientEmail: z.string().email("Invalid email").optional().or(z.literal("")),
   clientPhone: z.string().min(1, "Required"),
@@ -84,6 +85,7 @@ export default function ProjectInfo() {
       projectName: "",
       projectType: "",
       projectTypeOther: "",
+      buildType: "handmade",
       clientName: "",
       clientEmail: "",
       clientPhone: "",
@@ -102,6 +104,7 @@ export default function ProjectInfo() {
         projectName: quotation.projectName,
         projectType: isStandardCategory ? projectType : (projectType ? "Other" : ""),
         projectTypeOther: isStandardCategory ? "" : projectType,
+        buildType: (quotation.buildType as "handmade" | "factory") || "handmade",
         clientName: quotation.clientName,
         clientEmail: quotation.clientEmail || "",
         clientPhone: quotation.clientPhone || "",
@@ -256,6 +259,28 @@ export default function ProjectInfo() {
                               <SelectItem value="Villa">Villa</SelectItem>
                               <SelectItem value="Commercial">Commercial</SelectItem>
                               <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="buildType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Build Type *</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-build-type">
+                                <SelectValue placeholder="Select build type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="handmade">Handmade (Work-on-Site)</SelectItem>
+                              <SelectItem value="factory">Factory Finish</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
