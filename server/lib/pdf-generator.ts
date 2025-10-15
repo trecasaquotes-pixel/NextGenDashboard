@@ -78,7 +78,7 @@ export async function generateQuotationPDF(
       throw new Error(`Element ${selector} not found on page`);
     }
 
-    // Inject PDF-optimized CSS with Google Fonts
+    // Inject PDF-optimized CSS with Google Fonts and Part 2 enhancements
     await page.addStyleTag({
       content: `
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600&display=swap');
@@ -128,6 +128,11 @@ export async function generateQuotationPDF(
             z-index: 1000;
           }
           
+          /* Part 2D: Page numbers in footer */
+          .pdf-footer .page-num::after {
+            content: "Page " counter(page) " of " counter(pages);
+          }
+          
           .pdf-body {
             margin-top: 32mm;
             margin-bottom: 26mm;
@@ -146,8 +151,12 @@ export async function generateQuotationPDF(
             page-break-inside: avoid;
           }
           
-          table {
+          /* Part 2B: Fix table pagination - allow tables to continue across pages */
+          .table, table {
             page-break-inside: auto;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
           }
           
           tr {
@@ -155,9 +164,57 @@ export async function generateQuotationPDF(
             page-break-after: auto;
           }
           
-          td {
+          thead {
+            display: table-header-group; /* Repeat table headers automatically */
+          }
+          
+          tfoot {
+            display: table-row-group; /* Allow footer rows to flow */
+          }
+          
+          tbody {
+            display: table-row-group;
+          }
+          
+          /* Part 2B: Compact row spacing for more lines per page */
+          .table td, .table th, td, th {
+            padding: 5px 6px;
+            line-height: 1.25;
+            font-size: 10.5px;
+          }
+          
+          /* Part 2C: Status dot styling */
+          .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #B02A2A;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 8px;
+            transform: translateY(1px);
+          }
+          
+          .brand-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+          
+          /* Part 2E: Room block to prevent title/row separation */
+          .room-block {
             page-break-inside: avoid;
-            page-break-after: auto;
+          }
+          
+          .room-title {
+            margin: 10mm 0 4mm;
+            font-weight: 700;
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 14pt;
+            color: #013220;
+          }
+          
+          .room-table {
+            page-break-inside: auto;
           }
           
           /* Room subtotal styling */
@@ -171,6 +228,40 @@ export async function generateQuotationPDF(
             padding-top: 8px;
             padding-bottom: 8px;
             border-top: 1px solid #0A2A1F;
+          }
+          
+          /* Part 2A: Summary section styles */
+          .summary-section h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+            color: #0F3A2B;
+            margin: 0 0 6mm;
+          }
+          
+          .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-size: 11px;
+          }
+          
+          .summary-table th, .summary-table td {
+            border-bottom: 1px solid #E6E6E6;
+            padding: 6px 8px;
+          }
+          
+          .summary-table thead th {
+            background: #F3F6F5;
+            font-weight: 600;
+          }
+          
+          .summary-grand td {
+            border-top: 2px solid #D4AF37;
+            font-weight: 700;
+          }
+          
+          .spacer-8 {
+            height: 8mm;
           }
           
           /* Summary totals styling */
@@ -187,26 +278,12 @@ export async function generateQuotationPDF(
             color: #0F3A2B;
           }
           
-          /* Typography refinements */
-          .room-title {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 14pt;
-            font-weight: 700;
-            color: #013220;
-            margin-bottom: 8px;
-          }
-          
+          /* Section title */
           .section-title {
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 12pt;
             font-weight: 700;
             color: #013220;
-          }
-          
-          .summary-table th,
-          .summary-table td {
-            font-family: 'Montserrat', Arial, sans-serif;
-            font-size: 10px;
           }
           
           .header-meta {
