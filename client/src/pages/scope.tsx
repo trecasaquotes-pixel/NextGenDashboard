@@ -632,10 +632,10 @@ export default function Scope() {
                                   <TableHead className="w-[80px] px-1">H (ft)</TableHead>
                                   <TableHead className="w-[80px] px-1">W (ft)</TableHead>
                                   <TableHead className="w-[60px] px-1">SQFT</TableHead>
-                                  <TableHead className="w-[120px] px-2">Core Material</TableHead>
-                                  <TableHead className="w-[120px] px-2">Finish</TableHead>
-                                  <TableHead className="w-[100px] px-2">Hardware</TableHead>
-                                  <TableHead className="w-[80px] px-1">Rate (₹/sft)</TableHead>
+                                  <TableHead className="w-[132px] px-1">Core Material</TableHead>
+                                  <TableHead className="w-[132px] px-1">Finish</TableHead>
+                                  <TableHead className="w-[92px] px-1">Hardware</TableHead>
+                                  <TableHead className="w-[70px] px-1">Rate (₹/sft)</TableHead>
                                   <TableHead className="w-[90px] px-1">Amount (₹)</TableHead>
                                   <TableHead className="w-[40px] px-1"></TableHead>
                                 </TableRow>
@@ -732,7 +732,7 @@ export default function Scope() {
                                         {item.sqft || "0.00"}
                                       </span>
                                     </TableCell>
-                                    <TableCell className="px-2">
+                                    <TableCell className="px-1">
                                       <Select
                                         value={item.material || "Generic Ply"}
                                         onValueChange={(value) => handleInteriorFieldChange(item.id, "material", value)}
@@ -749,7 +749,7 @@ export default function Scope() {
                                         </SelectContent>
                                       </Select>
                                     </TableCell>
-                                    <TableCell className="px-2">
+                                    <TableCell className="px-1">
                                       <Select
                                         value={item.finish || "Generic Laminate"}
                                         onValueChange={(value) => handleInteriorFieldChange(item.id, "finish", value)}
@@ -766,7 +766,7 @@ export default function Scope() {
                                         </SelectContent>
                                       </Select>
                                     </TableCell>
-                                    <TableCell className="px-2">
+                                    <TableCell className="px-1">
                                       <Select
                                         value={item.hardware || "Nimmi"}
                                         onValueChange={(value) => handleInteriorFieldChange(item.id, "hardware", value)}
@@ -783,7 +783,7 @@ export default function Scope() {
                                         </SelectContent>
                                       </Select>
                                     </TableCell>
-                                    <TableCell className="px-2">
+                                    <TableCell className="px-1">
                                       {item.calc === 'SQFT' ? (
                                         <div className="flex items-center gap-2">
                                           <Input
