@@ -426,15 +426,15 @@ export default function Print() {
                         </tr>
                       </thead>
                       <tbody>
-                        {Object.entries(interiorsByRoom).map(([room, items]) => {
+                        {Object.entries(interiorsByRoom).sort(([a], [b]) => a.localeCompare(b)).map(([room, items]) => {
                           const roomArea = items.reduce((sum, item) => sum + Number(item.sqft || 0), 0);
                           const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
                           return (
                             <tr key={room}>
                               <td className="border border-gray-300 px-3 py-2 text-left font-medium">{room}</td>
-                              <td className="border border-gray-300 px-3 py-2 text-right font-mono">{roomArea.toFixed(2)}</td>
-                              <td className="border border-gray-300 px-3 py-2 text-right font-mono">{items.length}</td>
-                              <td className="border border-gray-300 px-3 py-2 text-right font-mono font-semibold">{formatINR(roomTotal)}</td>
+                              <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{roomArea.toFixed(2)}</td>
+                              <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{items.length}</td>
+                              <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums font-semibold">{formatINR(roomTotal)}</td>
                             </tr>
                           );
                         })}
@@ -466,7 +466,7 @@ export default function Print() {
                   <div className="space-y-6 page-break-before">
                     <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM-WISE BREAKDOWN</h3>
                     
-                    {Object.entries(interiorsByRoom).map(([room, items], roomIdx) => {
+                    {Object.entries(interiorsByRoom).sort(([a], [b]) => a.localeCompare(b)).map(([room, items], roomIdx) => {
                       const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
                       const isLastRoom = roomIdx === Object.entries(interiorsByRoom).length - 1;
                       
@@ -738,16 +738,19 @@ export default function Print() {
                             <th className="border border-gray-300 px-3 py-2 text-left">Room</th>
                             <th className="border border-gray-300 px-3 py-2 text-right">FC Area (SFT)</th>
                             <th className="border border-gray-300 px-3 py-2 text-right">Items</th>
+                            <th className="border border-gray-300 px-3 py-2 text-right">Room Total (₹)</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {Object.entries(falseCeilingByRoom).map(([room, items]) => {
+                          {Object.entries(falseCeilingByRoom).sort(([a], [b]) => a.localeCompare(b)).map(([room, items]) => {
                             const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
+                            const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
                             return (
                               <tr key={room}>
                                 <td className="border border-gray-300 px-3 py-2 text-left font-medium">{room}</td>
-                                <td className="border border-gray-300 px-3 py-2 text-right font-mono">{roomArea.toFixed(2)}</td>
-                                <td className="border border-gray-300 px-3 py-2 text-right font-mono">{items.length}</td>
+                                <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{roomArea.toFixed(2)}</td>
+                                <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{items.length}</td>
+                                <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums font-semibold">{formatINR(roomTotal)}</td>
                               </tr>
                             );
                           })}
@@ -785,24 +788,24 @@ export default function Print() {
                       <table className="summary-table w-full border-collapse text-sm mt-4">
                         <tbody>
                           <tr className="bg-gray-100 font-semibold">
-                            <td colSpan={2} className="border border-gray-300 px-3 py-2 text-right">Subtotal:</td>
-                            <td className="border border-gray-300 px-3 py-2 text-right font-mono">{formatINR(fcSubtotal)}</td>
+                            <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">Subtotal:</td>
+                            <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{formatINR(fcSubtotal)}</td>
                           </tr>
                           {fcDiscountAmount > 0 && (
                             <tr>
-                              <td colSpan={2} className="border border-gray-300 px-3 py-2 text-right">
+                              <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">
                                 Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
                               </td>
-                              <td className="border border-gray-300 px-3 py-2 text-right font-mono text-red-600">-{formatINR(fcDiscountAmount)}</td>
+                              <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums text-red-600">-{formatINR(fcDiscountAmount)}</td>
                             </tr>
                           )}
                           <tr>
-                            <td colSpan={2} className="border border-gray-300 px-3 py-2 text-right">GST (18%):</td>
-                            <td className="border border-gray-300 px-3 py-2 text-right font-mono">{formatINR(fcGst)}</td>
+                            <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">GST (18%):</td>
+                            <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{formatINR(fcGst)}</td>
                           </tr>
                           <tr className="bg-[#0E2F1B] text-white font-bold">
-                            <td colSpan={2} className="border border-gray-300 px-3 py-3 text-right text-base">Grand Total:</td>
-                            <td className="border border-gray-300 px-3 py-3 text-right font-mono text-base">{formatINR(fcFinalTotal)}</td>
+                            <td colSpan={3} className="border border-gray-300 px-3 py-3 text-right text-base">Grand Total:</td>
+                            <td className="border border-gray-300 px-3 py-3 text-right font-mono tabular-nums text-base">{formatINR(fcFinalTotal)}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -814,7 +817,7 @@ export default function Print() {
                     <div className="space-y-6 page-break-before">
                       <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
                       
-                      {Object.entries(falseCeilingByRoom).map(([room, items], roomIdx) => {
+                      {Object.entries(falseCeilingByRoom).sort(([a], [b]) => a.localeCompare(b)).map(([room, items], roomIdx) => {
                         const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
                         const isLastRoom = roomIdx === Object.entries(falseCeilingByRoom).length - 1;
                         
