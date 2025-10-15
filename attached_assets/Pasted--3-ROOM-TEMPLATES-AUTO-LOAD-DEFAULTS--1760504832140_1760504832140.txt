@@ -1,0 +1,202 @@
+──────────────────────────────
+3️⃣ ROOM TEMPLATES (AUTO-LOAD DEFAULTS)
+──────────────────────────────
+Create client/lib/templates.ts:
+
+export type UnitType = 'SFT' | 'COUNT' | 'LSUM';
+export type TemplateItem = {
+  description: string;
+  unit: UnitType;
+  forceHandmade?: boolean;
+};
+export type RoomTemplate = { room: string; items: TemplateItem[] };
+
+export function getTemplateForCategory(cat: '1BHK'|'2BHK'|'3BHK'|'4BHK'|'Duplex'|'Triplex'|'Villa'|'Commercial'): RoomTemplate[] {
+  switch(cat) {
+    case '3BHK':
+      return [
+        {
+          room: 'Kitchen',
+          items: [
+            { description: 'Base Unit', unit: 'SFT' },
+            { description: 'Wall Unit', unit: 'SFT' },
+            { description: 'Tall Unit', unit: 'SFT' },
+            { description: 'Appliance Unit', unit: 'SFT' },
+            { description: 'Wicker Basket', unit: 'COUNT' },
+            { description: 'Tandem Drawer Set', unit: 'COUNT' },
+            { description: 'Utility Wall Storage', unit: 'SFT' },
+            { description: 'Utility Tall Unit', unit: 'SFT' },
+          ]
+        },
+        {
+          room: 'Living Room',
+          items: [
+            { description: 'Crockery Base', unit: 'SFT' },
+            { description: 'TV Unit – Base', unit: 'SFT' },
+            { description: 'TV Unit – Tall Unit', unit: 'SFT' },
+            { description: 'TV Unit – Wall Highlights', unit: 'SFT', forceHandmade: true },
+          ]
+        },
+        {
+          room: 'Master Bedroom',
+          items: [
+            { description: 'Wardrobe – Swing', unit: 'SFT' },
+            { description: 'Wardrobe – Sliding', unit: 'SFT' },
+            { description: 'Wardrobe – Loft', unit: 'SFT' },
+            { description: 'TV Unit', unit: 'SFT' },
+            { description: 'Custom Wall Highlights', unit: 'SFT', forceHandmade: true },
+            { description: 'Dresser', unit: 'SFT' },
+          ]
+        },
+        {
+          room: 'Bedroom 2',
+          items: [
+            { description: 'Wardrobe – Swing', unit: 'SFT' },
+            { description: 'Wardrobe – Loft', unit: 'SFT' },
+            { description: 'TV Unit', unit: 'SFT' },
+            { description: 'Custom Wall Highlights', unit: 'SFT', forceHandmade: true },
+          ]
+        },
+        {
+          room: 'Bedroom 3',
+          items: [
+            { description: 'Wardrobe – Swing', unit: 'SFT' },
+            { description: 'Wardrobe – Loft', unit: 'SFT' },
+            { description: 'TV Unit', unit: 'SFT' },
+            { description: 'Custom Wall Highlights', unit: 'SFT', forceHandmade: true },
+          ]
+        },
+        {
+          room: 'Bathrooms',
+          items: [
+            { description: 'Vanity', unit: 'SFT' }
+          ]
+        },
+        {
+          room: 'Puja Room',
+          items: [
+            { description: 'Puja Base', unit: 'SFT' },
+            { description: 'Puja Back Panel', unit: 'SFT' },
+            { description: 'Puja Doors', unit: 'SFT' },
+            { description: 'Puja Back Glass', unit: 'SFT' },
+          ]
+        },
+        {
+          room: 'Others',
+          items: [
+            { description: 'Floor Matting', unit: 'LSUM' },
+            { description: 'Transportation', unit: 'LSUM' },
+          ]
+        }
+      ];
+    default:
+      return [];
+  }
+}
+
+
+──────────────────────────────
+4️⃣ FALSE CEILING RULES
+──────────────────────────────
+
+Every room has a False Ceiling entry (SFT).
+
+FC Painting → LSUM (part of “FC Others”)
+
+FC Lights → COUNT
+
+FC Fan Hooks → COUNT
+
+FC Paint uses selected Painting Pack (Tractor / Premium / Royal / Shine / Aspira)
+
+3BHK = base pack rate.
+
+±10% per bedroom difference (2BHK = -10%, 4BHK = +10%, etc.)
+
+──────────────────────────────
+5️⃣ BRAND CATALOG (dropdowns)
+──────────────────────────────
+Create data/brands.ts:
+
+export const CORE_BRANDS = ['Generic Ply', 'Century', 'GreenPly'] as const;
+export const FINISHES = ['Generic Laminate', 'Acrylic', 'Duco'] as const;
+export const HARDWARE = ['Nimmi', 'Hettich', 'Hafele', 'Ebco', 'Sleek'] as const;
+
+
+Bind these to dropdowns in the item rows (Core Material, Finish, Hardware).
+
+──────────────────────────────
+6️⃣ COMPUTATION LOGIC (AUTOMATION)
+──────────────────────────────
+Whenever user edits L, H, W, Count, or changes Build Type / Brand selections:
+
+If item.unit === 'SFT':
+
+area = L × (H || W)
+
+rate = calcRateSft(buildType, core, finish, hardware)
+
+if item.forceHandmade → calcRateSft('HANDMADE', core, finish, hardware)
+
+amount = area × rate
+
+If item.unit === 'COUNT':
+
+amount = count × perUnitRate (pull default from rates if needed)
+
+If item.unit === 'LSUM':
+
+amount = LSUM value directly entered by user.
+
+──────────────────────────────
+7️⃣ UI BEHAVIOR
+──────────────────────────────
+✅ When “Apply Template” is pressed:
+
+Load relevant rooms/items from template.
+
+Preselect defaults: Generic Ply + Generic Laminate + Nimmi.
+
+Don’t duplicate existing rooms/items.
+✅ L, H, W inputs wide enough (use full width or min 70px each).
+✅ Show “Room Subtotal” below each room.
+✅ Room Summary totals = sum of all Room Subtotals.
+
+──────────────────────────────
+8️⃣ ACCEPTANCE CRITERIA
+──────────────────────────────
+
+Build Type dropdown changes rates instantly.
+
+“Custom Wall Highlights / Paneling” always stay HANDMADE.
+
+3BHK template loads with correct room list (Kitchen → Others).
+
+Kitchen includes Utility Wall Storage + Utility Tall Unit (no wall highlight).
+
+Master Bedroom includes Wardrobes, TV Unit, Custom Wall Highlights, Dresser.
+
+Puja Room includes Doors + Back Glass.
+
+Others includes Floor Matting + Transportation.
+
+COUNT / LSUM lines show no ₹/sft column.
+
+False Ceiling tab mirrors interiors rooms + FC Others (Paint LSUM, Lights, Fan Hooks, optional Cove).
+
+FC Painting Pack scaling ±10% per BHK count.
+
+──────────────────────────────
+9️⃣ QUICK TESTS
+──────────────────────────────
+✅ New project → choose 3BHK → Apply Template → rooms populate.
+✅ Build Type = Factory → all rates +₹200 base.
+✅ Changing any brand/finish/hardware recomputes rate.
+✅ FC tab: each room present; “Others” block visible.
+✅ Custom Wall Highlight items stay on Handmade rate.
+✅ Floor Matting + Transportation appear as LSUM items.
+✅ No RFT anywhere.
+
+──────────────────────────────
+END OF TASK
+──────────────────────────────
