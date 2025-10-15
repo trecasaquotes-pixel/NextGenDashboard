@@ -537,6 +537,8 @@ export const brands = pgTable("brands", {
   type: varchar("type").notNull(),
   name: varchar("name", { length: 60 }).notNull(),
   adderPerSft: integer("adder_per_sft").notNull().default(0),
+  warrantyMonths: integer("warranty_months").default(12), // Default 1 year warranty
+  warrantySummary: text("warranty_summary"), // Optional warranty description
   isDefault: boolean("is_default").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
@@ -548,6 +550,8 @@ export const insertBrandSchema = createInsertSchema(brands, {
   type: brandTypeEnum,
   name: z.string().min(2).max(60),
   adderPerSft: z.number().int().min(0).default(0),
+  warrantyMonths: z.number().int().min(0).max(120).default(12).optional(),
+  warrantySummary: z.string().max(500).optional(),
   isDefault: z.boolean().default(false),
   isActive: z.boolean().default(true),
 }).omit({

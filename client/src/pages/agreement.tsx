@@ -444,8 +444,8 @@ export default function Agreement() {
           {/* Hidden Print Roots (for PDF capture) */}
           <div className="hidden">
             {/* These will be populated by the print page components when needed */}
-            <div id="print-interiors-root-hidden"></div>
-            <div id="print-fc-root-hidden"></div>
+            <div id="print-interiors-root" className="hidden-print-content"></div>
+            <div id="print-fc-root" className="hidden-print-content"></div>
           </div>
         </div>
       </main>

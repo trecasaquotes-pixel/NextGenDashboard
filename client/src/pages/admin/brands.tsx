@@ -52,11 +52,13 @@ export default function AdminBrandsPage() {
     type: "core",
     name: "",
     adderPerSft: 0,
+    warrantyMonths: 12,
+    warrantySummary: "",
     isDefault: false,
     isActive: true,
   });
 
-  const [editingValues, setEditingValues] = useState<Record<string, { name?: string; adderPerSft?: number }>>({});
+  const [editingValues, setEditingValues] = useState<Record<string, { name?: string; adderPerSft?: number; warrantyMonths?: number; warrantySummary?: string }>>({});
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -187,6 +189,8 @@ export default function AdminBrandsPage() {
       type: activeTab,
       name: "",
       adderPerSft: 0,
+      warrantyMonths: 12,
+      warrantySummary: "",
       isDefault: false,
       isActive: true,
     });
@@ -204,7 +208,7 @@ export default function AdminBrandsPage() {
     createMutation.mutate(newBrand as NewBrandRow);
   };
 
-  const handleInlineEdit = (brandId: string, field: 'name' | 'adderPerSft', value: string | number) => {
+  const handleInlineEdit = (brandId: string, field: 'name' | 'adderPerSft' | 'warrantyMonths' | 'warrantySummary', value: string | number) => {
     setEditingValues(prev => ({
       ...prev,
       [brandId]: {
@@ -224,8 +228,12 @@ export default function AdminBrandsPage() {
     });
   }, [debouncedEditingValues]);
 
-  const getBrandValue = (brand: BrandRow, field: 'name' | 'adderPerSft') => {
-    return editingValues[brand.id]?.[field] ?? brand[field];
+  const getBrandValue = (brand: BrandRow, field: 'name' | 'adderPerSft' | 'warrantyMonths' | 'warrantySummary') => {
+    const value = editingValues[brand.id]?.[field] ?? brand[field];
+    // Handle nullable warranty fields
+    if (field === 'warrantyMonths' && value === null) return 12;
+    if (field === 'warrantySummary' && value === null) return '';
+    return value;
   };
 
   if (authLoading || !isAuthenticated) {
@@ -285,7 +293,8 @@ export default function AdminBrandsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
-                      <TableHead className="w-[200px]">Adder (₹/sft)</TableHead>
+                      <TableHead className="w-[150px]">Adder (₹/sft)</TableHead>
+                      <TableHead className="w-[120px]">Warranty (months)</TableHead>
                       <TableHead className="w-[100px]">Default</TableHead>
                       <TableHead className="w-[100px]">Active</TableHead>
                       <TableHead className="w-[80px]"></TableHead>
@@ -297,7 +306,7 @@ export default function AdminBrandsPage() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Input
-                              value={getBrandValue(brand, 'name')}
+                              value={getBrandValue(brand, 'name') as string}
                               onChange={(e) => handleInlineEdit(brand.id, 'name', e.target.value)}
                               className="max-w-md"
                               data-testid={`input-brand-name-${brand.id}`}
@@ -313,10 +322,21 @@ export default function AdminBrandsPage() {
                           <Input
                             type="number"
                             min="0"
-                            value={getBrandValue(brand, 'adderPerSft')}
+                            value={getBrandValue(brand, 'adderPerSft') as number}
                             onChange={(e) => handleInlineEdit(brand.id, 'adderPerSft', parseInt(e.target.value) || 0)}
-                            className="max-w-[150px]"
+                            className="max-w-[120px]"
                             data-testid={`input-brand-adder-${brand.id}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="120"
+                            value={getBrandValue(brand, 'warrantyMonths') as number}
+                            onChange={(e) => handleInlineEdit(brand.id, 'warrantyMonths', parseInt(e.target.value) || 12)}
+                            className="max-w-[100px]"
+                            data-testid={`input-brand-warranty-${brand.id}`}
                           />
                         </TableCell>
                         <TableCell>
@@ -401,6 +421,30 @@ export default function AdminBrandsPage() {
                 value={newBrand.adderPerSft}
                 onChange={(e) => setNewBrand({ ...newBrand, adderPerSft: parseInt(e.target.value) || 0 })}
                 data-testid="input-new-brand-adder"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brand-warranty">Warranty (months)</Label>
+              <Input
+                id="brand-warranty"
+                type="number"
+                min="0"
+                max="120"
+                value={newBrand.warrantyMonths}
+                onChange={(e) => setNewBrand({ ...newBrand, warrantyMonths: parseInt(e.target.value) || 12 })}
+                data-testid="input-new-brand-warranty"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brand-warranty-summary">Warranty Summary (optional)</Label>
+              <Input
+                id="brand-warranty-summary"
+                value={newBrand.warrantySummary || ''}
+                onChange={(e) => setNewBrand({ ...newBrand, warrantySummary: e.target.value })}
+                placeholder="e.g., 24 months warranty against manufacturing defects"
+                data-testid="input-new-brand-warranty-summary"
               />
             </div>
 
