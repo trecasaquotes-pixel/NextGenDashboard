@@ -83,7 +83,7 @@ export default function ProjectDetail() {
   const [editingExpense, setEditingExpense] = useState<ProjectExpense | null>(null);
 
   const { data: project, isLoading } = useQuery<Project>({
-    queryKey: ['/api/projects', projectId],
+    queryKey: [`/api/projects/${projectId}`],
     enabled: !!projectId,
   });
 
@@ -106,7 +106,7 @@ export default function ProjectDetail() {
       return apiRequest("POST", `/api/projects/${projectId}/expenses`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
       toast({ title: "Expense added successfully" });
       setShowExpenseDialog(false);
       form.reset();
@@ -122,7 +122,7 @@ export default function ProjectDetail() {
       return apiRequest("PATCH", `/api/project-expenses/${id}`, body);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
       toast({ title: "Expense updated successfully" });
       setShowExpenseDialog(false);
       setEditingExpense(null);
@@ -138,7 +138,7 @@ export default function ProjectDetail() {
       return apiRequest("DELETE", `/api/project-expenses/${expenseId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
       toast({ title: "Expense deleted successfully" });
     },
     onError: () => {

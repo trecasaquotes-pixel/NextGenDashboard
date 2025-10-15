@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2, Download, Save, Share2, FileEdit } from "lucide-react";
+import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2, Download, Save, Share2, FileEdit, Briefcase, TrendingUp } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
@@ -73,6 +73,12 @@ export default function Estimate() {
   const { data: changeOrders = [] } = useQuery<any[]>({
     queryKey: [`/api/quotations/${quotationId}/change-orders`],
     enabled: !!quotationId && isAuthenticated,
+  });
+
+  const { data: project } = useQuery<any>({
+    queryKey: [`/api/quotations/${quotationId}/project`],
+    enabled: !!quotationId && isAuthenticated && quotation?.status === "approved",
+    retry: false,
   });
 
   // Local state for discount
@@ -544,6 +550,48 @@ export default function Estimate() {
               approvedAt={quotation.approvedAt || undefined}
               approvedBy={quotation.approvedBy || undefined}
             />
+          )}
+
+          {/* Project Link Card (if approved and project exists) */}
+          {quotation?.status === "approved" && project && (
+            <Card className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-green-600" />
+                    <CardTitle className="text-lg">Project Created</CardTitle>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/projects/${project.id}`)}
+                    data-testid="button-view-project"
+                  >
+                    View Project & Expenses
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <div className="text-muted-foreground mb-1">Project ID</div>
+                    <div className="font-mono font-semibold">{project.projectId}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground mb-1">Contract Amount</div>
+                    <div className="font-semibold">{formatINR(parseFloat(project.contractAmount || "0"))}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground mb-1">Current Status</div>
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className={`h-4 w-4 ${parseFloat(project.profitLoss || "0") >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                      <span className={`font-semibold ${parseFloat(project.profitLoss || "0") >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {parseFloat(project.profitLoss || "0") >= 0 ? 'Profitable' : 'Loss'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {/* Export & Snapshot Actions */}
