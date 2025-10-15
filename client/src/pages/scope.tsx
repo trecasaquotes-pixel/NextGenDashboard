@@ -627,23 +627,23 @@ export default function Scope() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead className="w-auto">Description</TableHead>
-                                  <TableHead className="w-[70px]">L (ft)</TableHead>
-                                  <TableHead className="w-[70px]">H (ft)</TableHead>
-                                  <TableHead className="w-[70px]">W (ft)</TableHead>
-                                  <TableHead className="w-[80px]">SQFT</TableHead>
-                                  <TableHead className="w-[140px]">Core Material</TableHead>
-                                  <TableHead className="w-[140px]">Finish</TableHead>
-                                  <TableHead className="w-[120px]">Hardware</TableHead>
-                                  <TableHead className="w-[100px]">Rate (₹/sft)</TableHead>
-                                  <TableHead className="w-[110px]">Amount (₹)</TableHead>
-                                  <TableHead className="w-[50px]"></TableHead>
+                                  <TableHead className="w-auto px-2">Description</TableHead>
+                                  <TableHead className="w-[65px] px-2">L (ft)</TableHead>
+                                  <TableHead className="w-[65px] px-2">H (ft)</TableHead>
+                                  <TableHead className="w-[65px] px-2">W (ft)</TableHead>
+                                  <TableHead className="w-[70px] px-2">SQFT</TableHead>
+                                  <TableHead className="w-[130px] px-2">Core Material</TableHead>
+                                  <TableHead className="w-[130px] px-2">Finish</TableHead>
+                                  <TableHead className="w-[110px] px-2">Hardware</TableHead>
+                                  <TableHead className="w-[90px] px-2">Rate (₹/sft)</TableHead>
+                                  <TableHead className="w-[100px] px-2">Amount (₹)</TableHead>
+                                  <TableHead className="w-[45px] px-1"></TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
                                 {roomItems.map((item) => (
                                   <TableRow key={item.id}>
-                                    <TableCell>
+                                    <TableCell className="px-2">
                                       <Input
                                         value={item.description || ""}
                                         onChange={(e) => handleInteriorFieldChange(item.id, "description", e.target.value)}
@@ -652,7 +652,7 @@ export default function Scope() {
                                         data-testid={`input-description-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-2">
                                       <Input
                                         key={`length-${item.id}-${item.length}`}
                                         type="text"
@@ -677,7 +677,7 @@ export default function Scope() {
                                         data-testid={`input-length-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-2">
                                       <Input
                                         key={`height-${item.id}-${item.height}`}
                                         type="text"
@@ -702,7 +702,7 @@ export default function Scope() {
                                         data-testid={`input-height-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-2">
                                       <Input
                                         key={`width-${item.id}-${item.width}`}
                                         type="text"
@@ -727,12 +727,12 @@ export default function Scope() {
                                         data-testid={`input-width-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-2">
                                       <span className="font-mono text-sm font-semibold" data-testid={`text-sqft-${item.id}`}>
                                         {item.sqft || "0.00"}
                                       </span>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-2">
                                       <Select
                                         value={item.material || "Generic Ply"}
                                         onValueChange={(value) => handleInteriorFieldChange(item.id, "material", value)}
@@ -749,7 +749,7 @@ export default function Scope() {
                                         </SelectContent>
                                       </Select>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-2">
                                       <Select
                                         value={item.finish || "Generic Laminate"}
                                         onValueChange={(value) => handleInteriorFieldChange(item.id, "finish", value)}
@@ -766,7 +766,7 @@ export default function Scope() {
                                         </SelectContent>
                                       </Select>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-2">
                                       <Select
                                         value={item.hardware || "Nimmi"}
                                         onValueChange={(value) => handleInteriorFieldChange(item.id, "hardware", value)}
@@ -783,7 +783,7 @@ export default function Scope() {
                                         </SelectContent>
                                       </Select>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-2">
                                       {item.calc === 'SQFT' ? (
                                         <div className="flex items-center gap-2">
                                           <Input
@@ -829,12 +829,12 @@ export default function Scope() {
                                         </span>
                                       )}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-2">
                                       <span className="font-mono text-sm font-semibold" data-testid={`text-amount-${item.id}`}>
                                         ₹{item.totalPrice || "0"}
                                       </span>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-1">
                                       <Button
                                         variant="ghost"
                                         size="icon"
