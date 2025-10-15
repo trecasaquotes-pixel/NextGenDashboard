@@ -11,23 +11,23 @@ export function AnnexureTitle({ letter, title, quoteId, clientName }: AnnexureTi
       {/* Branded Header */}
       <div className="mb-12">
         <div className="flex items-center justify-center gap-3 mb-3">
-          <h1 className="text-5xl font-bold text-[#013220] text-center">
+          <h1 className="text-5xl font-bold text-[#0E2F1B] text-center">
             TRECASA DESIGN STUDIO
           </h1>
           <div className="w-3 h-3 rounded-full bg-red-600"></div>
         </div>
-        <p className="text-[#C9A74E] text-lg text-center">Luxury Interiors | Architecture | Build</p>
+        <p className="text-[#D1B77C] text-lg text-center">Luxury Interiors | Architecture | Build</p>
       </div>
 
       {/* Annexure Title */}
-      <div className="border-4 border-[#C9A74E] p-12 rounded-lg max-w-2xl w-full text-center">
+      <div className="border-4 border-[#D1B77C] p-12 rounded-lg max-w-2xl w-full text-center">
         <div className="space-y-6">
           <div>
-            <p className="text-6xl font-bold text-[#013220] mb-2">ANNEXURE {letter}</p>
-            <div className="h-1 bg-[#C9A74E] w-32 mx-auto"></div>
+            <p className="text-6xl font-bold text-[#0E2F1B] mb-2">ANNEXURE {letter}</p>
+            <div className="h-1 bg-[#D1B77C] w-32 mx-auto"></div>
           </div>
           
-          <h2 className="text-3xl font-semibold text-[#013220] mt-8">
+          <h2 className="text-3xl font-semibold text-[#0E2F1B] mt-8">
             {title}
           </h2>
           

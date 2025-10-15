@@ -257,14 +257,14 @@ export default function Agreement() {
           {/* Agreement Document */}
           <div id="print-agreement-root" className="bg-white text-black" data-pdf-ready="true">
             {/* Branded Header */}
-            <div className="bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
+            <div className="bg-[#0E2F1B] text-white p-6 rounded-t-lg print:rounded-none">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h1 className="text-3xl font-bold">TRECASA DESIGN STUDIO</h1>
                     <div className="w-2.5 h-2.5 rounded-full bg-red-600"></div>
                   </div>
-                  <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
+                  <p className="text-[#D1B77C] text-sm">Luxury Interiors | Architecture | Build</p>
                 </div>
                 <div className="text-right text-sm space-y-1">
                   <p><strong>Quote ID:</strong> {quotation.quoteId}</p>
@@ -276,8 +276,8 @@ export default function Agreement() {
             {/* Content */}
             <div className="p-8 space-y-6">
               {/* Title */}
-              <div className="text-center border-b-2 border-[#C9A74E] pb-4">
-                <h2 className="text-2xl font-bold text-[#013220]">SERVICE AGREEMENT</h2>
+              <div className="text-center border-b-2 border-[#D1B77C] pb-4">
+                <h2 className="text-2xl font-bold text-[#0E2F1B]">SERVICE AGREEMENT</h2>
               </div>
 
               {/* Agreement Content */}
@@ -303,7 +303,7 @@ export default function Agreement() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#013220] text-base">1. SCOPE OF WORK</h3>
+                  <h3 className="font-semibold text-[#0E2F1B] text-base">1. SCOPE OF WORK</h3>
                   <p className="ml-4">
                     The Service Provider agrees to provide interior design and execution services as detailed in the attached quotations:
                   </p>
@@ -318,14 +318,14 @@ export default function Agreement() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#013220] text-base">2. PROJECT TIMELINE</h3>
+                  <h3 className="font-semibold text-[#0E2F1B] text-base">2. PROJECT TIMELINE</h3>
                   <p className="ml-4">
                     The project shall commence upon receipt of the advance payment and completion shall be as mutually agreed upon by both parties in writing.
                   </p>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#013220] text-base">3. PAYMENT TERMS</h3>
+                  <h3 className="font-semibold text-[#0E2F1B] text-base">3. PAYMENT TERMS</h3>
                   <p className="ml-4">
                     The Client agrees to make payments as per the schedule outlined in the attached quotations. Typically:
                   </p>
@@ -337,28 +337,28 @@ export default function Agreement() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#013220] text-base">4. WARRANTY</h3>
+                  <h3 className="font-semibold text-[#0E2F1B] text-base">4. WARRANTY</h3>
                   <p className="ml-4">
                     The Service Provider provides a warranty period of 12 months from the date of project handover against manufacturing defects. Normal wear and tear is not covered under warranty.
                   </p>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#013220] text-base">5. MODIFICATIONS</h3>
+                  <h3 className="font-semibold text-[#0E2F1B] text-base">5. MODIFICATIONS</h3>
                   <p className="ml-4">
                     Any modifications to the agreed scope of work must be communicated in writing and may result in additional charges and timeline extensions.
                   </p>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#013220] text-base">6. TERMINATION</h3>
+                  <h3 className="font-semibold text-[#0E2F1B] text-base">6. TERMINATION</h3>
                   <p className="ml-4">
                     Either party may terminate this agreement with 15 days written notice. In case of termination by the Client, payments made are non-refundable and work completed till date shall be billed proportionately.
                   </p>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#013220] text-base">7. GOVERNING LAW</h3>
+                  <h3 className="font-semibold text-[#0E2F1B] text-base">7. GOVERNING LAW</h3>
                   <p className="ml-4">
                     This Agreement shall be governed by and construed in accordance with the laws of India. Any disputes arising shall be subject to the jurisdiction of courts in [City].
                   </p>
@@ -436,7 +436,7 @@ export default function Agreement() {
             </div>
 
             {/* Branded Footer */}
-            <div className="bg-gray-100 p-4 text-center text-sm text-gray-600 border-t-2 border-[#C9A74E] rounded-b-lg print:rounded-none">
+            <div className="bg-gray-100 p-4 text-center text-sm text-gray-600 border-t-2 border-[#D1B77C] rounded-b-lg print:rounded-none">
               <div className="flex items-center justify-center gap-2">
                 <span>© 2025 TRECASA DESIGN STUDIO</span>
                 <div className="w-2 h-2 rounded-full bg-red-600"></div>

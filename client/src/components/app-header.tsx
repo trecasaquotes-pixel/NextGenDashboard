@@ -1,6 +1,6 @@
 export function AppHeader() {
   return (
-    <header className="w-full" style={{ backgroundColor: '#013220' }}>
+    <header className="w-full" style={{ backgroundColor: '#0E2F1B' }}>
       <div className="container mx-auto px-4 py-6">
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-1">
@@ -15,7 +15,7 @@ export function AppHeader() {
           </div>
           <p 
             className="text-sm md:text-base font-light tracking-wider"
-            style={{ color: '#C9A74E' }}
+            style={{ color: '#D1B77C' }}
           >
             Luxury Interiors | Architecture | Build
           </p>
@@ -23,7 +23,7 @@ export function AppHeader() {
       </div>
       <div 
         className="w-full h-[2px]"
-        style={{ backgroundColor: '#C9A74E' }}
+        style={{ backgroundColor: '#D1B77C' }}
       />
     </header>
   );

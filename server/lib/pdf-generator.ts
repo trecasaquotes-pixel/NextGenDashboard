@@ -123,7 +123,7 @@ export async function generateQuotationPDF(
             font-size: 10px;
             color: #1E2F28;
             padding: 0 14mm;
-            border-top: 2px solid #D4AF37;
+            border-top: 2px solid #D1B77C;
             background: white;
             z-index: 1000;
           }
@@ -187,7 +187,7 @@ export async function generateQuotationPDF(
           .status-dot {
             width: 10px;
             height: 10px;
-            background: #B02A2A;
+            background: #C42021;
             border-radius: 50%;
             display: inline-block;
             margin-left: 8px;
@@ -210,7 +210,7 @@ export async function generateQuotationPDF(
             font-weight: 700;
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 14pt;
-            color: #013220;
+            color: #0E2F1B;
           }
           
           .room-table {
@@ -256,7 +256,7 @@ export async function generateQuotationPDF(
           }
           
           .summary-grand td {
-            border-top: 2px solid #D4AF37;
+            border-top: 2px solid #D1B77C;
             font-weight: 700;
           }
           
@@ -270,7 +270,7 @@ export async function generateQuotationPDF(
           }
           
           .summary-totals .final-total {
-            border-top: 2px solid #D4AF37;
+            border-top: 2px solid #D1B77C;
             padding-top: 6px;
             font-size: 18px;
             font-weight: 700;
@@ -283,7 +283,7 @@ export async function generateQuotationPDF(
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 12pt;
             font-weight: 700;
-            color: #013220;
+            color: #0E2F1B;
           }
           
           .header-meta {

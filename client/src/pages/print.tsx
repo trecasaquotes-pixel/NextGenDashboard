@@ -332,11 +332,11 @@ export default function Print() {
               {/* Print Content */}
               <div id="print-interiors-root" className="print-content bg-white text-black" data-pdf-ready="true">
                 {/* PDF Header - Fixed */}
-                <div className="pdf-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
+                <div className="pdf-header bg-[#0E2F1B] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="brand-row flex items-center justify-between">
                     <div className="brand-left">
                       <h1 className="text-3xl font-bold mb-2">TRECASA DESIGN STUDIO</h1>
-                      <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
+                      <p className="text-[#D1B77C] text-sm">Luxury Interiors | Architecture | Build</p>
                     </div>
                     <div className="flex items-center gap-6">
                       <div className="text-right text-sm space-y-1 header-meta">
@@ -346,7 +346,7 @@ export default function Print() {
                         <div><strong>Project:</strong> {quotation.projectName || "N/A"}</div>
                       </div>
                       <div className="brand-right">
-                        <span className="status-dot" aria-hidden="true" style={{width: '10px', height: '10px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block', transform: 'translateY(1px)'}}></span>
+                        <span className="status-dot" aria-hidden="true" style={{width: '10px', height: '10px', background: '#C42021', borderRadius: '50%', display: 'inline-block', transform: 'translateY(1px)'}}></span>
                       </div>
                     </div>
                   </div>
@@ -358,15 +358,15 @@ export default function Print() {
                   <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
                   <div className="flex items-center gap-2">
                     <span className="page-num"></span>
-                    <span className="dot" style={{width: '8px', height: '8px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block'}}></span>
+                    <span className="dot" style={{width: '8px', height: '8px', background: '#C42021', borderRadius: '50%', display: 'inline-block'}}></span>
                   </div>
                 </div>
 
                 {/* PDF Body - Content */}
                 <div className="pdf-body p-8 space-y-8">
                   {/* Title */}
-                  <div className="text-center border-b-2 border-[#C9A74E] pb-4">
-                    <h2 className="text-2xl font-bold text-[#013220]">INTERIORS QUOTATION</h2>
+                  <div className="text-center border-b-2 border-[#D1B77C] pb-4">
+                    <h2 className="text-2xl font-bold text-[#0E2F1B]">INTERIORS QUOTATION</h2>
                   </div>
 
                   {/* Room Totals Summary - Part 2A */}
@@ -389,8 +389,8 @@ export default function Print() {
                       </tbody>
                       <tfoot>
                         <tr className="summary-grand">
-                          <td className="border-t-2 border-[#D4AF37] px-3 py-2 text-right font-bold">Interiors Subtotal</td>
-                          <td className="border-t-2 border-[#D4AF37] px-3 py-2 text-right font-mono font-bold">{formatINR(interiorsSubtotal)}</td>
+                          <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-bold">Interiors Subtotal</td>
+                          <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-mono font-bold">{formatINR(interiorsSubtotal)}</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -401,7 +401,7 @@ export default function Print() {
 
                   {/* Section A: Project Summary */}
                   <div className="space-y-3">
-                    <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
+                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
@@ -415,7 +415,7 @@ export default function Print() {
 
                   {/* Section B: Room Summary Table */}
                   <div className="space-y-3 break-inside-avoid page-break">
-                    <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM SUMMARY</h3>
+                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM SUMMARY</h3>
                     <table className="summary-table w-full border-collapse text-sm">
                       <thead>
                         <tr className="bg-gray-100">
@@ -454,7 +454,7 @@ export default function Print() {
                           <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">GST (18%):</td>
                           <td className="border border-gray-300 px-3 py-2 text-right font-mono">{formatINR(interiorsGst)}</td>
                         </tr>
-                        <tr className="bg-[#013220] text-white font-bold">
+                        <tr className="bg-[#0E2F1B] text-white font-bold">
                           <td colSpan={3} className="border border-gray-300 px-3 py-3 text-right text-base">Grand Total:</td>
                           <td className="border border-gray-300 px-3 py-3 text-right font-mono text-base">{formatINR(interiorsFinalTotal)}</td>
                         </tr>
@@ -464,7 +464,7 @@ export default function Print() {
 
                   {/* Section C: Room-wise Breakdown */}
                   <div className="space-y-6 page-break-before">
-                    <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM-WISE BREAKDOWN</h3>
+                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM-WISE BREAKDOWN</h3>
                     
                     {Object.entries(interiorsByRoom).map(([room, items], roomIdx) => {
                       const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
@@ -472,7 +472,7 @@ export default function Print() {
                       
                       return (
                         <section key={room} className="room-block">
-                          <h4 className="room-title font-semibold text-[#013220] mb-2" style={{margin: '10mm 0 4mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
+                          <h4 className="room-title font-semibold text-[#0E2F1B] mb-2" style={{margin: '10mm 0 4mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
                           <table className="room-table w-full text-sm border-collapse zebra-table">
                             <thead>
                               <tr className="bg-gray-100">
@@ -510,7 +510,7 @@ export default function Print() {
 
                   {/* Section C: Summary */}
                   <div className="summary-totals space-y-3 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">SUMMARY</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">SUMMARY</h3>
                     <table className="w-full max-w-md ml-auto text-sm">
                       <tbody>
                         <tr className="row">
@@ -529,9 +529,9 @@ export default function Print() {
                           <td className="py-1 text-right pr-4">GST (18%):</td>
                           <td className="py-1 text-right font-mono">{formatINR(interiorsGst)}</td>
                         </tr>
-                        <tr className="final-total row border-t-2 border-[#D4AF37]">
-                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#013220]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Final Interiors Quote:</td>
-                          <td className="py-2 text-right font-mono text-lg font-bold text-[#013220]">{formatINR(interiorsFinalTotal)}</td>
+                        <tr className="final-total row border-t-2 border-[#D1B77C]">
+                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#0E2F1B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Final Interiors Quote:</td>
+                          <td className="py-2 text-right font-mono text-lg font-bold text-[#0E2F1B]">{formatINR(interiorsFinalTotal)}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -539,7 +539,7 @@ export default function Print() {
 
                   {/* Section D: Notes/Terms */}
                   <div className="space-y-3 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">TERMS & CONDITIONS</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">TERMS & CONDITIONS</h3>
                     <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.interiors;
@@ -558,7 +558,7 @@ export default function Print() {
 
                   {/* Signatures */}
                   <div className="mt-8 border border-gray-300 rounded-lg p-6 space-y-4 break-inside-avoid" data-testid="signature-block-interiors">
-                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">SIGNATURES</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">SIGNATURES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {/* Client Signature */}
                       <div className="space-y-3 break-inside-avoid">
@@ -635,11 +635,11 @@ export default function Print() {
               {/* Print Content */}
               <div id="print-fc-root" className="print-content bg-white text-black" data-pdf-ready="true">
                 {/* PDF Header - Fixed */}
-                <div className="pdf-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
+                <div className="pdf-header bg-[#0E2F1B] text-white p-6 rounded-t-lg print:rounded-none">
                   <div className="brand-row flex items-center justify-between">
                     <div className="brand-left">
                       <h1 className="text-3xl font-bold mb-2">TRECASA DESIGN STUDIO</h1>
-                      <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
+                      <p className="text-[#D1B77C] text-sm">Luxury Interiors | Architecture | Build</p>
                     </div>
                     <div className="flex items-center gap-6">
                       <div className="text-right text-sm space-y-1 header-meta">
@@ -649,7 +649,7 @@ export default function Print() {
                         <div><strong>Project:</strong> {quotation.projectName || "N/A"}</div>
                       </div>
                       <div className="brand-right">
-                        <span className="status-dot" aria-hidden="true" style={{width: '10px', height: '10px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block', transform: 'translateY(1px)'}}></span>
+                        <span className="status-dot" aria-hidden="true" style={{width: '10px', height: '10px', background: '#C42021', borderRadius: '50%', display: 'inline-block', transform: 'translateY(1px)'}}></span>
                       </div>
                     </div>
                   </div>
@@ -661,15 +661,15 @@ export default function Print() {
                   <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
                   <div className="flex items-center gap-2">
                     <span className="page-num"></span>
-                    <span className="dot" style={{width: '8px', height: '8px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block'}}></span>
+                    <span className="dot" style={{width: '8px', height: '8px', background: '#C42021', borderRadius: '50%', display: 'inline-block'}}></span>
                   </div>
                 </div>
 
                 {/* PDF Body - Content */}
                 <div className="pdf-body p-8 space-y-8">
                   {/* Title */}
-                  <div className="text-center border-b-2 border-[#C9A74E] pb-4">
-                    <h2 className="text-2xl font-bold text-[#013220]">FALSE CEILING QUOTATION</h2>
+                  <div className="text-center border-b-2 border-[#D1B77C] pb-4">
+                    <h2 className="text-2xl font-bold text-[#0E2F1B]">FALSE CEILING QUOTATION</h2>
                   </div>
 
                   {/* Room Totals Summary - Part 2A */}
@@ -694,8 +694,8 @@ export default function Print() {
                           </tbody>
                           <tfoot>
                             <tr className="summary-grand">
-                              <td className="border-t-2 border-[#D4AF37] px-3 py-2 text-right font-bold">False Ceiling Subtotal</td>
-                              <td className="border-t-2 border-[#D4AF37] px-3 py-2 text-right font-mono font-bold">{formatINR(fcSubtotal)}</td>
+                              <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-bold">False Ceiling Subtotal</td>
+                              <td className="border-t-2 border-[#D1B77C] px-3 py-2 text-right font-mono font-bold">{formatINR(fcSubtotal)}</td>
                             </tr>
                           </tfoot>
                         </table>
@@ -708,7 +708,7 @@ export default function Print() {
 
                   {/* Section A: Project Summary */}
                   <div className="space-y-3">
-                    <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
+                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <p><strong>Client Name:</strong> {quotation.clientName || "N/A"}</p>
@@ -723,7 +723,7 @@ export default function Print() {
                   {/* Section B: Room Summary Table */}
                   {falseCeilingItems.length > 0 && (
                     <div className="space-y-3 break-inside-avoid page-break">
-                      <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM SUMMARY</h3>
+                      <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM SUMMARY</h3>
                       <table className="summary-table w-full border-collapse text-sm">
                         <thead>
                           <tr className="bg-gray-100">
@@ -749,7 +749,7 @@ export default function Print() {
                       {/* Others Items Summary */}
                       {otherItems.length > 0 && (
                         <div className="mt-4">
-                          <h4 className="font-semibold text-[#013220] mb-2">Other Items</h4>
+                          <h4 className="font-semibold text-[#0E2F1B] mb-2">Other Items</h4>
                           <table className="summary-table w-full border-collapse text-sm">
                             <thead>
                               <tr className="bg-gray-100">
@@ -792,7 +792,7 @@ export default function Print() {
                             <td colSpan={2} className="border border-gray-300 px-3 py-2 text-right">GST (18%):</td>
                             <td className="border border-gray-300 px-3 py-2 text-right font-mono">{formatINR(fcGst)}</td>
                           </tr>
-                          <tr className="bg-[#013220] text-white font-bold">
+                          <tr className="bg-[#0E2F1B] text-white font-bold">
                             <td colSpan={2} className="border border-gray-300 px-3 py-3 text-right text-base">Grand Total:</td>
                             <td className="border border-gray-300 px-3 py-3 text-right font-mono text-base">{formatINR(fcFinalTotal)}</td>
                           </tr>
@@ -804,7 +804,7 @@ export default function Print() {
                   {/* Section C: Room-wise False Ceiling Breakdown */}
                   {falseCeilingItems.length > 0 && (
                     <div className="space-y-6 page-break-before">
-                      <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
+                      <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
                       
                       {Object.entries(falseCeilingByRoom).map(([room, items], roomIdx) => {
                         const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
@@ -812,7 +812,7 @@ export default function Print() {
                         
                         return (
                           <section key={room} className="room-block">
-                            <h4 className="room-title font-semibold text-[#013220] mb-2" style={{margin: '10mm 0 4mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
+                            <h4 className="room-title font-semibold text-[#0E2F1B] mb-2" style={{margin: '10mm 0 4mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
                             <table className="room-table w-full text-sm border-collapse zebra-table">
                               <thead>
                                 <tr className="bg-gray-100">
@@ -831,7 +831,7 @@ export default function Print() {
                                     <td className="border border-gray-300 px-2 py-1 text-center font-mono font-semibold">{item.area || "0.00"}</td>
                                   </tr>
                                 ))}
-                                <tr className="bg-[#013220] text-white font-semibold">
+                                <tr className="bg-[#0E2F1B] text-white font-semibold">
                                   <td colSpan={3} className="border border-gray-300 px-2 py-2 text-right">Room Area:</td>
                                   <td className="border border-gray-300 px-2 py-2 text-center font-mono">{roomArea.toFixed(2)} SQFT</td>
                                 </tr>
@@ -846,7 +846,7 @@ export default function Print() {
                   {/* Section C: OTHERS */}
                   {otherItems.length > 0 && (
                     <div className="space-y-4 break-inside-avoid">
-                      <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">OTHERS</h3>
+                      <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">OTHERS</h3>
                       <table className="w-full text-sm border-collapse zebra-table">
                         <thead>
                           <tr className="bg-gray-100">
@@ -872,7 +872,7 @@ export default function Print() {
 
                   {/* Section D: Summary */}
                   <div className="summary-totals space-y-3 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">SUMMARY</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">SUMMARY</h3>
                     <table className="w-full max-w-md ml-auto text-sm">
                       <tbody>
                         <tr className="row">
@@ -891,9 +891,9 @@ export default function Print() {
                           <td className="py-1 text-right pr-4">GST (18%):</td>
                           <td className="py-1 text-right font-mono">{formatINR(fcGst)}</td>
                         </tr>
-                        <tr className="final-total row border-t-2 border-[#D4AF37]">
-                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#013220]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Final False Ceiling Quote:</td>
-                          <td className="py-2 text-right font-mono text-lg font-bold text-[#013220]">{formatINR(fcFinalTotal)}</td>
+                        <tr className="final-total row border-t-2 border-[#D1B77C]">
+                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#0E2F1B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Final False Ceiling Quote:</td>
+                          <td className="py-2 text-right font-mono text-lg font-bold text-[#0E2F1B]">{formatINR(fcFinalTotal)}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -901,7 +901,7 @@ export default function Print() {
 
                   {/* Notes/Terms */}
                   <div className="space-y-3 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">TERMS & CONDITIONS</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">TERMS & CONDITIONS</h3>
                     <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.falseCeiling;
@@ -920,7 +920,7 @@ export default function Print() {
 
                   {/* Signatures */}
                   <div className="mt-8 border border-gray-300 rounded-lg p-6 space-y-4 break-inside-avoid" data-testid="signature-block-false-ceiling">
-                    <h3 className="text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">SIGNATURES</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">SIGNATURES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {/* Client Signature */}
                       <div className="space-y-3 break-inside-avoid">

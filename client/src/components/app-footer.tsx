@@ -3,7 +3,7 @@ export function AppFooter() {
     <footer className="w-full mt-auto">
       <div 
         className="w-full h-[1px]"
-        style={{ backgroundColor: '#C9A74E' }}
+        style={{ backgroundColor: '#D1B77C' }}
       />
       <div className="container mx-auto px-4 py-6">
         <div className="text-center space-y-1" style={{ color: '#999999', fontSize: '12px', lineHeight: '1.2' }}>
