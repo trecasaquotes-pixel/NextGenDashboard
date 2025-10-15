@@ -31,6 +31,11 @@ export default function Estimate() {
   const [showApproveDialog, setShowApproveDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
 
+  // Scroll to top when page loads
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
