@@ -1611,6 +1611,157 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Business Expenses routes (overhead/monthly costs)
+  app.get('/api/business-expenses', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const expenses = await db.query.businessExpenses.findMany({
+        where: eq(businessExpenses.userId, userId),
+        orderBy: (businessExpenses, { desc }) => [desc(businessExpenses.paymentDate), desc(businessExpenses.createdAt)],
+      });
+      res.json(expenses);
+    } catch (error) {
+      console.error("Error fetching business expenses:", error);
+      res.status(500).json({ message: "Failed to fetch business expenses" });
+    }
+  });
+
+  app.post('/api/business-expenses', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validated = insertBusinessExpenseSchema.parse(req.body);
+      
+      // Convert paymentDate string to Date if provided (and not empty)
+      const expenseData: any = {
+        ...validated,
+        userId,
+      };
+      
+      // Only set paymentDate if it's a non-empty string
+      if (validated.paymentDate && validated.paymentDate.trim() !== '') {
+        expenseData.paymentDate = new Date(validated.paymentDate as any);
+      } else {
+        delete expenseData.paymentDate;
+      }
+      
+      const [newExpense] = await db.insert(businessExpenses).values(expenseData).returning();
+      res.json(newExpense);
+    } catch (error) {
+      console.error("Error creating business expense:", error);
+      res.status(500).json({ message: "Failed to create business expense" });
+    }
+  });
+
+  app.patch('/api/business-expenses/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const expense = await db.query.businessExpenses.findFirst({
+        where: eq(businessExpenses.id, req.params.id),
+      });
+      
+      if (!expense || expense.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      // Handle paymentDate conversion for update
+      const updateData: any = { ...req.body, updatedAt: new Date() };
+      
+      // Handle paymentDate: convert if valid, remove if empty/undefined
+      if (updateData.paymentDate !== undefined) {
+        if (updateData.paymentDate && updateData.paymentDate.trim() !== '') {
+          updateData.paymentDate = new Date(updateData.paymentDate);
+        } else {
+          delete updateData.paymentDate;
+        }
+      }
+      
+      const [updated] = await db.update(businessExpenses)
+        .set(updateData)
+        .where(eq(businessExpenses.id, req.params.id))
+        .returning();
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating business expense:", error);
+      res.status(500).json({ message: "Failed to update business expense" });
+    }
+  });
+
+  app.delete('/api/business-expenses/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const expense = await db.query.businessExpenses.findFirst({
+        where: eq(businessExpenses.id, req.params.id),
+      });
+      
+      if (!expense || expense.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      await db.delete(businessExpenses).where(eq(businessExpenses.id, req.params.id));
+      res.json({ ok: true });
+    } catch (error) {
+      console.error("Error deleting business expense:", error);
+      res.status(500).json({ message: "Failed to delete business expense" });
+    }
+  });
+
+  // Get business expenses stats and summary
+  app.get('/api/business-expenses/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const allExpenses = await db.query.businessExpenses.findMany({
+        where: eq(businessExpenses.userId, userId),
+      });
+      
+      // Calculate total by category
+      const byCategory = allExpenses.reduce((acc: any, exp) => {
+        const category = exp.category || 'Other';
+        if (!acc[category]) {
+          acc[category] = 0;
+        }
+        acc[category] += parseFloat(exp.amount || "0");
+        return acc;
+      }, {});
+      
+      // Calculate monthly totals (last 6 months)
+      const now = new Date();
+      const monthlyTotals: { month: string; total: number }[] = [];
+      
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const monthTotal = allExpenses.reduce((sum, exp) => {
+          if (exp.paymentDate) {
+            const expDate = new Date(exp.paymentDate);
+            const expMonthKey = `${expDate.getFullYear()}-${String(expDate.getMonth() + 1).padStart(2, '0')}`;
+            if (expMonthKey === monthKey) {
+              return sum + parseFloat(exp.amount || "0");
+            }
+          }
+          return sum;
+        }, 0);
+        
+        monthlyTotals.push({
+          month: monthKey,
+          total: monthTotal,
+        });
+      }
+      
+      const totalExpenses = allExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount || "0"), 0);
+      
+      res.json({
+        totalExpenses,
+        byCategory,
+        monthlyTotals,
+        count: allExpenses.length,
+      });
+    } catch (error) {
+      console.error("Error fetching business expenses stats:", error);
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
   // Admin routes
   registerAdminRatesRoutes(app, isAuthenticated);
   registerAdminTemplatesRoutes(app, isAuthenticated);
