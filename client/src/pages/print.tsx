@@ -26,6 +26,11 @@ export default function Print() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"interiors" | "false-ceiling">("interiors");
 
+  // Scroll to top when page loads
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
