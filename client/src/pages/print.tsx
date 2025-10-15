@@ -493,7 +493,9 @@ export default function Print() {
                                   <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.height || "-"}</td>
                                   <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.width || "-"}</td>
                                   <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums font-semibold">{item.sqft || "0.00"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-right font-mono tabular-nums">₹{item.unitPrice || "0"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-right font-mono tabular-nums">
+                                    ₹{item.unitPrice || "0"}{item.isRateOverridden ? "*" : ""}
+                                  </td>
                                   <td className="border border-gray-300 px-2 py-1 text-right font-mono tabular-nums font-semibold">₹{item.totalPrice || "0"}</td>
                                 </tr>
                               ))}
@@ -507,6 +509,13 @@ export default function Print() {
                       );
                     })}
                   </div>
+
+                  {/* Custom Rate Legend (if any rates are overridden) */}
+                  {interiorItems.some(item => item.isRateOverridden) && (
+                    <div className="text-xs text-gray-600 mt-2 mb-4 break-inside-avoid">
+                      <span className="font-semibold">*</span> Custom rate applied
+                    </div>
+                  )}
 
                   {/* Section C: Summary */}
                   <div className="summary-totals space-y-3 break-inside-avoid">
