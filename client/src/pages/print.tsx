@@ -672,6 +672,40 @@ export default function Print() {
                     <h2 className="text-2xl font-bold text-[#013220]">FALSE CEILING QUOTATION</h2>
                   </div>
 
+                  {/* Room Totals Summary - Part 2A */}
+                  {fcRoomTotals.length > 0 && (
+                    <>
+                      <section className="summary-section space-y-6">
+                        <h2 className="text-xl font-bold text-[#0F3A2B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>ROOM TOTALS — FALSE CEILING</h2>
+                        <table className="summary-table w-full border-collapse text-sm">
+                          <thead>
+                            <tr className="bg-[#F3F6F5]">
+                              <th className="border-b border-[#E6E6E6] px-3 py-2 text-left font-semibold">Room</th>
+                              <th className="border-b border-[#E6E6E6] px-3 py-2 text-right font-semibold">Subtotal (₹)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {fcRoomTotals.map(({room, total}) => (
+                              <tr key={room}>
+                                <td className="border-b border-[#E6E6E6] px-3 py-2">{room}</td>
+                                <td className="border-b border-[#E6E6E6] px-3 py-2 text-right font-mono">{formatINR(total)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr className="summary-grand">
+                              <td className="border-t-2 border-[#D4AF37] px-3 py-2 text-right font-bold">False Ceiling Subtotal</td>
+                              <td className="border-t-2 border-[#D4AF37] px-3 py-2 text-right font-mono font-bold">{formatINR(fcSubtotal)}</td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </section>
+
+                      {/* Force detailed breakdown to start on fresh page */}
+                      <div className="page-break"></div>
+                    </>
+                  )}
+
                   {/* Section A: Project Summary */}
                   <div className="space-y-3">
                     <h3 className="section-title text-lg font-semibold text-[#013220] border-b border-gray-300 pb-2">PROJECT SUMMARY</h3>
@@ -777,9 +811,9 @@ export default function Print() {
                         const isLastRoom = roomIdx === Object.entries(falseCeilingByRoom).length - 1;
                         
                         return (
-                          <div key={room} className={`break-inside-avoid ${!isLastRoom ? 'page-break' : ''}`}>
-                            <h4 className="room-title font-semibold text-[#013220] mb-2">{room}</h4>
-                            <table className="w-full text-sm border-collapse zebra-table">
+                          <section key={room} className="room-block">
+                            <h4 className="room-title font-semibold text-[#013220] mb-2" style={{margin: '10mm 0 4mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
+                            <table className="room-table w-full text-sm border-collapse zebra-table">
                               <thead>
                                 <tr className="bg-gray-100">
                                   <th className="border border-gray-300 px-2 py-1 text-left">Description</th>
@@ -803,7 +837,7 @@ export default function Print() {
                                 </tr>
                               </tbody>
                             </table>
-                          </div>
+                          </section>
                         );
                       })}
                     </div>
