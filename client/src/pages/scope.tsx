@@ -628,9 +628,9 @@ export default function Scope() {
                               <TableHeader>
                                 <TableRow>
                                   <TableHead className="w-auto px-2">Description</TableHead>
-                                  <TableHead className="w-[50px] px-1">L (ft)</TableHead>
-                                  <TableHead className="w-[50px] px-1">H (ft)</TableHead>
-                                  <TableHead className="w-[50px] px-1">W (ft)</TableHead>
+                                  <TableHead className="w-[80px] px-1">L (ft)</TableHead>
+                                  <TableHead className="w-[80px] px-1">H (ft)</TableHead>
+                                  <TableHead className="w-[80px] px-1">W (ft)</TableHead>
                                   <TableHead className="w-[60px] px-1">SQFT</TableHead>
                                   <TableHead className="w-[120px] px-2">Core Material</TableHead>
                                   <TableHead className="w-[120px] px-2">Finish</TableHead>
@@ -918,8 +918,8 @@ export default function Scope() {
                               <TableHeader>
                                 <TableRow>
                                   <TableHead className="w-auto px-2">Description</TableHead>
-                                  <TableHead className="w-[50px] px-1">Length (ft)</TableHead>
-                                  <TableHead className="w-[50px] px-1">Width (ft)</TableHead>
+                                  <TableHead className="w-[80px] px-1">Length (ft)</TableHead>
+                                  <TableHead className="w-[80px] px-1">Width (ft)</TableHead>
                                   <TableHead className="w-[80px] px-1">Area (SQFT)</TableHead>
                                   <TableHead className="w-[40px] px-1"></TableHead>
                                 </TableRow>
