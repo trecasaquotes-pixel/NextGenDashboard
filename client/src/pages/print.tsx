@@ -530,8 +530,16 @@ export default function Print() {
                           <td className="py-1 text-right font-mono">{formatINR(interiorsGst)}</td>
                         </tr>
                         <tr className="final-total row border-t-2 border-[#D1B77C]">
-                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#0E2F1B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Final Interiors Quote:</td>
-                          <td className="py-2 text-right font-mono text-lg font-bold text-[#0E2F1B]">{formatINR(interiorsFinalTotal)}</td>
+                          <td className="py-3 text-right pr-4">
+                            <div className="text-xs text-[#0E2F1B] mb-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Final Interiors Quote</div>
+                          </td>
+                          <td className="py-3 text-right">
+                            <div className="text-lg font-bold tabular-nums" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
+                              <span className="text-[#C42021]">₹</span>
+                              <span className="text-[#0E2F1B]">{formatINR(interiorsFinalTotal).replace('₹', '')}</span>
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Rounded off to nearest rupee</div>
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -539,7 +547,7 @@ export default function Print() {
 
                   {/* Section D: Notes/Terms */}
                   <div className="space-y-3 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">TERMS & CONDITIONS</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-4 border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
                     <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.interiors;
@@ -558,11 +566,11 @@ export default function Print() {
 
                   {/* Signatures */}
                   <div className="mt-8 border border-gray-300 rounded-lg p-6 space-y-4 break-inside-avoid" data-testid="signature-block-interiors">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">SIGNATURES</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-4 border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {/* Client Signature */}
                       <div className="space-y-3 break-inside-avoid">
-                        <p className="text-xs font-semibold uppercase text-gray-600 tracking-wide">Client</p>
+                        <p className="text-xs uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>Client</p>
                         <div className="space-y-2">
                           <div>
                             <p className="text-xs text-gray-500">Name:</p>
@@ -587,7 +595,7 @@ export default function Print() {
 
                       {/* Trecasa Signature */}
                       <div className="space-y-3 break-inside-avoid">
-                        <p className="text-xs font-semibold uppercase text-gray-600 tracking-wide">
+                        <p className="text-xs uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>
                           {quotation.signoff?.trecasa?.title || "For TRECASA DESIGN STUDIO"}
                         </p>
                         <div className="space-y-2">
@@ -892,8 +900,16 @@ export default function Print() {
                           <td className="py-1 text-right font-mono">{formatINR(fcGst)}</td>
                         </tr>
                         <tr className="final-total row border-t-2 border-[#D1B77C]">
-                          <td className="py-2 text-right pr-4 text-lg font-bold text-[#0E2F1B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Final False Ceiling Quote:</td>
-                          <td className="py-2 text-right font-mono text-lg font-bold text-[#0E2F1B]">{formatINR(fcFinalTotal)}</td>
+                          <td className="py-3 text-right pr-4">
+                            <div className="text-xs text-[#0E2F1B] mb-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Final False Ceiling Quote</div>
+                          </td>
+                          <td className="py-3 text-right">
+                            <div className="text-lg font-bold tabular-nums" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
+                              <span className="text-[#C42021]">₹</span>
+                              <span className="text-[#0E2F1B]">{formatINR(fcFinalTotal).replace('₹', '')}</span>
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Rounded off to nearest rupee</div>
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -901,7 +917,7 @@ export default function Print() {
 
                   {/* Notes/Terms */}
                   <div className="space-y-3 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">TERMS & CONDITIONS</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-4 border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
                     <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.falseCeiling;
@@ -920,11 +936,11 @@ export default function Print() {
 
                   {/* Signatures */}
                   <div className="mt-8 border border-gray-300 rounded-lg p-6 space-y-4 break-inside-avoid" data-testid="signature-block-false-ceiling">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">SIGNATURES</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-4 border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {/* Client Signature */}
                       <div className="space-y-3 break-inside-avoid">
-                        <p className="text-xs font-semibold uppercase text-gray-600 tracking-wide">Client</p>
+                        <p className="text-xs uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>Client</p>
                         <div className="space-y-2">
                           <div>
                             <p className="text-xs text-gray-500">Name:</p>
@@ -949,7 +965,7 @@ export default function Print() {
 
                       {/* Trecasa Signature */}
                       <div className="space-y-3 break-inside-avoid">
-                        <p className="text-xs font-semibold uppercase text-gray-600 tracking-wide">
+                        <p className="text-xs uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>
                           {quotation.signoff?.trecasa?.title || "For TRECASA DESIGN STUDIO"}
                         </p>
                         <div className="space-y-2">
