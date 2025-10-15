@@ -489,17 +489,17 @@ export default function Print() {
                               {items.map((item, idx) => (
                                 <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                   <td className="border border-gray-300 px-2 py-1">{item.description || "N/A"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono">{item.length || "-"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono">{item.height || "-"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono">{item.width || "-"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono font-semibold">{item.sqft || "0.00"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-right font-mono">₹{item.unitPrice || "0"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-right font-mono font-semibold">₹{item.totalPrice || "0"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.length || "-"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.height || "-"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.width || "-"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums font-semibold">{item.sqft || "0.00"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-right font-mono tabular-nums">₹{item.unitPrice || "0"}</td>
+                                  <td className="border border-gray-300 px-2 py-1 text-right font-mono tabular-nums font-semibold">₹{item.totalPrice || "0"}</td>
                                 </tr>
                               ))}
                               <tr className="room-subtotal bg-[#0F3A2B] text-white font-semibold">
                                 <td colSpan={6} className="border border-[#0A2A1F] px-2 py-2 text-right">Room Subtotal:</td>
-                                <td className="border border-[#0A2A1F] px-2 py-2 text-right font-mono">{formatINR(roomTotal)}</td>
+                                <td className="border border-[#0A2A1F] px-2 py-2 text-right font-mono tabular-nums">{formatINR(roomTotal)}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -515,19 +515,19 @@ export default function Print() {
                       <tbody>
                         <tr className="row">
                           <td className="py-1 text-right pr-4">Interiors Subtotal:</td>
-                          <td className="py-1 text-right font-mono font-semibold">{formatINR(interiorsSubtotal)}</td>
+                          <td className="py-1 text-right font-mono tabular-nums font-semibold">{formatINR(interiorsSubtotal)}</td>
                         </tr>
                         {interiorsDiscountAmount > 0 && (
                           <tr className="row">
                             <td className="py-1 text-right pr-4">
                               Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
                             </td>
-                            <td className="py-1 text-right font-mono text-red-600">-{formatINR(interiorsDiscountAmount)}</td>
+                            <td className="py-1 text-right font-mono tabular-nums text-red-600">-{formatINR(interiorsDiscountAmount)}</td>
                           </tr>
                         )}
                         <tr className="row">
                           <td className="py-1 text-right pr-4">GST (18%):</td>
-                          <td className="py-1 text-right font-mono">{formatINR(interiorsGst)}</td>
+                          <td className="py-1 text-right font-mono tabular-nums">{formatINR(interiorsGst)}</td>
                         </tr>
                         <tr className="final-total row border-t-2 border-[#D1B77C]">
                           <td className="py-3 text-right pr-4">
@@ -837,14 +837,14 @@ export default function Print() {
                                 {items.map((item, idx) => (
                                   <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                     <td className="border border-gray-300 px-2 py-1">{item.description || "N/A"}</td>
-                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono">{item.length || "-"}</td>
-                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono">{item.width || "-"}</td>
-                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono font-semibold">{item.area || "0.00"}</td>
+                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.length || "-"}</td>
+                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.width || "-"}</td>
+                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums font-semibold">{item.area || "0.00"}</td>
                                   </tr>
                                 ))}
                                 <tr className="bg-[#0E2F1B] text-white font-semibold">
                                   <td colSpan={3} className="border border-gray-300 px-2 py-2 text-right">Room Area:</td>
-                                  <td className="border border-gray-300 px-2 py-2 text-center font-mono">{roomArea.toFixed(2)} SQFT</td>
+                                  <td className="border border-gray-300 px-2 py-2 text-center font-mono tabular-nums">{roomArea.toFixed(2)} SQFT</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -873,7 +873,7 @@ export default function Print() {
                               <td className="border border-gray-300 px-2 py-1 font-semibold">{item.itemType || "N/A"}</td>
                               <td className="border border-gray-300 px-2 py-1">{item.description || "N/A"}</td>
                               <td className="border border-gray-300 px-2 py-1 text-center capitalize">{item.valueType || "lumpsum"}</td>
-                              <td className="border border-gray-300 px-2 py-1 text-right font-mono">{item.value || "0"}</td>
+                              <td className="border border-gray-300 px-2 py-1 text-right font-mono tabular-nums">{item.value || "0"}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -888,19 +888,19 @@ export default function Print() {
                       <tbody>
                         <tr className="row">
                           <td className="py-1 text-right pr-4">False Ceiling Subtotal:</td>
-                          <td className="py-1 text-right font-mono font-semibold">{formatINR(fcSubtotal)}</td>
+                          <td className="py-1 text-right font-mono tabular-nums font-semibold">{formatINR(fcSubtotal)}</td>
                         </tr>
                         {fcDiscountAmount > 0 && (
                           <tr className="row">
                             <td className="py-1 text-right pr-4">
                               Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
                             </td>
-                            <td className="py-1 text-right font-mono text-red-600">-{formatINR(fcDiscountAmount)}</td>
+                            <td className="py-1 text-right font-mono tabular-nums text-red-600">-{formatINR(fcDiscountAmount)}</td>
                           </tr>
                         )}
                         <tr className="row">
                           <td className="py-1 text-right pr-4">GST (18%):</td>
-                          <td className="py-1 text-right font-mono">{formatINR(fcGst)}</td>
+                          <td className="py-1 text-right font-mono tabular-nums">{formatINR(fcGst)}</td>
                         </tr>
                         <tr className="final-total row border-t-2 border-[#D1B77C]">
                           <td className="py-3 text-right pr-4">
