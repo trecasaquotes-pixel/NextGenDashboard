@@ -438,18 +438,7 @@ export default function Scope() {
 
     // Empty value resets to auto
     if (value === "" || value === null) {
-      const updatedData: any = {
-        isRateOverridden: false,
-        rateOverride: null,
-      };
-      
-      // Recalculate amount with auto rate
-      const sqft = parseFloat(item.sqft || "0");
-      const rateAuto = item.rateAuto ? parseFloat(item.rateAuto.toString()) : 0;
-      updatedData.unitPrice = rateAuto;
-      updatedData.totalPrice = calculateAmount(rateAuto, sqft);
-      
-      updateInteriorItem.mutate({ id, data: updatedData });
+      handleResetRateOverride(id);
       return;
     }
 
@@ -464,9 +453,21 @@ export default function Scope() {
       return;
     }
 
+    // Always recalculate rateAuto for consistency
+    const projectBuildType = (quotation?.buildType as BuildType) || "handmade";
+    const description = item.description || "";
+    const effectiveBuildType = getEffectiveBuildType(projectBuildType, description);
+    const rateAuto = calculateRate(
+      effectiveBuildType,
+      (item.material || "Generic Ply") as CoreMaterial,
+      (item.finish || "Generic Laminate") as FinishMaterial,
+      (item.hardware || "Nimmi") as HardwareBrand
+    );
+
     const updatedData: any = {
       isRateOverridden: true,
       rateOverride: overrideValue,
+      rateAuto: rateAuto,
       unitPrice: overrideValue,
     };
 
@@ -787,23 +788,29 @@ export default function Scope() {
                                         <div className="flex items-center gap-2">
                                           <Input
                                             type="number"
-                                            value={item.isRateOverridden && item.rateOverride ? item.rateOverride.toString() : ""}
-                                            placeholder={item.rateAuto ? item.rateAuto.toString() : "0"}
-                                            onChange={(e) => handleRateOverride(item.id, e.target.value)}
+                                            defaultValue={item.unitPrice || ""}
+                                            key={`${item.id}-${item.unitPrice}-${item.isRateOverridden}`}
                                             onBlur={(e) => {
-                                              if (!e.target.value) {
+                                              const newValue = e.target.value;
+                                              const currentRate = item.unitPrice ? parseFloat(item.unitPrice.toString()) : 0;
+                                              const newRate = newValue ? parseFloat(newValue) : 0;
+                                              
+                                              // Only update if value actually changed
+                                              if (newValue === "" || newRate === 0) {
                                                 handleResetRateOverride(item.id);
+                                              } else if (newRate !== currentRate) {
+                                                handleRateOverride(item.id, newValue);
                                               }
                                             }}
                                             min="0"
                                             max="999999"
-                                            step="0.01"
+                                            step="1"
                                             className="h-8 w-28 text-right font-mono text-sm"
                                             data-testid={`input-rate-${item.id}`}
                                           />
                                           {item.isRateOverridden && (
                                             <>
-                                              <Badge variant="secondary" className="text-xs">Custom</Badge>
+                                              <Badge variant="secondary" className="text-xs" data-testid={`badge-custom-${item.id}`}>Custom</Badge>
                                               <Button
                                                 variant="ghost"
                                                 size="sm"
