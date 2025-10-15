@@ -623,21 +623,21 @@ export default function Scope() {
                         </div>
 
                         {roomItems.length > 0 && (
-                          <div className="border border-border rounded-md overflow-hidden">
+                          <div className="border border-border rounded-md">
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead className="min-w-[200px]">Description</TableHead>
+                                  <TableHead className="w-auto">Description</TableHead>
                                   <TableHead className="w-[70px]">L (ft)</TableHead>
                                   <TableHead className="w-[70px]">H (ft)</TableHead>
                                   <TableHead className="w-[70px]">W (ft)</TableHead>
-                                  <TableHead className="w-[90px]">SQFT</TableHead>
-                                  <TableHead className="min-w-[160px]">Core Material</TableHead>
-                                  <TableHead className="min-w-[180px]">Finish</TableHead>
-                                  <TableHead className="min-w-[140px]">Hardware</TableHead>
-                                  <TableHead className="w-[110px]">Rate (₹/sft)</TableHead>
-                                  <TableHead className="w-[120px]">Amount (₹)</TableHead>
-                                  <TableHead className="w-[60px]"></TableHead>
+                                  <TableHead className="w-[80px]">SQFT</TableHead>
+                                  <TableHead className="w-[140px]">Core Material</TableHead>
+                                  <TableHead className="w-[140px]">Finish</TableHead>
+                                  <TableHead className="w-[120px]">Hardware</TableHead>
+                                  <TableHead className="w-[100px]">Rate (₹/sft)</TableHead>
+                                  <TableHead className="w-[110px]">Amount (₹)</TableHead>
+                                  <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -917,11 +917,11 @@ export default function Scope() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead className="min-w-[300px]">Description</TableHead>
+                                  <TableHead className="w-auto">Description</TableHead>
                                   <TableHead className="w-[70px]">Length (ft)</TableHead>
                                   <TableHead className="w-[70px]">Width (ft)</TableHead>
                                   <TableHead className="w-[100px]">Area (SQFT)</TableHead>
-                                  <TableHead className="w-[60px]"></TableHead>
+                                  <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -1035,13 +1035,13 @@ export default function Scope() {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead className="w-[180px]">Item Type</TableHead>
-                              <TableHead className="min-w-[240px]">Description</TableHead>
-                              <TableHead className="w-[110px]">Type</TableHead>
-                              <TableHead className="w-[100px]">Quantity</TableHead>
-                              <TableHead className="w-[140px]">Price per Quantity</TableHead>
-                              <TableHead className="w-[120px]">Total</TableHead>
-                              <TableHead className="w-[60px]"></TableHead>
+                              <TableHead className="w-[160px]">Item Type</TableHead>
+                              <TableHead className="w-auto">Description</TableHead>
+                              <TableHead className="w-[100px]">Type</TableHead>
+                              <TableHead className="w-[90px]">Quantity</TableHead>
+                              <TableHead className="w-[130px]">Price per Quantity</TableHead>
+                              <TableHead className="w-[110px]">Total</TableHead>
+                              <TableHead className="w-[50px]"></TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
