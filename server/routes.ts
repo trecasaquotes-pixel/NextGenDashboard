@@ -1477,10 +1477,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const validated = insertProjectExpenseSchema.parse(req.body);
-      const [newExpense] = await db.insert(projectExpenses).values({
+      
+      // Convert paymentDate string to Date if provided (and not empty)
+      const expenseData: any = {
         ...validated,
         projectId,
-      }).returning();
+      };
+      
+      // Only set paymentDate if it's a non-empty string
+      if (validated.paymentDate && validated.paymentDate.trim() !== '') {
+        expenseData.paymentDate = new Date(validated.paymentDate as any);
+      } else {
+        // Remove paymentDate if it's empty or undefined
+        delete expenseData.paymentDate;
+      }
+      
+      const [newExpense] = await db.insert(projectExpenses).values(expenseData).returning();
       
       // Update project totals
       const allExpenses = await db.query.projectExpenses.findMany({
@@ -1518,8 +1530,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden" });
       }
       
+      // Handle paymentDate conversion for update
+      const updateData: any = { ...req.body, updatedAt: new Date() };
+      
+      // Handle paymentDate: convert if valid, remove if empty/undefined
+      if (updateData.paymentDate !== undefined) {
+        if (updateData.paymentDate && updateData.paymentDate.trim() !== '') {
+          updateData.paymentDate = new Date(updateData.paymentDate);
+        } else {
+          // Remove empty or whitespace-only paymentDate
+          delete updateData.paymentDate;
+        }
+      }
+      
       const [updated] = await db.update(projectExpenses)
-        .set({ ...req.body, updatedAt: new Date() })
+        .set(updateData)
         .where(eq(projectExpenses.id, req.params.id))
         .returning();
       

@@ -34,6 +34,7 @@ No specific user preferences were provided in the original document.
     - **Global Rules**: Application-wide settings including pricing defaults, bedroom scaling, payment schedules, city factors, and footer branding.
 - **Audit Log**: Comprehensive audit trail for all admin changes with user tracking, smart summaries, filtering, and diff viewing.
 - **Client Portal**: Secure, token-based system for sharing quotations with clients without authentication, allowing clients to view project details, financial summaries, terms, and accept quotations.
+- **Project Management & Expense Tracking**: Automatically creates projects when quotations are approved. Tracks project expenses with real-time profit/loss calculations, comprehensive expense categorization, vendor/payment tracking, and financial summaries. Includes projects list with P&L overview and detailed project view with expense CRUD operations.
 
 ### Feature Specifications
 - **Quotation Management**: Create, view, edit, and manage quotations with auto-generated unique IDs.

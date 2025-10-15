@@ -922,8 +922,10 @@ export const insertProjectExpenseSchema = createInsertSchema(projectExpenses, {
   description: z.string().min(1, "Description is required").max(500),
   amount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount"),
   paymentMode: z.enum(["Cash", "UPI", "Cheque", "Bank Transfer", "Other"]).optional(),
+  paymentDate: z.string().optional(), // Accept as string, convert in backend
 }).omit({
   id: true,
+  projectId: true, // projectId comes from URL params, not request body
   createdAt: true,
   updatedAt: true,
 });
