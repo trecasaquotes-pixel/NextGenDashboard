@@ -35,6 +35,13 @@ No specific user preferences were provided in the original document.
 - **Audit Log**: Comprehensive audit trail for all admin changes with user tracking, smart summaries, filtering, and diff viewing.
 - **Client Portal**: Secure, token-based system for sharing quotations with clients without authentication, allowing clients to view project details, financial summaries, terms, and accept quotations.
 - **Project Management & Expense Tracking**: Automatically creates projects when quotations are approved. Tracks project expenses with real-time profit/loss calculations, comprehensive expense categorization, vendor/payment tracking, and financial summaries. Includes projects list with P&L overview and detailed project view with expense CRUD operations.
+- **Business Expenses Management**: Comprehensive overhead expense tracking system for monthly operational costs (rent, salaries, utilities, office supplies, marketing, insurance, maintenance, subscriptions, professional fees). Features include:
+    - **Category-based tracking**: 11 predefined expense categories for business overhead
+    - **Recurring expense support**: Mark expenses as recurring (Monthly, Quarterly, Yearly) for regular costs
+    - **Payment tracking**: Vendor names, payment modes, dates, receipt numbers
+    - **Statistical dashboard**: Real-time total expenses, category breakdown, monthly trends
+    - **Category filtering**: Filter expenses by category for focused analysis
+    - **Full CRUD operations**: Create, edit, and delete business expenses with validation
 
 ### Feature Specifications
 - **Quotation Management**: Create, view, edit, and manage quotations with auto-generated unique IDs.
