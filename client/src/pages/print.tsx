@@ -385,9 +385,15 @@ export default function Print() {
 
                 {/* PDF Footer - Fixed */}
                 <div className="pdf-footer">
-                  <div>© 2025 TRECASA DESIGN STUDIO</div>
+                  <div>
+                    <div>© 2025 TRECASA DESIGN STUDIO</div>
+                    <div className="text-[8px] mt-0.5">H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049 · +91 9059784422</div>
+                  </div>
                   <div className="page-num"></div>
-                  <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
+                  <div className="text-right">
+                    <div>www.trecasadesignstudio.com</div>
+                    <div className="text-[8px] mt-0.5">@trecasa.designstudio</div>
+                  </div>
                 </div>
 
                 {/* PDF Body - Content */}
@@ -683,9 +689,15 @@ export default function Print() {
 
                 {/* PDF Footer - Fixed */}
                 <div className="pdf-footer">
-                  <div>© 2025 TRECASA DESIGN STUDIO</div>
+                  <div>
+                    <div>© 2025 TRECASA DESIGN STUDIO</div>
+                    <div className="text-[8px] mt-0.5">H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049 · +91 9059784422</div>
+                  </div>
                   <div className="page-num"></div>
-                  <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
+                  <div className="text-right">
+                    <div>www.trecasadesignstudio.com</div>
+                    <div className="text-[8px] mt-0.5">@trecasa.designstudio</div>
+                  </div>
                 </div>
 
                 {/* PDF Body - Content */}
