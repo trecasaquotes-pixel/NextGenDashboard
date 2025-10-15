@@ -103,6 +103,8 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
       const updateData = z.object({
         name: z.string().min(2).max(60).optional(),
         adderPerSft: z.number().int().min(0).optional(),
+        warrantyMonths: z.number().int().min(0).max(120).optional(),
+        warrantySummary: z.string().max(200).optional().nullable(),
         isActive: z.boolean().optional(),
       }).parse(req.body);
       
