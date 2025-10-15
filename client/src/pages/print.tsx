@@ -147,7 +147,22 @@ export default function Print() {
     }
   };
 
-  if (!match || authLoading || !isAuthenticated || !quotation) {
+  if (!match) {
+    return null;
+  }
+
+  if (authLoading || !quotation) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Loading quotation...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
     return null;
   }
 
@@ -373,14 +388,10 @@ export default function Print() {
                 <div className="pdf-footer">
                   <div>© 2025 TRECASA DESIGN STUDIO</div>
                   <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
-                  <div className="flex items-center gap-2">
-                    <span className="page-num"></span>
-                    <span className="dot" style={{width: '8px', height: '8px', background: '#C42021', borderRadius: '50%', display: 'inline-block'}}></span>
-                  </div>
                 </div>
 
                 {/* PDF Body - Content */}
-                <div className="pdf-body p-8 space-y-8">
+                <div className="pdf-body print-body-content p-8 space-y-8">
                   {/* Title */}
                   <div className="text-center border-b-2 border-[#D1B77C] pb-4">
                     <h2 className="text-2xl font-bold text-[#0E2F1B]">INTERIORS QUOTATION</h2>
@@ -651,14 +662,10 @@ export default function Print() {
                 <div className="pdf-footer">
                   <div>© 2025 TRECASA DESIGN STUDIO</div>
                   <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
-                  <div className="flex items-center gap-2">
-                    <span className="page-num"></span>
-                    <span className="dot" style={{width: '8px', height: '8px', background: '#C42021', borderRadius: '50%', display: 'inline-block'}}></span>
-                  </div>
                 </div>
 
                 {/* PDF Body - Content */}
-                <div className="pdf-body p-8 space-y-8">
+                <div className="pdf-body print-body-content p-8 space-y-8">
                   {/* Title */}
                   <div className="text-center border-b-2 border-[#D1B77C] pb-4">
                     <h2 className="text-2xl font-bold text-[#0E2F1B]">FALSE CEILING QUOTATION</h2>
