@@ -673,7 +673,7 @@ export default function Scope() {
                                         onKeyDown={(e) => {
                                           if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
                                         }}
-                                        className="dimInput font-mono"
+                                        className="w-full h-10 font-mono text-center"
                                         data-testid={`input-length-${item.id}`}
                                       />
                                     </TableCell>
@@ -698,7 +698,7 @@ export default function Scope() {
                                         onKeyDown={(e) => {
                                           if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
                                         }}
-                                        className="dimInput font-mono"
+                                        className="w-full h-10 font-mono text-center"
                                         data-testid={`input-height-${item.id}`}
                                       />
                                     </TableCell>
@@ -723,7 +723,7 @@ export default function Scope() {
                                         onKeyDown={(e) => {
                                           if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
                                         }}
-                                        className="dimInput font-mono"
+                                        className="w-full h-10 font-mono text-center"
                                         data-testid={`input-width-${item.id}`}
                                       />
                                     </TableCell>
@@ -957,7 +957,7 @@ export default function Scope() {
                                         onKeyDown={(e) => {
                                           if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
                                         }}
-                                        className="dimInput font-mono"
+                                        className="w-full h-10 font-mono text-center"
                                         data-testid={`input-ceiling-length-${item.id}`}
                                       />
                                     </TableCell>
@@ -982,7 +982,7 @@ export default function Scope() {
                                         onKeyDown={(e) => {
                                           if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
                                         }}
-                                        className="dimInput font-mono"
+                                        className="w-full h-10 font-mono text-center"
                                         data-testid={`input-ceiling-width-${item.id}`}
                                       />
                                     </TableCell>
