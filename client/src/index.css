@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500&display=swap');
+/* Fonts are loaded in index.html */
 
 @tailwind base;
 @tailwind components;
@@ -87,7 +87,7 @@
 
   --font-sans: 'Montserrat', system-ui, -apple-system, sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-mono: 'Montserrat', system-ui, -apple-system, sans-serif;
   --radius: .5rem;
   --shadow-2xs: 0px 1px 2px 0px hsl(220 15% 15% / 0.05);
   --shadow-xs: 0px 1px 3px 0px hsl(220 15% 15% / 0.1);

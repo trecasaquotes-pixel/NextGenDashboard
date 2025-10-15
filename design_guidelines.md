@@ -30,15 +30,18 @@
 ### B. Typography
 
 **Font Stack:**
-- Primary: 'Inter', system-ui, sans-serif (via Google Fonts)
-- Monospace: 'JetBrains Mono', monospace (for dimensions/calculations)
+- Primary: 'Montserrat', system-ui, sans-serif (via Google Fonts)
+  - Used for all UI elements, body text, labels, buttons, forms
+  - Also used for numbers, dimensions, calculations, and tabular data
+- Secondary: 'Playfair Display', Georgia, serif (via Google Fonts)
+  - Used for headings, section titles, and elegant accents
 
 **Scale:**
-- Headings: font-bold text-2xl to text-4xl
-- Body: font-normal text-base
-- Labels: font-medium text-sm
-- Captions: font-normal text-xs
-- Data/Numbers: font-mono text-sm (for dimensions, SQFT)
+- Headings: font-bold text-2xl to text-4xl (Playfair Display)
+- Body: font-normal text-base (Montserrat)
+- Labels: font-medium text-sm (Montserrat)
+- Captions: font-normal text-xs (Montserrat)
+- Data/Numbers: font-mono text-sm (Montserrat - for dimensions, SQFT, prices)
 
 ### C. Layout System
 
