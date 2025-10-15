@@ -70,14 +70,14 @@ export const templates: Record<TemplateId, TemplateDef> = {
     id: "1BHK",
     name: "1 BHK",
     rooms: [
-      { key: "Living", label: "Living", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("TV Back Panel") ] },
       { key: "Kitchen", label: "Kitchen", tab: "Interiors", defaultItems: [ I("Kitchen – Base", "factory"), I("Kitchen – Wall", "factory"), I("Kitchen – Loft", "factory") ] },
+      { key: "Living", label: "Living", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("TV Back Panel") ] },
       { key: "Bedroom1", label: "Bedroom 1", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bathroom1", label: "Bathroom 1", tab: "Interiors", defaultItems: [ { description: "Vanity", calc: "SQFT" } ] },
 
       // FC rows (room-wise)
-      { key: "Living", label: "Living", tab: "FC", fcLine: true },
       { key: "Kitchen", label: "Kitchen", tab: "FC", fcLine: true },
+      { key: "Living", label: "Living", tab: "FC", fcLine: true },
       { key: "Bedroom1", label: "Bedroom 1", tab: "FC", fcLine: true },
       { key: "Bathroom1", label: "Bathroom 1", tab: "FC", fcLine: true },
     ],
@@ -87,15 +87,15 @@ export const templates: Record<TemplateId, TemplateDef> = {
   "2BHK": {
     id: "2BHK", name: "2 BHK",
     rooms: [
-      { key: "Living", label: "Living", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Kitchen", label: "Kitchen", tab: "Interiors", defaultItems: [ I("Kitchen – Base", "factory"), I("Kitchen – Wall", "factory"), I("Kitchen – Loft", "factory") ] },
+      { key: "Living", label: "Living", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Bedroom1", label: "Master Bedroom", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bedroom2", label: "Bedroom 2", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bathroom1", label: "Bathroom 1", tab: "Interiors", defaultItems: [ { description: "Vanity", calc: "SQFT" } ] },
       { key: "Bathroom2", label: "Bathroom 2", tab: "Interiors", defaultItems: [ { description: "Vanity", calc: "SQFT" } ] },
 
-      { key: "Living", label: "Living", tab: "FC", fcLine: true },
       { key: "Kitchen", label: "Kitchen", tab: "FC", fcLine: true },
+      { key: "Living", label: "Living", tab: "FC", fcLine: true },
       { key: "Bedroom1", label: "Master Bedroom", tab: "FC", fcLine: true },
       { key: "Bedroom2", label: "Bedroom 2", tab: "FC", fcLine: true },
       { key: "Bathroom1", label: "Bathroom 1", tab: "FC", fcLine: true },
@@ -107,16 +107,16 @@ export const templates: Record<TemplateId, TemplateDef> = {
   "3BHK": {
     id: "3BHK", name: "3 BHK",
     rooms: [
-      { key: "Living", label: "Living/Dining", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Kitchen", label: "Kitchen", tab: "Interiors", defaultItems: [ I("Kitchen – Base", "factory"), I("Kitchen – Wall", "factory"), I("Kitchen – Loft", "factory") ] },
+      { key: "Living", label: "Living/Dining", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Bedroom1", label: "Master Bedroom", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft"), I("Dresser Base") ] },
       { key: "Bedroom2", label: "Bedroom 2", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bedroom3", label: "Bedroom 3", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bathroom1", label: "Bathroom 1", tab: "Interiors", defaultItems: [ { description: "Vanity", calc: "SQFT" } ] },
       { key: "Bathroom2", label: "Bathroom 2", tab: "Interiors", defaultItems: [ { description: "Vanity", calc: "SQFT" } ] },
 
-      { key: "Living", label: "Living/Dining", tab: "FC", fcLine: true },
       { key: "Kitchen", label: "Kitchen", tab: "FC", fcLine: true },
+      { key: "Living", label: "Living/Dining", tab: "FC", fcLine: true },
       { key: "Bedroom1", label: "Master Bedroom", tab: "FC", fcLine: true },
       { key: "Bedroom2", label: "Bedroom 2", tab: "FC", fcLine: true },
       { key: "Bedroom3", label: "Bedroom 3", tab: "FC", fcLine: true },
@@ -129,8 +129,8 @@ export const templates: Record<TemplateId, TemplateDef> = {
   "4BHK": {
     id: "4BHK", name: "4 BHK",
     rooms: [
-      { key: "Living", label: "Living/Dining", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Kitchen", label: "Kitchen", tab: "Interiors", defaultItems: [ I("Kitchen – Base", "factory"), I("Kitchen – Wall", "factory"), I("Kitchen – Loft", "factory") ] },
+      { key: "Living", label: "Living/Dining", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Bedroom1", label: "Master Bedroom", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft"), I("Dresser Base") ] },
       { key: "Bedroom2", label: "Bedroom 2", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bedroom3", label: "Bedroom 3", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
@@ -139,8 +139,8 @@ export const templates: Record<TemplateId, TemplateDef> = {
       { key: "Bathroom2", label: "Bathroom 2", tab: "Interiors", defaultItems: [ { description: "Vanity", calc: "SQFT" } ] },
       { key: "Bathroom3", label: "Bathroom 3", tab: "Interiors", defaultItems: [ { description: "Vanity", calc: "SQFT" } ] },
 
-      { key: "Living", label: "Living/Dining", tab: "FC", fcLine: true },
       { key: "Kitchen", label: "Kitchen", tab: "FC", fcLine: true },
+      { key: "Living", label: "Living/Dining", tab: "FC", fcLine: true },
       { key: "Bedroom1", label: "Master Bedroom", tab: "FC", fcLine: true },
       { key: "Bedroom2", label: "Bedroom 2", tab: "FC", fcLine: true },
       { key: "Bedroom3", label: "Bedroom 3", tab: "FC", fcLine: true },
@@ -155,14 +155,14 @@ export const templates: Record<TemplateId, TemplateDef> = {
   "Duplex": {
     id: "Duplex", name: "Duplex",
     rooms: [
-      { key: "Living", label: "Living/Dining", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Kitchen", label: "Kitchen", tab: "Interiors", defaultItems: [ I("Kitchen – Base", "factory"), I("Kitchen – Wall", "factory") ] },
+      { key: "Living", label: "Living/Dining", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Bedroom1", label: "Master Bedroom", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bedroom2", label: "Bedroom 2", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bedroom3", label: "Bedroom 3", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
 
-      { key: "Living", label: "Living/Dining", tab: "FC", fcLine: true },
       { key: "Kitchen", label: "Kitchen", tab: "FC", fcLine: true },
+      { key: "Living", label: "Living/Dining", tab: "FC", fcLine: true },
       { key: "Bedroom1", label: "Master Bedroom", tab: "FC", fcLine: true },
       { key: "Bedroom2", label: "Bedroom 2", tab: "FC", fcLine: true },
       { key: "Bedroom3", label: "Bedroom 3", tab: "FC", fcLine: true },
@@ -173,15 +173,15 @@ export const templates: Record<TemplateId, TemplateDef> = {
   "Triplex": {
     id: "Triplex", name: "Triplex",
     rooms: [
-      { key: "Living", label: "Living/Dining", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Kitchen", label: "Kitchen", tab: "Interiors", defaultItems: [ I("Kitchen – Base", "factory"), I("Kitchen – Wall", "factory") ] },
+      { key: "Living", label: "Living/Dining", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Bedroom1", label: "Master Bedroom", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bedroom2", label: "Bedroom 2", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bedroom3", label: "Bedroom 3", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bedroom4", label: "Bedroom 4", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
 
-      { key: "Living", label: "Living/Dining", tab: "FC", fcLine: true },
       { key: "Kitchen", label: "Kitchen", tab: "FC", fcLine: true },
+      { key: "Living", label: "Living/Dining", tab: "FC", fcLine: true },
       { key: "Bedroom1", label: "Master Bedroom", tab: "FC", fcLine: true },
       { key: "Bedroom2", label: "Bedroom 2", tab: "FC", fcLine: true },
       { key: "Bedroom3", label: "Bedroom 3", tab: "FC", fcLine: true },
@@ -193,15 +193,15 @@ export const templates: Record<TemplateId, TemplateDef> = {
   "Villa": {
     id: "Villa", name: "Villa",
     rooms: [
-      { key: "Living", label: "Living/Dining", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Kitchen", label: "Kitchen", tab: "Interiors", defaultItems: [ I("Kitchen – Base", "factory"), I("Kitchen – Wall", "factory") ] },
+      { key: "Living", label: "Living/Dining", tab: "Interiors", defaultItems: [ I("TV Unit – Base"), I("Crockery Base") ] },
       { key: "Bedroom1", label: "Master Bedroom", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bedroom2", label: "Bedroom 2", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bedroom3", label: "Bedroom 3", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
       { key: "Bedroom4", label: "Bedroom 4", tab: "Interiors", defaultItems: [ I("Wardrobe (Swing)"), I("Loft") ] },
 
-      { key: "Living", label: "Living/Dining", tab: "FC", fcLine: true },
       { key: "Kitchen", label: "Kitchen", tab: "FC", fcLine: true },
+      { key: "Living", label: "Living/Dining", tab: "FC", fcLine: true },
       { key: "Bedroom1", label: "Master Bedroom", tab: "FC", fcLine: true },
       { key: "Bedroom2", label: "Bedroom 2", tab: "FC", fcLine: true },
       { key: "Bedroom3", label: "Bedroom 3", tab: "FC", fcLine: true },

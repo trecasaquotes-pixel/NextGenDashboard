@@ -413,57 +413,12 @@ export default function Print() {
                     </div>
                   </div>
 
-                  {/* Section B: Room Summary Table */}
-                  <div className="space-y-3 break-inside-avoid page-break">
-                    <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM SUMMARY</h3>
-                    <table className="summary-table w-full border-collapse text-sm">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="border border-gray-300 px-3 py-2 text-left">Room</th>
-                          <th className="border border-gray-300 px-3 py-2 text-right">Area (SFT)</th>
-                          <th className="border border-gray-300 px-3 py-2 text-right">Items</th>
-                          <th className="border border-gray-300 px-3 py-2 text-right">Room Total (₹)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.entries(interiorsByRoom).sort(([a], [b]) => a.localeCompare(b)).map(([room, items]) => {
-                          const roomArea = items.reduce((sum, item) => sum + Number(item.sqft || 0), 0);
-                          const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
-                          return (
-                            <tr key={room}>
-                              <td className="border border-gray-300 px-3 py-2 text-left font-medium">{room}</td>
-                              <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{roomArea.toFixed(2)}</td>
-                              <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{items.length}</td>
-                              <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums font-semibold">{formatINR(roomTotal)}</td>
-                            </tr>
-                          );
-                        })}
-                        <tr className="bg-gray-100 font-semibold">
-                          <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">Subtotal:</td>
-                          <td className="border border-gray-300 px-3 py-2 text-right font-mono">{formatINR(interiorsSubtotal)}</td>
-                        </tr>
-                        {interiorsDiscountAmount > 0 && (
-                          <tr>
-                            <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">
-                              Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
-                            </td>
-                            <td className="border border-gray-300 px-3 py-2 text-right font-mono text-red-600">-{formatINR(interiorsDiscountAmount)}</td>
-                          </tr>
-                        )}
-                        <tr>
-                          <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">GST (18%):</td>
-                          <td className="border border-gray-300 px-3 py-2 text-right font-mono">{formatINR(interiorsGst)}</td>
-                        </tr>
-                        <tr className="bg-[#0E2F1B] text-white font-bold">
-                          <td colSpan={3} className="border border-gray-300 px-3 py-3 text-right text-base">Grand Total:</td>
-                          <td className="border border-gray-300 px-3 py-3 text-right font-mono text-base">{formatINR(interiorsFinalTotal)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
 
+                  {/* Force page break before Room-wise Breakdown */}
+                  <div className="page-break"></div>
+                  
                   {/* Section C: Room-wise Breakdown */}
-                  <div className="space-y-6 page-break-before">
+                  <div className="space-y-6">
                     <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM-WISE BREAKDOWN</h3>
                     
                     {Object.entries(interiorsByRoom).sort(([a], [b]) => a.localeCompare(b)).map(([room, items], roomIdx) => {
@@ -473,35 +428,35 @@ export default function Print() {
                       return (
                         <section key={room} className="room-block">
                           <h4 className="room-title font-semibold text-[#0E2F1B] mb-2" style={{margin: '10mm 0 4mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
-                          <table className="room-table w-full text-sm border-collapse zebra-table">
+                          <table className="room-table w-full text-sm zebra-table">
                             <thead>
                               <tr className="bg-gray-100">
-                                <th className="border border-gray-300 px-2 py-1 text-left">Description</th>
-                                <th className="border border-gray-300 px-2 py-1 text-center w-16">L</th>
-                                <th className="border border-gray-300 px-2 py-1 text-center w-16">H</th>
-                                <th className="border border-gray-300 px-2 py-1 text-center w-16">W</th>
-                                <th className="border border-gray-300 px-2 py-1 text-center w-20">SQFT</th>
-                                <th className="border border-gray-300 px-2 py-1 text-right w-24">Rate (₹/sft)</th>
-                                <th className="border border-gray-300 px-2 py-1 text-right w-28">Amount (₹)</th>
+                                <th className="px-2 py-1 text-left">Description</th>
+                                <th className="px-2 py-1 text-center w-16">L</th>
+                                <th className="px-2 py-1 text-center w-16">H</th>
+                                <th className="px-2 py-1 text-center w-16">W</th>
+                                <th className="px-2 py-1 text-center w-20">SQFT</th>
+                                <th className="px-2 py-1 text-right w-24">Rate (₹/sft)</th>
+                                <th className="px-2 py-1 text-right w-28">Amount (₹)</th>
                               </tr>
                             </thead>
                             <tbody>
                               {items.map((item, idx) => (
                                 <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                  <td className="border border-gray-300 px-2 py-1">{item.description || "N/A"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.length || "-"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.height || "-"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.width || "-"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums font-semibold">{item.sqft || "0.00"}</td>
-                                  <td className="border border-gray-300 px-2 py-1 text-right font-mono tabular-nums">
+                                  <td className="px-2 py-0.5">{item.description || "N/A"}</td>
+                                  <td className="px-2 py-0.5 text-center font-mono tabular-nums">{item.length || "-"}</td>
+                                  <td className="px-2 py-0.5 text-center font-mono tabular-nums">{item.height || "-"}</td>
+                                  <td className="px-2 py-0.5 text-center font-mono tabular-nums">{item.width || "-"}</td>
+                                  <td className="px-2 py-0.5 text-center font-mono tabular-nums font-semibold">{item.sqft || "0.00"}</td>
+                                  <td className="px-2 py-0.5 text-right font-mono tabular-nums">
                                     ₹{item.unitPrice || "0"}{item.isRateOverridden ? "*" : ""}
                                   </td>
-                                  <td className="border border-gray-300 px-2 py-1 text-right font-mono tabular-nums font-semibold">₹{item.totalPrice || "0"}</td>
+                                  <td className="px-2 py-0.5 text-right font-mono tabular-nums font-semibold">₹{item.totalPrice || "0"}</td>
                                 </tr>
                               ))}
-                              <tr className="room-subtotal bg-[#0F3A2B] text-white font-semibold">
-                                <td colSpan={6} className="border border-[#0A2A1F] px-2 py-2 text-right">Room Subtotal:</td>
-                                <td className="border border-[#0A2A1F] px-2 py-2 text-right font-mono tabular-nums">{formatINR(roomTotal)}</td>
+                              <tr className="room-subtotal bg-[#0F3A2B] text-white font-semibold border-t-2 border-[#D1B77C]">
+                                <td colSpan={6} className="px-2 py-1.5 text-right">Room Subtotal:</td>
+                                <td className="px-2 py-1.5 text-right font-mono tabular-nums">{formatINR(roomTotal)}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -555,8 +510,11 @@ export default function Print() {
                   </div>
 
                   {/* Section D: Notes/Terms */}
+                  {/* Force page break before TERMS & CONDITIONS */}
+                  <div className="page-break"></div>
+                  
                   <div className="space-y-3 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-4 border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
                     <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.interiors;
@@ -737,93 +695,13 @@ export default function Print() {
                     </div>
                   </div>
 
-                  {/* Section B: Room Summary Table */}
-                  {falseCeilingItems.length > 0 && (
-                    <div className="space-y-3 break-inside-avoid page-break">
-                      <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM SUMMARY</h3>
-                      <table className="summary-table w-full border-collapse text-sm">
-                        <thead>
-                          <tr className="bg-gray-100">
-                            <th className="border border-gray-300 px-3 py-2 text-left">Room</th>
-                            <th className="border border-gray-300 px-3 py-2 text-right">FC Area (SFT)</th>
-                            <th className="border border-gray-300 px-3 py-2 text-right">Items</th>
-                            <th className="border border-gray-300 px-3 py-2 text-right">Room Total (₹)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.entries(falseCeilingByRoom).sort(([a], [b]) => a.localeCompare(b)).map(([room, items]) => {
-                            const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
-                            const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
-                            return (
-                              <tr key={room}>
-                                <td className="border border-gray-300 px-3 py-2 text-left font-medium">{room}</td>
-                                <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{roomArea.toFixed(2)}</td>
-                                <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{items.length}</td>
-                                <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums font-semibold">{formatINR(roomTotal)}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                      
-                      {/* Others Items Summary */}
-                      {otherItems.length > 0 && (
-                        <div className="mt-4">
-                          <h4 className="font-semibold text-[#0E2F1B] mb-2">Other Items</h4>
-                          <table className="summary-table w-full border-collapse text-sm">
-                            <thead>
-                              <tr className="bg-gray-100">
-                                <th className="border border-gray-300 px-3 py-2 text-left">Item Type</th>
-                                <th className="border border-gray-300 px-3 py-2 text-left">Description</th>
-                                <th className="border border-gray-300 px-3 py-2 text-center">Type</th>
-                                <th className="border border-gray-300 px-3 py-2 text-right">Value</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {otherItems.map((item) => (
-                                <tr key={item.id}>
-                                  <td className="border border-gray-300 px-3 py-2 font-medium">{item.itemType || "N/A"}</td>
-                                  <td className="border border-gray-300 px-3 py-2">{item.description || "N/A"}</td>
-                                  <td className="border border-gray-300 px-3 py-2 text-center capitalize">{item.valueType || "lumpsum"}</td>
-                                  <td className="border border-gray-300 px-3 py-2 text-right font-mono">{item.value || "0"}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                      
-                      {/* Totals */}
-                      <table className="summary-table w-full border-collapse text-sm mt-4">
-                        <tbody>
-                          <tr className="bg-gray-100 font-semibold">
-                            <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">Subtotal:</td>
-                            <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{formatINR(fcSubtotal)}</td>
-                          </tr>
-                          {fcDiscountAmount > 0 && (
-                            <tr>
-                              <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">
-                                Discount ({quotation.discountType === 'percent' ? `${discountValue}%` : 'Fixed'}):
-                              </td>
-                              <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums text-red-600">-{formatINR(fcDiscountAmount)}</td>
-                            </tr>
-                          )}
-                          <tr>
-                            <td colSpan={3} className="border border-gray-300 px-3 py-2 text-right">GST (18%):</td>
-                            <td className="border border-gray-300 px-3 py-2 text-right font-mono tabular-nums">{formatINR(fcGst)}</td>
-                          </tr>
-                          <tr className="bg-[#0E2F1B] text-white font-bold">
-                            <td colSpan={3} className="border border-gray-300 px-3 py-3 text-right text-base">Grand Total:</td>
-                            <td className="border border-gray-300 px-3 py-3 text-right font-mono tabular-nums text-base">{formatINR(fcFinalTotal)}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
 
+                  {/* Force page break before Room-wise FC Breakdown */}
+                  <div className="page-break"></div>
+                  
                   {/* Section C: Room-wise False Ceiling Breakdown */}
                   {falseCeilingItems.length > 0 && (
-                    <div className="space-y-6 page-break-before">
+                    <div className="space-y-6">
                       <h3 className="section-title text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">ROOM-WISE FALSE CEILING BREAKDOWN</h3>
                       
                       {Object.entries(falseCeilingByRoom).sort(([a], [b]) => a.localeCompare(b)).map(([room, items], roomIdx) => {
@@ -833,27 +711,27 @@ export default function Print() {
                         return (
                           <section key={room} className="room-block">
                             <h4 className="room-title font-semibold text-[#0E2F1B] mb-2" style={{margin: '10mm 0 4mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
-                            <table className="room-table w-full text-sm border-collapse zebra-table">
+                            <table className="room-table w-full text-sm zebra-table">
                               <thead>
                                 <tr className="bg-gray-100">
-                                  <th className="border border-gray-300 px-2 py-1 text-left">Description</th>
-                                  <th className="border border-gray-300 px-2 py-1 text-center w-20">L (ft)</th>
-                                  <th className="border border-gray-300 px-2 py-1 text-center w-20">W (ft)</th>
-                                  <th className="border border-gray-300 px-2 py-1 text-center w-24">Area (SQFT)</th>
+                                  <th className="px-2 py-1 text-left">Description</th>
+                                  <th className="px-2 py-1 text-center w-20">L (ft)</th>
+                                  <th className="px-2 py-1 text-center w-20">W (ft)</th>
+                                  <th className="px-2 py-1 text-center w-24">Area (SQFT)</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {items.map((item, idx) => (
                                   <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                    <td className="border border-gray-300 px-2 py-1">{item.description || "N/A"}</td>
-                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.length || "-"}</td>
-                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums">{item.width || "-"}</td>
-                                    <td className="border border-gray-300 px-2 py-1 text-center font-mono tabular-nums font-semibold">{item.area || "0.00"}</td>
+                                    <td className="px-2 py-0.5">{item.description || "N/A"}</td>
+                                    <td className="px-2 py-0.5 text-center font-mono tabular-nums">{item.length || "-"}</td>
+                                    <td className="px-2 py-0.5 text-center font-mono tabular-nums">{item.width || "-"}</td>
+                                    <td className="px-2 py-0.5 text-center font-mono tabular-nums font-semibold">{item.area || "0.00"}</td>
                                   </tr>
                                 ))}
-                                <tr className="bg-[#0E2F1B] text-white font-semibold">
-                                  <td colSpan={3} className="border border-gray-300 px-2 py-2 text-right">Room Area:</td>
-                                  <td className="border border-gray-300 px-2 py-2 text-center font-mono tabular-nums">{roomArea.toFixed(2)} SQFT</td>
+                                <tr className="bg-[#0E2F1B] text-white font-semibold border-t-2 border-[#D1B77C]">
+                                  <td colSpan={3} className="px-2 py-1.5 text-right">Room Area:</td>
+                                  <td className="px-2 py-1.5 text-center font-mono tabular-nums">{roomArea.toFixed(2)} SQFT</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -867,22 +745,22 @@ export default function Print() {
                   {otherItems.length > 0 && (
                     <div className="space-y-4 break-inside-avoid">
                       <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2">OTHERS</h3>
-                      <table className="w-full text-sm border-collapse zebra-table">
+                      <table className="w-full text-sm zebra-table">
                         <thead>
                           <tr className="bg-gray-100">
-                            <th className="border border-gray-300 px-2 py-1 text-left">Item Type</th>
-                            <th className="border border-gray-300 px-2 py-1 text-left">Description</th>
-                            <th className="border border-gray-300 px-2 py-1 text-center w-28">Type</th>
-                            <th className="border border-gray-300 px-2 py-1 text-right w-32">Value</th>
+                            <th className="px-2 py-1 text-left">Item Type</th>
+                            <th className="px-2 py-1 text-left">Description</th>
+                            <th className="px-2 py-1 text-center w-28">Type</th>
+                            <th className="px-2 py-1 text-right w-32">Value</th>
                           </tr>
                         </thead>
                         <tbody>
                           {otherItems.map((item, idx) => (
                             <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                              <td className="border border-gray-300 px-2 py-1 font-semibold">{item.itemType || "N/A"}</td>
-                              <td className="border border-gray-300 px-2 py-1">{item.description || "N/A"}</td>
-                              <td className="border border-gray-300 px-2 py-1 text-center capitalize">{item.valueType || "lumpsum"}</td>
-                              <td className="border border-gray-300 px-2 py-1 text-right font-mono tabular-nums">{item.value || "0"}</td>
+                              <td className="px-2 py-0.5 font-semibold">{item.itemType || "N/A"}</td>
+                              <td className="px-2 py-0.5">{item.description || "N/A"}</td>
+                              <td className="px-2 py-0.5 text-center capitalize">{item.valueType || "lumpsum"}</td>
+                              <td className="px-2 py-0.5 text-right font-mono tabular-nums">{item.value || "0"}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -928,8 +806,11 @@ export default function Print() {
                   </div>
 
                   {/* Notes/Terms */}
+                  {/* Force page break before TERMS & CONDITIONS */}
+                  <div className="page-break"></div>
+                  
                   <div className="space-y-3 break-inside-avoid">
-                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-t-2 border-[#D1B77C] pt-4 border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
+                    <h3 className="text-lg font-semibold text-[#0E2F1B] border-b border-gray-300 pb-2" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>TERMS & CONDITIONS</h3>
                     <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
                       {(() => {
                         const terms = quotation.terms?.falseCeiling;

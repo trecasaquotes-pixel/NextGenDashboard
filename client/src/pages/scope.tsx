@@ -627,15 +627,15 @@ export default function Scope() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead className="w-[180px]">Description</TableHead>
-                                  <TableHead className="w-[140px]">L (ft)</TableHead>
-                                  <TableHead className="w-[140px]">H (ft)</TableHead>
-                                  <TableHead className="w-[140px]">W (ft)</TableHead>
+                                  <TableHead className="min-w-[200px]">Description</TableHead>
+                                  <TableHead className="w-[70px]">L (ft)</TableHead>
+                                  <TableHead className="w-[70px]">H (ft)</TableHead>
+                                  <TableHead className="w-[70px]">W (ft)</TableHead>
                                   <TableHead className="w-[90px]">SQFT</TableHead>
-                                  <TableHead className="w-[140px]">Core Material</TableHead>
-                                  <TableHead className="w-[160px]">Finish</TableHead>
-                                  <TableHead className="w-[120px]">Hardware</TableHead>
-                                  <TableHead className="w-[100px]">Rate (₹/sft)</TableHead>
+                                  <TableHead className="min-w-[160px]">Core Material</TableHead>
+                                  <TableHead className="min-w-[180px]">Finish</TableHead>
+                                  <TableHead className="min-w-[140px]">Hardware</TableHead>
+                                  <TableHead className="w-[110px]">Rate (₹/sft)</TableHead>
                                   <TableHead className="w-[120px]">Amount (₹)</TableHead>
                                   <TableHead className="w-[60px]"></TableHead>
                                 </TableRow>
@@ -917,10 +917,10 @@ export default function Scope() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead className="w-[300px]">Description</TableHead>
-                                  <TableHead className="w-[140px]">Length (ft)</TableHead>
-                                  <TableHead className="w-[140px]">Width (ft)</TableHead>
-                                  <TableHead className="w-[90px]">Area (SQFT)</TableHead>
+                                  <TableHead className="min-w-[300px]">Description</TableHead>
+                                  <TableHead className="w-[70px]">Length (ft)</TableHead>
+                                  <TableHead className="w-[70px]">Width (ft)</TableHead>
+                                  <TableHead className="w-[100px]">Area (SQFT)</TableHead>
                                   <TableHead className="w-[60px]"></TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -1035,75 +1035,98 @@ export default function Scope() {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead className="w-[200px]">Item Type</TableHead>
-                              <TableHead className="w-[300px]">Description</TableHead>
-                              <TableHead className="w-[150px]">Type</TableHead>
-                              <TableHead className="w-[200px]">Value</TableHead>
+                              <TableHead className="w-[180px]">Item Type</TableHead>
+                              <TableHead className="min-w-[240px]">Description</TableHead>
+                              <TableHead className="w-[110px]">Type</TableHead>
+                              <TableHead className="w-[100px]">Quantity</TableHead>
+                              <TableHead className="w-[140px]">Price per Quantity</TableHead>
+                              <TableHead className="w-[120px]">Total</TableHead>
                               <TableHead className="w-[60px]"></TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {otherItems.map((item) => (
-                              <TableRow key={item.id}>
-                                <TableCell>
-                                  <Select
-                                    value={item.itemType || ""}
-                                    onValueChange={(value) => updateOtherItem.mutate({ id: item.id, data: { itemType: value } })}
-                                  >
-                                    <SelectTrigger className="h-8" data-testid={`select-other-type-${item.id}`}>
-                                      <SelectValue placeholder="Select type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {OTHER_ITEM_TYPES.map((type) => (
-                                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </TableCell>
-                                <TableCell>
-                                  <Input
-                                    value={item.description || ""}
-                                    onChange={(e) => updateOtherItem.mutate({ id: item.id, data: { description: e.target.value } })}
-                                    placeholder="Description"
-                                    className="h-8"
-                                    data-testid={`input-other-description-${item.id}`}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Select
-                                    value={item.valueType || "lumpsum"}
-                                    onValueChange={(value) => updateOtherItem.mutate({ id: item.id, data: { valueType: value } })}
-                                  >
-                                    <SelectTrigger className="h-8" data-testid={`select-other-value-type-${item.id}`}>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="lumpsum">Lumpsum</SelectItem>
-                                      <SelectItem value="count">Count</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </TableCell>
-                                <TableCell>
-                                  <Input
-                                    value={item.value || ""}
-                                    onChange={(e) => updateOtherItem.mutate({ id: item.id, data: { value: e.target.value } })}
-                                    placeholder={item.valueType === "count" ? "Enter count" : "Enter amount"}
-                                    className="h-8"
-                                    data-testid={`input-other-value-${item.id}`}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => deleteOtherItem.mutate(item.id)}
-                                    data-testid={`button-delete-other-${item.id}`}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
+                            {otherItems.map((item) => {
+                              const quantity = parseFloat(item.value || "0");
+                              const pricePerQty = parseFloat(item.unitPrice || "0");
+                              const total = quantity * pricePerQty;
+                              
+                              return (
+                                <TableRow key={item.id}>
+                                  <TableCell>
+                                    <Select
+                                      value={item.itemType || ""}
+                                      onValueChange={(value) => updateOtherItem.mutate({ id: item.id, data: { itemType: value } })}
+                                    >
+                                      <SelectTrigger className="h-8" data-testid={`select-other-type-${item.id}`}>
+                                        <SelectValue placeholder="Select type" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {OTHER_ITEM_TYPES.map((type) => (
+                                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Input
+                                      value={item.description || ""}
+                                      onChange={(e) => updateOtherItem.mutate({ id: item.id, data: { description: e.target.value } })}
+                                      placeholder="Description"
+                                      className="h-8"
+                                      data-testid={`input-other-description-${item.id}`}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Select
+                                      value={item.valueType || "lumpsum"}
+                                      onValueChange={(value) => updateOtherItem.mutate({ id: item.id, data: { valueType: value } })}
+                                    >
+                                      <SelectTrigger className="h-8" data-testid={`select-other-value-type-${item.id}`}>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="lumpsum">Lumpsum</SelectItem>
+                                        <SelectItem value="count">Quantity</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Input
+                                      value={item.value || ""}
+                                      onChange={(e) => updateOtherItem.mutate({ id: item.id, data: { value: e.target.value } })}
+                                      placeholder={item.valueType === "count" ? "Enter quantity" : "Enter amount"}
+                                      className="h-8"
+                                      data-testid={`input-other-value-${item.id}`}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Input
+                                      type="number"
+                                      value={item.unitPrice || ""}
+                                      onChange={(e) => updateOtherItem.mutate({ id: item.id, data: { unitPrice: e.target.value } })}
+                                      placeholder="0.00"
+                                      className="h-8"
+                                      data-testid={`input-other-unit-price-${item.id}`}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-mono text-sm" data-testid={`text-other-total-${item.id}`}>
+                                      {formatINR(total)}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => deleteOtherItem.mutate(item.id)}
+                                      data-testid={`button-delete-other-${item.id}`}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
                           </TableBody>
                         </Table>
                       </div>

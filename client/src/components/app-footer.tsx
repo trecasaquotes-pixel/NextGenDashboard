@@ -7,14 +7,8 @@ export function AppFooter() {
       />
       <div className="container mx-auto px-4 py-6">
         <div className="text-center space-y-1" style={{ color: '#999999', fontSize: '12px', lineHeight: '1.2' }}>
-          <p className="flex items-center justify-center gap-1">
-            © 2025 TRECASA DESIGN STUDIO
-            <span 
-              className="inline-block w-1.5 h-1.5 rounded-full translate-y-[-0.3em]"
-              style={{ backgroundColor: '#C62828' }}
-              aria-label="dot"
-            />
-            | All Rights Reserved
+          <p>
+            © 2025 TRECASA DESIGN STUDIO | All Rights Reserved
           </p>
           <p>Luxury Interiors | Architecture | Build</p>
           <p>
