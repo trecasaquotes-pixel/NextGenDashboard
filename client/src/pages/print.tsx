@@ -194,6 +194,17 @@ export default function Print() {
     return acc;
   }, {} as Record<string, FalseCeilingItem[]>);
 
+  // Compute room totals for summary tables (Part 2A requirement)
+  const interiorsRoomTotals = Object.entries(interiorsByRoom).map(([room, items]) => ({
+    room,
+    total: items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0)
+  }));
+
+  const fcRoomTotals = Object.entries(falseCeilingByRoom).map(([room, items]) => ({
+    room,
+    total: items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0)
+  }));
+
   const currentDate = new Date().toLocaleDateString('en-IN', {
     day: '2-digit',
     month: 'short',
@@ -322,19 +333,21 @@ export default function Print() {
               <div id="print-interiors-root" className="print-content bg-white text-black" data-pdf-ready="true">
                 {/* PDF Header - Fixed */}
                 <div className="pdf-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h1 className="text-3xl font-bold">TRECASA DESIGN STUDIO</h1>
-                        <div className="w-2.5 h-2.5 rounded-full bg-red-600"></div>
-                      </div>
+                  <div className="brand-row flex items-center justify-between">
+                    <div className="brand-left">
+                      <h1 className="text-3xl font-bold mb-2">TRECASA DESIGN STUDIO</h1>
                       <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
                     </div>
-                    <div className="text-right text-sm space-y-1 header-meta">
-                      <div><strong>Client:</strong> {quotation.clientName || "N/A"}</div>
-                      <div><strong>Quote ID:</strong> {quotation.quoteId}</div>
-                      <div><strong>Date:</strong> {currentDate}</div>
-                      <div><strong>Project:</strong> {quotation.projectName || "N/A"}</div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-right text-sm space-y-1 header-meta">
+                        <div><strong>Client:</strong> {quotation.clientName || "N/A"}</div>
+                        <div><strong>Quote ID:</strong> {quotation.quoteId}</div>
+                        <div><strong>Date:</strong> {currentDate}</div>
+                        <div><strong>Project:</strong> {quotation.projectName || "N/A"}</div>
+                      </div>
+                      <div className="brand-right">
+                        <span className="status-dot" aria-hidden="true" style={{width: '10px', height: '10px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block', transform: 'translateY(1px)'}}></span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -343,7 +356,10 @@ export default function Print() {
                 <div className="pdf-footer">
                   <div>© 2025 TRECASA DESIGN STUDIO</div>
                   <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
-                  <div className="dot" style={{width: '8px', height: '8px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block'}}></div>
+                  <div className="flex items-center gap-2">
+                    <span className="page-num"></span>
+                    <span className="dot" style={{width: '8px', height: '8px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block'}}></span>
+                  </div>
                 </div>
 
                 {/* PDF Body - Content */}
@@ -352,6 +368,36 @@ export default function Print() {
                   <div className="text-center border-b-2 border-[#C9A74E] pb-4">
                     <h2 className="text-2xl font-bold text-[#013220]">INTERIORS QUOTATION</h2>
                   </div>
+
+                  {/* Room Totals Summary - Part 2A */}
+                  <section className="summary-section space-y-6">
+                    <h2 className="text-xl font-bold text-[#0F3A2B]" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>ROOM TOTALS — INTERIORS</h2>
+                    <table className="summary-table w-full border-collapse text-sm">
+                      <thead>
+                        <tr className="bg-[#F3F6F5]">
+                          <th className="border-b border-[#E6E6E6] px-3 py-2 text-left font-semibold">Room</th>
+                          <th className="border-b border-[#E6E6E6] px-3 py-2 text-right font-semibold">Subtotal (₹)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {interiorsRoomTotals.map(({room, total}) => (
+                          <tr key={room}>
+                            <td className="border-b border-[#E6E6E6] px-3 py-2">{room}</td>
+                            <td className="border-b border-[#E6E6E6] px-3 py-2 text-right font-mono">{formatINR(total)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="summary-grand">
+                          <td className="border-t-2 border-[#D4AF37] px-3 py-2 text-right font-bold">Interiors Subtotal</td>
+                          <td className="border-t-2 border-[#D4AF37] px-3 py-2 text-right font-mono font-bold">{formatINR(interiorsSubtotal)}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </section>
+
+                  {/* Force detailed breakdown to start on fresh page */}
+                  <div className="page-break"></div>
 
                   {/* Section A: Project Summary */}
                   <div className="space-y-3">
@@ -425,9 +471,9 @@ export default function Print() {
                       const isLastRoom = roomIdx === Object.entries(interiorsByRoom).length - 1;
                       
                       return (
-                        <div key={room} className={`break-inside-avoid ${!isLastRoom ? 'page-break' : ''}`}>
-                          <h4 className="room-title font-semibold text-[#013220] mb-2">{room}</h4>
-                          <table className="w-full text-sm border-collapse zebra-table">
+                        <section key={room} className="room-block">
+                          <h4 className="room-title font-semibold text-[#013220] mb-2" style={{margin: '10mm 0 4mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
+                          <table className="room-table w-full text-sm border-collapse zebra-table">
                             <thead>
                               <tr className="bg-gray-100">
                                 <th className="border border-gray-300 px-2 py-1 text-left">Description</th>
@@ -457,7 +503,7 @@ export default function Print() {
                               </tr>
                             </tbody>
                           </table>
-                        </div>
+                        </section>
                       );
                     })}
                   </div>
@@ -590,19 +636,21 @@ export default function Print() {
               <div id="print-fc-root" className="print-content bg-white text-black" data-pdf-ready="true">
                 {/* PDF Header - Fixed */}
                 <div className="pdf-header bg-[#013220] text-white p-6 rounded-t-lg print:rounded-none">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h1 className="text-3xl font-bold">TRECASA DESIGN STUDIO</h1>
-                        <div className="w-2.5 h-2.5 rounded-full bg-red-600"></div>
-                      </div>
+                  <div className="brand-row flex items-center justify-between">
+                    <div className="brand-left">
+                      <h1 className="text-3xl font-bold mb-2">TRECASA DESIGN STUDIO</h1>
                       <p className="text-[#C9A74E] text-sm">Luxury Interiors | Architecture | Build</p>
                     </div>
-                    <div className="text-right text-sm space-y-1 header-meta">
-                      <div><strong>Client:</strong> {quotation.clientName || "N/A"}</div>
-                      <div><strong>Quote ID:</strong> {quotation.quoteId}</div>
-                      <div><strong>Date:</strong> {currentDate}</div>
-                      <div><strong>Project:</strong> {quotation.projectName || "N/A"}</div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-right text-sm space-y-1 header-meta">
+                        <div><strong>Client:</strong> {quotation.clientName || "N/A"}</div>
+                        <div><strong>Quote ID:</strong> {quotation.quoteId}</div>
+                        <div><strong>Date:</strong> {currentDate}</div>
+                        <div><strong>Project:</strong> {quotation.projectName || "N/A"}</div>
+                      </div>
+                      <div className="brand-right">
+                        <span className="status-dot" aria-hidden="true" style={{width: '10px', height: '10px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block', transform: 'translateY(1px)'}}></span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -611,7 +659,10 @@ export default function Print() {
                 <div className="pdf-footer">
                   <div>© 2025 TRECASA DESIGN STUDIO</div>
                   <div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
-                  <div className="dot" style={{width: '8px', height: '8px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block'}}></div>
+                  <div className="flex items-center gap-2">
+                    <span className="page-num"></span>
+                    <span className="dot" style={{width: '8px', height: '8px', background: '#B02A2A', borderRadius: '50%', display: 'inline-block'}}></span>
+                  </div>
                 </div>
 
                 {/* PDF Body - Content */}

@@ -1,0 +1,194 @@
+💬 Instruction for Replit AI (Part 2):
+
+We’re enhancing the PDF render for the quotation.
+
+Apply these changes in the PDF template used by Puppeteer (server/lib/pdf-generator.ts and its HTML/CSS helpers). Keep all changes from Part 1.
+
+───────────────────────────────
+A) ADD “ROOM TOTALS SUMMARY” BEFORE BREAKDOWN
+───────────────────────────────
+Goal: On page 1 (after header), show a compact summary table listing each room and its subtotal, then a section break, then the existing room-wise breakdown.
+
+1. Data
+- In the render payload, compute:
+  - interiorsRoomTotals: Array<{ room: string; total: number }>
+  - interiorsSubtotal: number (already exists)
+  - fcRoomTotals (if false ceiling exists): Array<{ room: string; total: number }>
+  - fcSubtotal (if applicable)
+
+2. HTML (insert near top of body content, before “ROOM-WISE BREAKDOWN”):
+<section class="summary-section">
+  <h2>ROOM TOTALS — INTERIORS</h2>
+  <table class="summary-table">
+    <thead>
+      <tr><th>Room</th><th style="text-align:right;">Subtotal (₹)</th></tr>
+    </thead>
+    <tbody>
+      {{#each interiorsRoomTotals}}
+        <tr>
+          <td>{{this.room}}</td>
+          <td style="text-align:right;">₹{{this.total}}</td>
+        </tr>
+      {{/each}}
+    </tbody>
+    <tfoot>
+      <tr class="summary-grand">
+        <td style="text-align:right;">Interiors Subtotal</td>
+        <td style="text-align:right;">₹{{interiorsSubtotal}}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  {{#if fcRoomTotals.length}}
+    <div class="spacer-8"></div>
+    <h2>ROOM TOTALS — FALSE CEILING</h2>
+    <table class="summary-table">
+      <thead>
+        <tr><th>Room</th><th style="text-align:right;">Subtotal (₹)</th></tr>
+      </thead>
+      <tbody>
+        {{#each fcRoomTotals}}
+          <tr>
+            <td>{{this.room}}</td>
+            <td style="text-align:right;">₹{{this.total}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+      <tfoot>
+        <tr class="summary-grand">
+          <td style="text-align:right;">False Ceiling Subtotal</td>
+          <td style="text-align:right;">₹{{fcSubtotal}}</td>
+        </tr>
+      </tfoot>
+    </table>
+  {{/if}}
+</section>
+
+<!-- Force the detailed breakdown to start on a fresh page -->
+<div class="page-break"></div>
+
+3. CSS:
+.summary-section h2 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  color: #0F3A2B;
+  margin: 0 0 6mm;
+}
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 11px;
+}
+.summary-table th, .summary-table td {
+  border-bottom: 1px solid #E6E6E6;
+  padding: 6px 8px;
+}
+.summary-table thead th {
+  background: #F3F6F5;
+  font-weight: 600;
+}
+.summary-grand td {
+  border-top: 2px solid #D4AF37;
+  font-weight: 700;
+}
+.spacer-8 { height: 8mm; }
+.page-break { page-break-before: always; }
+
+───────────────────────────────
+B) FIX TABLE PAGINATION (NO 4–5 ROW CAP)
+───────────────────────────────
+Goal: Allow tables to continue across pages and keep header/footer intact.
+
+Add/adjust CSS:
+
+/* Let long tables naturally flow across pages */
+.table, table { page-break-inside: auto; }
+tr { page-break-inside: avoid; page-break-after: auto; }
+thead { display: table-header-group; }  /* repeat table header automatically */
+tfoot { display: table-row-group; }     /* allow footer rows to flow */
+tbody { display: table-row-group; }
+
+/* Compact row spacing so more lines fit per page */
+.table td, .table th, td, th {
+  padding: 5px 6px;        /* reduce vertical padding */
+  line-height: 1.25;       /* tighter lines */
+  font-size: 10.5px;       /* slightly smaller for dense tables */
+}
+
+/* Remove any fixed heights that limit rows per page */
+.table, table { height: auto !important; max-height: none !important; overflow: visible !important; }
+
+Ensure any previous CSS that sets fixed heights or overflow on table containers is removed.
+
+───────────────────────────────
+C) ALIGN THE RED STATUS DOT IN HEADER
+───────────────────────────────
+Place the dot visually centered on the green band, aligned near the right of the TRECASA wordmark block.
+
+HTML (within header brand block):
+<div class="brand-row">
+  <div class="brand-left">
+    <!-- logo + “TRECASA DESIGN STUDIO” -->
+  </div>
+  <div class="brand-right">
+    <span class="status-dot" aria-hidden="true"></span>
+  </div>
+</div>
+
+CSS:
+.brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.status-dot {
+  width: 10px;
+  height: 10px;
+  background: #B02A2A;   /* red */
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 8px;
+  transform: translateY(1px);  /* optical centering */
+}
+
+───────────────────────────────
+D) PAGE NUMBERS IN FOOTER
+───────────────────────────────
+Add page numbering right-aligned in the footer using Puppeteer CSS counters:
+
+/* in the footer block */
+.pdf-footer .page-num::after {
+  content: "Page " counter(page) " of " counter(pages);
+}
+
+HTML (inside .pdf-footer):
+<div>© 2025 TRECASA DESIGN STUDIO</div>
+<div>www.trecasadesignstudio.com | @trecasa.designstudio</div>
+<div class="right">
+  <span class="page-num"></span>
+  <span class="dot" style="width:8px;height:8px;background:#B02A2A;border-radius:50%;display:inline-block;margin-left:10px;"></span>
+</div>
+
+Ensure `.pdf-footer` uses `display:flex; justify-content:space-between; align-items:center;`.
+
+───────────────────────────────
+E) DON’T BREAK A ROOM TITLE FROM ITS FIRST ROW
+───────────────────────────────
+Ensure a room header stays with at least its first line item:
+
+.room-block { page-break-inside: avoid; }
+.room-title { margin: 10mm 0 4mm; font-weight: 700; font-family: 'Playfair Display', Georgia, serif; }
+.room-table { page-break-inside: auto; }
+
+Wrap each room in `<section class="room-block">…</section>` and keep the table separate inside it.
+
+───────────────────────────────
+Result:
+- Page 1 shows **Room Totals** (Interiors and FC if present).
+- Detailed room-wise breakdown starts on next page.
+- Tables can span pages; no 4–5-row limit.
+- Red dot aligned on the header green band.
+- Footer shows **page X of Y**.
+
+Keep brand fonts from Part 1 (Playfair Display + Montserrat).
