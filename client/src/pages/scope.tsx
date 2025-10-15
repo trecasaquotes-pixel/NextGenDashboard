@@ -583,7 +583,20 @@ export default function Scope() {
 
                 {/* Interiors Tab */}
                 <TabsContent value="interiors" className="space-y-6 pb-24">
-                  {Array.from(new Set(interiorItems.map(item => item.roomType).filter(Boolean))).sort().map((roomType) => {
+                  {Array.from(new Set(interiorItems.map(item => item.roomType).filter(Boolean)))
+                    .sort((a, b) => {
+                      const indexA = ROOM_TYPES.indexOf(a as any);
+                      const indexB = ROOM_TYPES.indexOf(b as any);
+                      // If both are in ROOM_TYPES, sort by that order
+                      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                      // If only A is in ROOM_TYPES, A comes first
+                      if (indexA !== -1) return -1;
+                      // If only B is in ROOM_TYPES, B comes first
+                      if (indexB !== -1) return 1;
+                      // If neither are in ROOM_TYPES, sort alphabetically
+                      return a.localeCompare(b);
+                    })
+                    .map((roomType) => {
                     const roomItems = interiorItems.filter((item) => item.roomType === roomType);
                     const totalSqft = roomItems.reduce((sum, item) => sum + parseFloat(item.sqft || "0"), 0);
                     const roomTotal = roomItems.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
@@ -878,7 +891,20 @@ export default function Scope() {
                 {/* False Ceiling Tab */}
                 <TabsContent value="false-ceiling" className="space-y-6 pb-24">
                   {/* False Ceiling Items by Room */}
-                  {Array.from(new Set(falseCeilingItems.map(item => item.roomType).filter(Boolean))).sort().map((roomType) => {
+                  {Array.from(new Set(falseCeilingItems.map(item => item.roomType).filter(Boolean)))
+                    .sort((a, b) => {
+                      const indexA = ROOM_TYPES.indexOf(a as any);
+                      const indexB = ROOM_TYPES.indexOf(b as any);
+                      // If both are in ROOM_TYPES, sort by that order
+                      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                      // If only A is in ROOM_TYPES, A comes first
+                      if (indexA !== -1) return -1;
+                      // If only B is in ROOM_TYPES, B comes first
+                      if (indexB !== -1) return 1;
+                      // If neither are in ROOM_TYPES, sort alphabetically
+                      return a.localeCompare(b);
+                    })
+                    .map((roomType) => {
                     const roomItems = falseCeilingItems.filter((item) => item.roomType === roomType);
                     const totalArea = roomItems.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
 

@@ -46,7 +46,7 @@ No specific user preferences were provided in the original document.
 ### Feature Specifications
 - **Quotation Management**: Create, view, edit, and manage quotations with auto-generated unique IDs.
 - **Project Information**: Capture client details, project category, address, and Build Type.
-- **Scope Definition**: Room-based line items for Interiors (dimensions, materials, pricing) and False Ceiling (area calculations).
+- **Scope Definition**: Room-based line items for Interiors (dimensions, materials, pricing) and False Ceiling (area calculations). Rooms are displayed in standard order (Kitchen, Living, Bedrooms, Bathrooms, Utility, Puja) followed by custom room names alphabetically.
 - **Estimate Generation**: Detailed summaries, overall summary with discount and GST.
 - **Print Functionality**: Print-friendly views and PDF export.
 - **Quotes List**: Tabular display of quotations with project details and financial totals.
