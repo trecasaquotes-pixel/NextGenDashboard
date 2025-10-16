@@ -54,7 +54,7 @@ No specific user preferences were provided in the original document.
 - **Print Functionality**: Print-friendly views and PDF export.
 - **Quotes List**: Tabular display of quotations with project details and financial totals.
 - **UX Enhancements**: Inline room totals, sticky footer bars, and improved dimension input.
-- **Dynamic Terms & Conditions**: Template-based T&C with per-quote overrides and token substitution.
+- **Dynamic Terms & Conditions**: Template-based T&C with per-quote overrides, token substitution, and dynamic Materials & Brands bullets that auto-populate from actual quotation selections (Core Materials, Finishes, Hardware) with intelligent formatting and deduplication.
 - **Signature Block & Status Controls**: Client and Trecasa signature system with status tracking (draft, sent, accepted, rejected).
 
 ## External Dependencies

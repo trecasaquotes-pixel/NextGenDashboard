@@ -10,6 +10,12 @@ export type TermsVars = {
   paymentSchedule?: string;
 };
 
+export type MaterialsData = {
+  material?: string;
+  finish?: string;
+  hardware?: string;
+}[];
+
 export const defaultTerms: Record<TermsTemplateId, string[]> = {
   default_interiors: [
     "PRICING & TAXES: All prices are inclusive of design, material, fabrication, installation, and margin. GST at applicable rates will be charged extra on the total invoice value.",
@@ -34,6 +40,7 @@ export const defaultTerms: Record<TermsTemplateId, string[]> = {
     "QUOTE VALIDITY: This quotation is valid until {validUntilDate}. Post expiry, prices and availability are subject to reconfirmation.",
     "PAYMENT TERMS: {paymentSchedule}. Timely payment is essential for uninterrupted project execution. Payment delays may extend timelines.",
     "WARRANTY: {warrantyMonths} months warranty against sagging, cracks, and joint failures under normal usage conditions. Warranty excludes water seepage damage, impact damage, structural issues, unauthorized modifications, or natural calamities.",
+    "MATERIALS & BRANDS: Materials and brands are as specified in the quotation. In case of unavailability, equivalent alternatives may be used with prior client approval. Brand warranties, if any, are as per manufacturer terms.",
     "HEIGHT & ACCESS: Quoted rates assume standard ceiling heights (9-10 feet). Work requiring scaffolding above 10 feet, stilt/tower scaffolding, or specialized access equipment will be charged extra as per actual requirements.",
     "SITE CONDITIONS: Client to provide clear working area, adequate lighting, power supply, water connection, material storage space, and safe access. Delays due to site unpreparedness will extend timelines proportionally.",
     "STRUCTURAL REQUIREMENTS: Client to ensure structural integrity of existing ceiling/walls. TRECASA is not responsible for structural failures, water seepage, or pre-existing defects. Structural reinforcement, if required, will be charged separately.",
@@ -48,7 +55,95 @@ export const defaultTerms: Record<TermsTemplateId, string[]> = {
   ],
 };
 
-export function renderTerms(lines: string[], vars: TermsVars = {}): string[] {
+function buildDynamicMaterialsBullets(items: MaterialsData): string[] {
+  // Build unique sets with case-insensitive deduplication
+  const coreSet = new Set<string>();
+  const finishSet = new Set<string>();
+  const hardwareSet = new Set<string>();
+  
+  items.forEach(item => {
+    if (item.material) {
+      const normalized = item.material.trim();
+      if (normalized && normalized.toLowerCase() !== 'generic ply') {
+        coreSet.add(normalized);
+      }
+    }
+    if (item.finish) {
+      const normalized = item.finish.trim();
+      if (normalized && normalized.toLowerCase() !== 'generic laminate') {
+        finishSet.add(normalized);
+      }
+    }
+    if (item.hardware) {
+      const normalized = item.hardware.trim();
+      if (normalized && normalized.toLowerCase() !== 'nimmi') {
+        hardwareSet.add(normalized);
+      }
+    }
+  });
+  
+  // Format finish names with thickness hints
+  const formatFinish = (finish: string): string => {
+    const lower = finish.toLowerCase();
+    
+    // Check if thickness already in label
+    if (lower.includes('mm') || lower.includes('millimeter')) {
+      return finish;
+    }
+    
+    if (lower.includes('external laminate') || (lower.includes('laminate') && !lower.includes('internal'))) {
+      return 'External laminates (1.0 mm)';
+    }
+    if (lower.includes('internal laminate')) {
+      return 'Internal laminates (0.8 mm)';
+    }
+    if (lower.includes('acrylic')) {
+      return 'Acrylic (1.5 mm for kitchens)';
+    }
+    if (lower.includes('pu') || lower.includes('duco')) {
+      return 'PU-Duco as per design';
+    }
+    
+    return finish;
+  };
+  
+  // Build bullet strings
+  const bullets: string[] = [];
+  
+  // Core Materials bullet
+  if (coreSet.size > 0) {
+    const coreList = Array.from(coreSet).join(', ');
+    bullets.push(`Core Materials: ${coreList} as per approved design requirements. (Blockboard is not used in any scope of work).`);
+  } else {
+    bullets.push("Core Materials: BWP/BWR grade plywood (710 Grade) as per approved design. (Blockboard is not used in any scope of work).");
+  }
+  
+  // Finishes bullet
+  if (finishSet.size > 0) {
+    const formattedFinishes = Array.from(finishSet).map(formatFinish);
+    const uniqueFormatted = Array.from(new Set(formattedFinishes));
+    const finishList = uniqueFormatted.join(', ');
+    bullets.push(`Finishes: ${finishList} unless otherwise specified.`);
+  } else {
+    bullets.push("Finishes: External laminates (1.0 mm), Internal laminates (0.8 mm), Acrylic (1.5 mm for kitchens), PU-Duco as per design.");
+  }
+  
+  // Hardware bullet
+  if (hardwareSet.size > 0) {
+    const hardwareList = Array.from(hardwareSet).join(', ');
+    const orEquivalent = hardwareSet.size >= 2 ? ', or equivalent' : '';
+    bullets.push(`Hardware: ${hardwareList}${orEquivalent}, with soft-close mechanisms where applicable.`);
+  } else {
+    bullets.push("Hardware: Hettich/Ebco/equivalent with soft-close mechanisms where applicable.");
+  }
+  
+  // Glass & Metal Works bullet (always static)
+  bullets.push("Glass & Metal Works: 5mm/8mm toughened glass, stainless steel/powder-coated mild steel as per design specifications.");
+  
+  return bullets;
+}
+
+export function renderTerms(lines: string[], vars: TermsVars = {}, materialsData?: MaterialsData): string[] {
   const v = {
     validDays: 15,
     validUntilDate: "",
@@ -57,16 +152,31 @@ export function renderTerms(lines: string[], vars: TermsVars = {}): string[] {
     ...vars
   };
   
-  return lines.map(l =>
-    l
+  return lines.map(l => {
+    // Replace MATERIALS & BRANDS line with dynamic bullets
+    if (l.startsWith("MATERIALS & BRANDS:")) {
+      if (materialsData && materialsData.length > 0) {
+        const bullets = buildDynamicMaterialsBullets(materialsData);
+        return `MATERIALS & BRANDS:\n${bullets.map(b => `  • ${b}`).join('\n')}`;
+      }
+      // Fallback to expanded static version with bullets
+      return `MATERIALS & BRANDS:
+  • Core Materials: BWP/BWR grade plywood (710 Grade) as per approved design. (Blockboard is not used in any scope of work).
+  • Finishes: External laminates (1.0 mm), Internal laminates (0.8 mm), Acrylic (1.5 mm for kitchens), PU-Duco as per design.
+  • Hardware: Hettich/Ebco/equivalent with soft-close mechanisms where applicable.
+  • Glass & Metal Works: 5mm/8mm toughened glass, stainless steel/powder-coated mild steel as per design specifications.`;
+    }
+    
+    // Standard variable replacements
+    return l
       .replaceAll("{clientName}", v.clientName ?? "")
       .replaceAll("{projectName}", v.projectName ?? "")
       .replaceAll("{quoteId}", v.quoteId ?? "")
       .replaceAll("{validDays}", String(v.validDays))
       .replaceAll("{validUntilDate}", v.validUntilDate)
       .replaceAll("{warrantyMonths}", String(v.warrantyMonths))
-      .replaceAll("{paymentSchedule}", v.paymentSchedule)
-  );
+      .replaceAll("{paymentSchedule}", v.paymentSchedule);
+  });
 }
 
 export const defaultTermsConfig = {

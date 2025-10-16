@@ -600,7 +600,11 @@ export default function Print() {
                               quoteId: quotation.quoteId,
                               validUntilDate,
                               ...terms.vars
-                            })
+                            }, interiorItems.map(item => ({
+                              material: item.material,
+                              finish: item.finish,
+                              hardware: item.hardware
+                            })))
                           : (terms?.customText || "").split('\n').filter(line => line.trim());
                         return lines.map((line, idx) => {
                           // Check if line has a title (text before first colon)
@@ -970,7 +974,11 @@ export default function Print() {
                               quoteId: quotation.quoteId,
                               validUntilDate,
                               ...terms.vars
-                            })
+                            }, interiorItems.map(item => ({
+                              material: item.material,
+                              finish: item.finish,
+                              hardware: item.hardware
+                            })))
                           : (terms?.customText || "").split('\n').filter(line => line.trim());
                         return lines.map((line, idx) => {
                           // Check if line has a title (text before first colon)
