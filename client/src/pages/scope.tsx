@@ -355,6 +355,52 @@ export default function Scope() {
     const normalizedValue = value === "" ? null : value;
     const updatedData: any = { [field]: normalizedValue };
 
+    // Get current calc type
+    const currentCalc = field === "calc" ? normalizedValue : (item.calc || "SQFT");
+
+    // Handle calc type changes - clear irrelevant fields and recalculate
+    if (field === "calc") {
+      const projectBuildType = (quotation?.buildType as BuildType) || "handmade";
+      const description = item.description || "";
+      const effectiveBuildType = getEffectiveBuildType(projectBuildType, description);
+      const material = item.material || "Generic Ply";
+      const finish = item.finish || "Generic Laminate";
+      const hardware = item.hardware || "Nimmi";
+      
+      const rateAuto = calculateRate(
+        effectiveBuildType,
+        material as CoreMaterial,
+        finish as FinishMaterial,
+        hardware as HardwareBrand
+      );
+      
+      if (normalizedValue === "LSUM") {
+        // Lumpsum: clear dimensions and sqft, just use totalPrice
+        updatedData.length = null;
+        updatedData.height = null;
+        updatedData.width = null;
+        updatedData.sqft = null;
+        updatedData.unitPrice = item.totalPrice || 0;
+        updatedData.totalPrice = item.totalPrice || 0;
+      } else if (normalizedValue === "COUNT") {
+        // Count: clear dimensions, use sqft as quantity, recalculate amount
+        updatedData.length = null;
+        updatedData.height = null;
+        updatedData.width = null;
+        const quantity = parseFloat(item.sqft || "1");
+        updatedData.sqft = quantity.toString();
+        updatedData.rateAuto = rateAuto;
+        updatedData.unitPrice = rateAuto;
+        updatedData.totalPrice = calculateAmount(rateAuto, quantity);
+      } else if (normalizedValue === "SQFT") {
+        // SQFT: recalculate with existing or zero dimensions
+        const sqft = parseFloat(item.sqft || "0");
+        updatedData.rateAuto = rateAuto;
+        updatedData.unitPrice = rateAuto;
+        updatedData.totalPrice = calculateAmount(rateAuto, sqft);
+      }
+    }
+
     // Get updated values for all fields
     const newLength = field === "length" ? normalizedValue : item.length;
     const newHeight = field === "height" ? normalizedValue : item.height;
@@ -374,7 +420,7 @@ export default function Scope() {
     }
 
     // Auto-reset override when buildType/material/finish/hardware changes
-    const resetOverrideTriggers = ["material", "finish", "hardware", "description"];
+    const resetOverrideTriggers = ["material", "finish", "hardware", "description", "calc"];
     const shouldResetOverride = resetOverrideTriggers.includes(field) && item.isRateOverridden;
     
     if (shouldResetOverride) {
@@ -382,50 +428,73 @@ export default function Scope() {
       updatedData.rateOverride = null;
     }
 
-    // Always recalculate sqft when dimensions change
-    if (field === "length" || field === "height" || field === "width") {
-      const calculatedSqft = calculateSqft(newLength, newHeight, newWidth);
-      updatedData.sqft = calculatedSqft;
-      
-      // Also recalculate rateAuto and amount
-      const sqftValue = parseFloat(calculatedSqft);
-      const rateAuto = calculateRate(
-        effectiveBuildType,
-        newMaterial as CoreMaterial,
-        newFinish as FinishMaterial,
-        newHardware as HardwareBrand
-      );
-      
-      // Compute effective rate (considering override)
-      const effectiveRate = item.isRateOverridden && item.rateOverride 
-        ? parseFloat(item.rateOverride.toString()) 
-        : rateAuto;
-      
-      // Send as numbers, not strings
-      updatedData.rateAuto = rateAuto;
-      updatedData.unitPrice = effectiveRate;
-      updatedData.totalPrice = calculateAmount(effectiveRate, sqftValue);
-    } else if (field === "material" || field === "finish" || field === "hardware" || field === "description") {
-      // Recalculate rate and amount when brand fields or description changes
-      const sqft = parseFloat(item.sqft || "0");
-      const rateAuto = calculateRate(
-        effectiveBuildType,
-        newMaterial as CoreMaterial,
-        newFinish as FinishMaterial,
-        newHardware as HardwareBrand
-      );
-      
-      // Effective rate is always rateAuto after override reset
-      const effectiveRate = shouldResetOverride ? rateAuto : (
-        item.isRateOverridden && item.rateOverride 
+    // Calculate based on calc type
+    if (currentCalc === "SQFT") {
+      // SQFT calculation: dimensions -> sqft -> rate -> amount
+      if (field === "length" || field === "height" || field === "width") {
+        const calculatedSqft = calculateSqft(newLength, newHeight, newWidth);
+        updatedData.sqft = calculatedSqft;
+        
+        const sqftValue = parseFloat(calculatedSqft);
+        const rateAuto = calculateRate(
+          effectiveBuildType,
+          newMaterial as CoreMaterial,
+          newFinish as FinishMaterial,
+          newHardware as HardwareBrand
+        );
+        
+        const effectiveRate = item.isRateOverridden && item.rateOverride 
           ? parseFloat(item.rateOverride.toString()) 
-          : rateAuto
-      );
-      
-      // Send as numbers, not strings
-      updatedData.rateAuto = rateAuto;
-      updatedData.unitPrice = effectiveRate;
-      updatedData.totalPrice = calculateAmount(effectiveRate, sqft);
+          : rateAuto;
+        
+        updatedData.rateAuto = rateAuto;
+        updatedData.unitPrice = effectiveRate;
+        updatedData.totalPrice = calculateAmount(effectiveRate, sqftValue);
+      } else if (field === "material" || field === "finish" || field === "hardware" || field === "description" || field === "calc") {
+        const sqft = parseFloat(item.sqft || "0");
+        const rateAuto = calculateRate(
+          effectiveBuildType,
+          newMaterial as CoreMaterial,
+          newFinish as FinishMaterial,
+          newHardware as HardwareBrand
+        );
+        
+        const effectiveRate = shouldResetOverride ? rateAuto : (
+          item.isRateOverridden && item.rateOverride 
+            ? parseFloat(item.rateOverride.toString()) 
+            : rateAuto
+        );
+        
+        updatedData.rateAuto = rateAuto;
+        updatedData.unitPrice = effectiveRate;
+        updatedData.totalPrice = calculateAmount(effectiveRate, sqft);
+      }
+    } else if (currentCalc === "COUNT") {
+      // COUNT calculation: quantity (stored in sqft field) × rate -> amount
+      if (field === "sqft" || field === "material" || field === "finish" || field === "hardware" || field === "description" || field === "calc") {
+        const quantity = parseFloat(field === "sqft" ? normalizedValue : (item.sqft || "0"));
+        const rateAuto = calculateRate(
+          effectiveBuildType,
+          newMaterial as CoreMaterial,
+          newFinish as FinishMaterial,
+          newHardware as HardwareBrand
+        );
+        
+        const effectiveRate = item.isRateOverridden && item.rateOverride 
+          ? parseFloat(item.rateOverride.toString()) 
+          : rateAuto;
+        
+        updatedData.rateAuto = rateAuto;
+        updatedData.unitPrice = effectiveRate;
+        updatedData.totalPrice = calculateAmount(effectiveRate, quantity);
+      }
+    } else if (currentCalc === "LSUM") {
+      // LSUM: just a fixed price, no calculations needed
+      // Unit price acts as the lumpsum amount
+      if (field === "calc") {
+        updatedData.unitPrice = item.totalPrice || 0;
+        updatedData.totalPrice = item.totalPrice || 0;
+      }
     }
 
     updateInteriorItem.mutate({ id, data: updatedData });
@@ -640,22 +709,40 @@ export default function Scope() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
+                                  <TableHead className="w-[100px] px-1">Type</TableHead>
                                   <TableHead className="w-auto px-2">Description</TableHead>
                                   <TableHead className="w-[80px] px-1">L (ft)</TableHead>
                                   <TableHead className="w-[80px] px-1">H (ft)</TableHead>
                                   <TableHead className="w-[80px] px-1">W (ft)</TableHead>
-                                  <TableHead className="w-[60px] px-1">SQFT</TableHead>
+                                  <TableHead className="w-[60px] px-1">SQFT/Qty</TableHead>
                                   <TableHead className="w-[132px] px-1">Core Material</TableHead>
                                   <TableHead className="w-[132px] px-1">Finish</TableHead>
                                   <TableHead className="w-[92px] px-1">Hardware</TableHead>
-                                  <TableHead className="w-[70px] px-1">Rate (₹/sft)</TableHead>
+                                  <TableHead className="w-[70px] px-1">Rate</TableHead>
                                   <TableHead className="w-[90px] px-1">Amount (₹)</TableHead>
                                   <TableHead className="w-[40px] px-1"></TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {roomItems.map((item) => (
+                                {roomItems.map((item) => {
+                                  const calcType = item.calc || "SQFT";
+                                  return (
                                   <TableRow key={item.id}>
+                                    <TableCell className="px-1">
+                                      <Select
+                                        value={calcType}
+                                        onValueChange={(value) => handleInteriorFieldChange(item.id, "calc", value)}
+                                      >
+                                        <SelectTrigger className="h-8" data-testid={`select-calc-${item.id}`}>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="SQFT">SQFT</SelectItem>
+                                          <SelectItem value="COUNT">Count</SelectItem>
+                                          <SelectItem value="LSUM">Lumpsum</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </TableCell>
                                     <TableCell className="px-2">
                                       <Input
                                         key={`description-${item.id}-${item.description}`}
@@ -675,86 +762,122 @@ export default function Scope() {
                                         data-testid={`input-description-${item.id}`}
                                       />
                                     </TableCell>
-                                    <TableCell className="px-1">
-                                      <Input
-                                        key={`length-${item.id}-${item.length}`}
-                                        type="text"
-                                        inputMode="decimal"
-                                        pattern="^\d*(\.\d{0,2})?$"
-                                        placeholder="0.00"
-                                        defaultValue={item.length || ""}
-                                        onChange={(e) => {
-                                          e.target.value = sanitizeDecimalInput(e.target.value);
-                                        }}
-                                        onBlur={(e) => {
-                                          const currentValue = e.target.value;
-                                          if (currentValue !== (item.length || "")) {
-                                            handleInteriorFieldChange(item.id, "length", currentValue);
-                                          }
-                                        }}
-                                        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
-                                        onKeyDown={(e) => {
-                                          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
-                                        }}
-                                        className="w-full h-10 font-mono text-center"
-                                        data-testid={`input-length-${item.id}`}
-                                      />
-                                    </TableCell>
-                                    <TableCell className="px-1">
-                                      <Input
-                                        key={`height-${item.id}-${item.height}`}
-                                        type="text"
-                                        inputMode="decimal"
-                                        pattern="^\d*(\.\d{0,2})?$"
-                                        placeholder="0.00"
-                                        defaultValue={item.height || ""}
-                                        onChange={(e) => {
-                                          e.target.value = sanitizeDecimalInput(e.target.value);
-                                        }}
-                                        onBlur={(e) => {
-                                          const currentValue = e.target.value;
-                                          if (currentValue !== (item.height || "")) {
-                                            handleInteriorFieldChange(item.id, "height", currentValue);
-                                          }
-                                        }}
-                                        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
-                                        onKeyDown={(e) => {
-                                          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
-                                        }}
-                                        className="w-full h-10 font-mono text-center"
-                                        data-testid={`input-height-${item.id}`}
-                                      />
-                                    </TableCell>
-                                    <TableCell className="px-1">
-                                      <Input
-                                        key={`width-${item.id}-${item.width}`}
-                                        type="text"
-                                        inputMode="decimal"
-                                        pattern="^\d*(\.\d{0,2})?$"
-                                        placeholder="0.00"
-                                        defaultValue={item.width || ""}
-                                        onChange={(e) => {
-                                          e.target.value = sanitizeDecimalInput(e.target.value);
-                                        }}
-                                        onBlur={(e) => {
-                                          const currentValue = e.target.value;
-                                          if (currentValue !== (item.width || "")) {
-                                            handleInteriorFieldChange(item.id, "width", currentValue);
-                                          }
-                                        }}
-                                        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
-                                        onKeyDown={(e) => {
-                                          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
-                                        }}
-                                        className="w-full h-10 font-mono text-center"
-                                        data-testid={`input-width-${item.id}`}
-                                      />
-                                    </TableCell>
-                                    <TableCell className="px-1">
-                                      <span className="font-mono text-sm font-semibold" data-testid={`text-sqft-${item.id}`}>
-                                        {item.sqft || "0.00"}
-                                      </span>
-                                    </TableCell>
+                                    {calcType === "SQFT" ? (
+                                      <>
+                                        <TableCell className="px-1">
+                                          <Input
+                                            key={`length-${item.id}-${item.length}`}
+                                            type="text"
+                                            inputMode="decimal"
+                                            pattern="^\d*(\.\d{0,2})?$"
+                                            placeholder="0.00"
+                                            defaultValue={item.length || ""}
+                                            onChange={(e) => {
+                                              e.target.value = sanitizeDecimalInput(e.target.value);
+                                            }}
+                                            onBlur={(e) => {
+                                              const currentValue = e.target.value;
+                                              if (currentValue !== (item.length || "")) {
+                                                handleInteriorFieldChange(item.id, "length", currentValue);
+                                              }
+                                            }}
+                                            onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+                                            }}
+                                            className="w-full h-10 font-mono text-center"
+                                            data-testid={`input-length-${item.id}`}
+                                          />
+                                        </TableCell>
+                                        <TableCell className="px-1">
+                                          <Input
+                                            key={`height-${item.id}-${item.height}`}
+                                            type="text"
+                                            inputMode="decimal"
+                                            pattern="^\d*(\.\d{0,2})?$"
+                                            placeholder="0.00"
+                                            defaultValue={item.height || ""}
+                                            onChange={(e) => {
+                                              e.target.value = sanitizeDecimalInput(e.target.value);
+                                            }}
+                                            onBlur={(e) => {
+                                              const currentValue = e.target.value;
+                                              if (currentValue !== (item.height || "")) {
+                                                handleInteriorFieldChange(item.id, "height", currentValue);
+                                              }
+                                            }}
+                                            onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+                                            }}
+                                            className="w-full h-10 font-mono text-center"
+                                            data-testid={`input-height-${item.id}`}
+                                          />
+                                        </TableCell>
+                                        <TableCell className="px-1">
+                                          <Input
+                                            key={`width-${item.id}-${item.width}`}
+                                            type="text"
+                                            inputMode="decimal"
+                                            pattern="^\d*(\.\d{0,2})?$"
+                                            placeholder="0.00"
+                                            defaultValue={item.width || ""}
+                                            onChange={(e) => {
+                                              e.target.value = sanitizeDecimalInput(e.target.value);
+                                            }}
+                                            onBlur={(e) => {
+                                              const currentValue = e.target.value;
+                                              if (currentValue !== (item.width || "")) {
+                                                handleInteriorFieldChange(item.id, "width", currentValue);
+                                              }
+                                            }}
+                                            onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+                                            }}
+                                            className="w-full h-10 font-mono text-center"
+                                            data-testid={`input-width-${item.id}`}
+                                          />
+                                        </TableCell>
+                                        <TableCell className="px-1">
+                                          <span className="font-mono text-sm font-semibold" data-testid={`text-sqft-${item.id}`}>
+                                            {item.sqft || "0.00"}
+                                          </span>
+                                        </TableCell>
+                                      </>
+                                    ) : calcType === "COUNT" ? (
+                                      <>
+                                        <TableCell className="px-1" colSpan={3}>
+                                          <Input
+                                            key={`sqft-count-${item.id}-${item.sqft}`}
+                                            type="number"
+                                            placeholder="Qty"
+                                            defaultValue={item.sqft || ""}
+                                            onBlur={(e) => {
+                                              const currentValue = e.target.value;
+                                              if (currentValue !== (item.sqft || "")) {
+                                                handleInteriorFieldChange(item.id, "sqft", currentValue);
+                                              }
+                                            }}
+                                            className="w-full h-10 font-mono text-center"
+                                            data-testid={`input-quantity-${item.id}`}
+                                          />
+                                        </TableCell>
+                                        <TableCell className="px-1">
+                                          <span className="font-mono text-sm font-semibold" data-testid={`text-quantity-${item.id}`}>
+                                            {item.sqft || "0"}
+                                          </span>
+                                        </TableCell>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <TableCell className="px-1" colSpan={4}>
+                                          <span className="text-sm text-muted-foreground italic">
+                                            Lumpsum (no dimensions)
+                                          </span>
+                                        </TableCell>
+                                      </>
+                                    )}
                                     <TableCell className="px-1">
                                       <Select
                                         value={item.material || "Generic Ply"}
@@ -807,7 +930,7 @@ export default function Scope() {
                                       </Select>
                                     </TableCell>
                                     <TableCell className="px-1">
-                                      {item.calc === 'SQFT' ? (
+                                      {calcType === 'SQFT' || calcType === 'COUNT' ? (
                                         <div className="flex items-center gap-2">
                                           <Input
                                             type="number"
@@ -853,9 +976,32 @@ export default function Scope() {
                                       )}
                                     </TableCell>
                                     <TableCell className="px-1">
-                                      <span className="font-mono text-sm font-semibold" data-testid={`text-amount-${item.id}`}>
-                                        ₹{item.totalPrice || "0"}
-                                      </span>
+                                      {calcType === 'LSUM' ? (
+                                        <Input
+                                          type="number"
+                                          defaultValue={item.totalPrice || ""}
+                                          key={`lsum-${item.id}-${item.totalPrice}`}
+                                          onBlur={(e) => {
+                                            const newValue = e.target.value;
+                                            const amount = newValue ? parseFloat(newValue).toString() : "0";
+                                            updateInteriorItem.mutate({ 
+                                              id: item.id, 
+                                              data: { 
+                                                totalPrice: amount,
+                                                unitPrice: amount
+                                              } 
+                                            });
+                                          }}
+                                          min="0"
+                                          placeholder="Enter amount"
+                                          className="h-8 w-28 text-right font-mono text-sm"
+                                          data-testid={`input-lumpsum-${item.id}`}
+                                        />
+                                      ) : (
+                                        <span className="font-mono text-sm font-semibold" data-testid={`text-amount-${item.id}`}>
+                                          ₹{item.totalPrice || "0"}
+                                        </span>
+                                      )}
                                     </TableCell>
                                     <TableCell className="px-1">
                                       <Button
@@ -868,7 +1014,8 @@ export default function Scope() {
                                       </Button>
                                     </TableCell>
                                   </TableRow>
-                                ))}
+                                  );
+                                })}
                               </TableBody>
                             </Table>
                           </div>
