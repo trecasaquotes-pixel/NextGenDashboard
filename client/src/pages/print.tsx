@@ -854,6 +854,7 @@ export default function Print() {
                       
                       {sortRoomEntries(Object.entries(falseCeilingByRoom)).map(([room, items], roomIdx) => {
                         const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
+                        const roomTotal = items.reduce((sum, item) => sum + parseFloat(item.totalPrice || "0"), 0);
                         
                         return (
                           <section key={room} className="room-block" style={{marginTop: roomIdx === 0 ? '0' : '14px'}}>
@@ -861,27 +862,36 @@ export default function Print() {
                             <table className="w-full border-collapse text-[9pt]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
                               <thead>
                                 <tr style={{backgroundColor: '#F2F2F2', height: '26px'}}>
-                                  <th className="text-left font-semibold" style={{padding: '6px 10px', width: '80mm', borderBottom: '1px solid #E0E0E0'}}>Description</th>
-                                  <th className="text-center font-semibold" style={{padding: '6px 10px', width: '30mm', borderBottom: '1px solid #E0E0E0'}}>L (ft)</th>
-                                  <th className="text-center font-semibold" style={{padding: '6px 10px', width: '30mm', borderBottom: '1px solid #E0E0E0'}}>W (ft)</th>
-                                  <th className="text-center font-semibold" style={{padding: '6px 10px', width: '35mm', borderBottom: '1px solid #E0E0E0'}}>Area (SQFT)</th>
+                                  <th className="text-left font-semibold" style={{padding: '6px 10px', width: '60mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>Description</th>
+                                  <th className="text-center font-semibold" style={{padding: '6px 8px', width: '20mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>L×W</th>
+                                  <th className="text-center font-semibold" style={{padding: '6px 8px', width: '20mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>SQFT</th>
+                                  <th className="text-right font-semibold" style={{padding: '6px 8px', width: '25mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>Price (₹/sft)</th>
+                                  <th className="text-right font-semibold" style={{padding: '6px 10px', width: '30mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>Total (₹)</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {items.map((item, idx) => (
-                                  <tr key={item.id} style={{minHeight: '24px', borderBottom: '0.6pt solid #EAEAEA'}}>
-                                    <td style={{padding: '5px 8px', color: '#111111'}}>{item.description || "N/A"}</td>
-                                    <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.length || "-"}</td>
-                                    <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.width || "-"}</td>
-                                    <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.area || "0.00"}</td>
-                                  </tr>
-                                ))}
+                                {items.map((item, idx) => {
+                                  const unitPrice = parseFloat(item.unitPrice || "0");
+                                  const total = parseFloat(item.totalPrice || "0");
+                                  
+                                  return (
+                                    <tr key={item.id} style={{minHeight: '24px', borderBottom: '0.6pt solid #EAEAEA'}}>
+                                      <td style={{padding: '5px 8px', color: '#111111', fontSize: '8pt'}}>{item.description || "N/A"}</td>
+                                      <td className="text-center font-mono tabular-nums" style={{padding: '5px 6px', color: '#111111', fontSize: '7.5pt'}}>
+                                        {item.length || "-"}×{item.width || "-"}
+                                      </td>
+                                      <td className="text-center font-mono tabular-nums" style={{padding: '5px 6px', color: '#111111', fontSize: '8pt'}}>{item.area || "0.00"}</td>
+                                      <td className="text-right font-mono tabular-nums" style={{padding: '5px 6px', color: '#111111', fontSize: '8pt'}}>₹{unitPrice.toFixed(2)}</td>
+                                      <td className="text-right font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111', fontSize: '8pt'}}>{formatINR(total)}</td>
+                                    </tr>
+                                  );
+                                })}
                               </tbody>
                             </table>
                             {/* Room Subtotal Bar */}
                             <div className="flex justify-between items-center text-white font-medium text-[9.5pt]" style={{backgroundColor: '#154734', padding: '6px 10px', height: '26px', lineHeight: '1.2', fontFamily: "'Montserrat', Arial, sans-serif"}}>
-                              <span>Room Area:</span>
-                              <span>{roomArea.toFixed(2)} SQFT</span>
+                              <span>Room Total:</span>
+                              <span>{formatINR(roomTotal)}</span>
                             </div>
                           </section>
                         );
