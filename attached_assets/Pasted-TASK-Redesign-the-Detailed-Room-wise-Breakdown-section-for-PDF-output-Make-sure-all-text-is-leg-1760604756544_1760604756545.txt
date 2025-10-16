@@ -1,0 +1,119 @@
+TASK: Redesign the “Detailed Room-wise Breakdown” section for PDF output.
+Make sure all text is legible, not clipped, and perfectly aligned.
+Maintain consistent margins and font hierarchy with other pages (like Roomwise Summary).
+
+---------------------------------
+🔹 SECTION STRUCTURE
+---------------------------------
+Title: “Detailed Room-wise Breakdown”
+- Font: Playfair Display, Bold 11pt
+- Color: #1A1A1A
+- Alignment: Left
+- Top margin before section: 16px
+- Bottom margin after title: 6px
+
+Each Room Block:
+- Top margin between rooms: 14px
+- Room name (e.g., “Kitchen”, “Living/Dining”):
+  - Font: Playfair Display, SemiBold 11pt
+  - Color: #154734 (Trecasa green)
+  - Line height: 1.4×
+  - Bottom margin: 4px
+
+---------------------------------
+🔹 TABLE HEADER (INSIDE EACH ROOM)
+---------------------------------
+Header Row:
+- Background color: #F2F2F2
+- Height: 26px
+- Padding: 6px top/bottom, 10px left/right
+- Font: Montserrat SemiBold, 9.5pt
+- Color: #000000
+- Border: none
+- Columns:
+  1. Description — Left aligned
+  2. L (ft), H (ft), W (ft), SQFT, Rate (₹/sft), Amount (₹)
+     - All other columns: Center-aligned except “Amount (₹)” (Right-aligned)
+- Header row should have slightly darker bottom border (#E0E0E0).
+
+Column Widths (to avoid clipping):
+| Column        | Width (mm) | Alignment  |
+|---------------|-------------|------------|
+| Description   | 65          | Left       |
+| L (ft)        | 17          | Center     |
+| H (ft)        | 17          | Center     |
+| W (ft)        | 17          | Center     |
+| SQFT          | 20          | Center     |
+| Rate (₹/sft)  | 28          | Right      |
+| Amount (₹)    | 32          | Right      |
+
+---------------------------------
+🔹 TABLE BODY (ROWS)
+---------------------------------
+Row Height: Minimum 22–24px
+Font: Montserrat Regular, 9pt
+Color: #111111
+Padding per cell: 5px top/bottom, 8px left/right
+Alignment: Same as header (left/center/right)
+Background: White
+Alternate row background: None (keep clean white)
+Borders:
+- No outer border
+- Subtle gray line between rows (#EAEAEA, 0.6pt)
+
+---------------------------------
+🔹 ROOM SUBTOTAL BAR
+---------------------------------
+Position: Immediately below each room’s item table
+Background: Dark Green (#154734)
+Font: Montserrat Medium, 9.5pt
+Text color: White (#FFFFFF)
+Padding: 6px 10px
+Height: ~26px
+Border radius: None
+Alignment:
+- Left: “Room Subtotal:”
+- Right: “₹xx,xxx.xx”
+Line spacing: 1.2×
+
+---------------------------------
+🔹 SPACING AND LAYOUT DETAILS
+---------------------------------
+- Room-to-room vertical gap: 16px
+- Inside-table line height: 1.3×
+- Maintain 10mm (≈0.4 inch) left/right padding within each room block to ensure text doesn’t clip near page edges.
+- Allow automatic table page break if the room’s items exceed available space; repeat header for next page.
+
+---------------------------------
+🔹 FONTS & COLORS SUMMARY
+---------------------------------
+Fonts:
+- Headings: Playfair Display Bold 11pt
+- Table headers: Montserrat SemiBold 9.5pt
+- Table body: Montserrat Regular 9pt
+- Subtotal text: Montserrat Medium 9.5pt
+
+Colors:
+- Heading text: #154734
+- Table header bg: #F2F2F2
+- Table text: #111111
+- Subtotal bg: #154734
+- Subtotal text: #FFFFFF
+- Divider lines: #E0E0E0
+
+---------------------------------
+🔹 PAGE LAYOUT RECOMMENDATIONS
+---------------------------------
+- Maintain uniform 0.5 inch (12.7mm) margins all around.
+- Ensure Description column wraps text if longer than width — no overflow or clipping.
+- SQFT, Rate, and Amount columns should right-align numbers with consistent spacing.
+- Rate values should have 2 decimal precision and include the ₹ symbol.
+- If more than one page, repeat the “Detailed Room-wise Breakdown” title on the new page’s header and keep footer consistent.
+
+---------------------------------
+🔹 FINAL VISUAL STYLE NOTES
+---------------------------------
+- No horizontal clipping: Increase table width by 2–3% if text still wraps unnecessarily.
+- Maintain clear whitespace between room tables.
+- Keep uniform horizontal grid alignment across all rooms (Description column start, Amount column end align vertically).
+- Ensure all currency values line up vertically for visual clarity.

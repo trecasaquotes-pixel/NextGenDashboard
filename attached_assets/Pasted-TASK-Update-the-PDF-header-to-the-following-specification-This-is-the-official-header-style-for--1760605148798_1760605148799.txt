@@ -1,0 +1,124 @@
+TASK: Update the PDF header to the following specification. 
+This is the official header style for all Trecasa-generated PDFs.
+
+---------------------------------
+🔹 HEADER LAYOUT OVERVIEW
+---------------------------------
+- Header background: Dark Green (#154734)
+- Text color: White (#FFFFFF)
+- Total header height: ~110px
+- Corner radius: 8px (top-left and top-right)
+- Horizontal padding: 24px (left/right)
+- Vertical padding: 16px (top/bottom)
+- Page width: Full A4 width minus standard 0.5-inch margins
+- Layout: Two-column grid
+  - Left column: Company name + address
+  - Right column: Contact details (right-aligned)
+- Font family: Montserrat (Medium + Regular)
+- Line height: 1.3×
+
+---------------------------------
+🔹 LEFT COLUMN CONTENT
+---------------------------------
+1️⃣ Company name (main heading)
+   - Text: “TRECASA DESIGN STUDIO”
+   - Font: Montserrat SemiBold, **15pt**
+   - Letter spacing: +0.4px
+   - Text transform: UPPERCASE
+   - Text color: White (#FFFFFF)
+   - Margin-bottom: 4px
+
+2️⃣ Company address
+   - Text: “H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049”
+   - Font: Montserrat Regular, 8.5pt
+   - Color: White (#FFFFFF)
+   - Line spacing: 1.3×
+
+3️⃣ Client and project details section
+   - Background: same Dark Green (#154734)
+   - Font: Montserrat Regular, 9pt
+   - Text color: White (#FFFFFF)
+   - Padding-top: 8px
+   - Two-line layout:
+       • Line 1: “Client Name:” + client name  
+         - Label: Montserrat Medium 9pt  
+         - Value: Montserrat Regular 9pt  
+         - Left-aligned  
+       • Line 2: “Project Address:” + address  
+         - Label: Montserrat Medium 9pt  
+         - Value: Montserrat Regular 9pt  
+
+4️⃣ Greeting line
+   - Text: “Hi [Client Name] & Family”
+   - Font: Playfair Display Italic, 9.5pt
+   - Color: #EAEAEA
+   - Margin-top: 4px
+   - Line height: 1.2×
+
+---------------------------------
+🔹 RIGHT COLUMN CONTENT
+---------------------------------
+1️⃣ Contact details (top-right)
+   - Email: “contact@trecasainfra.com”
+   - Font: Montserrat Regular 8.5pt
+   - Color: White (#FFFFFF)
+   - Margin-bottom: 2px
+   - Alignment: Right
+   - Line height: 1.2×
+
+2️⃣ Phone number: “+91 9059784422”
+   - Font: Montserrat SemiBold 8.5pt
+   - Color: White (#FFFFFF)
+   - Alignment: Right
+   - Margin-bottom: 8px
+
+3️⃣ Issue Date and Quote ID
+   - Alignment: Right
+   - Font: Montserrat Medium, 9pt
+   - Label color: #FFFFFF (80% opacity)
+   - Value color: White (#FFFFFF)
+   - Line spacing: 4px between lines
+   - Layout:
+       • “Issue Date: 16 Oct 2025”
+       • “Quote ID: TRE_QT_251015_R4Y1”
+
+---------------------------------
+🔹 SPACING AND ALIGNMENT
+---------------------------------
+- Left column width: 70%
+- Right column width: 30%
+- Vertical alignment: top for contact info, middle alignment for date/quote block
+- Horizontal gutter between columns: 16px
+- Ensure responsive spacing so no overlap occurs for long client names or addresses.
+
+---------------------------------
+🔹 FONTS AND COLORS SUMMARY
+---------------------------------
+Font families:
+- Primary: Montserrat
+  - SemiBold (600) → Company name
+  - Regular (400) → Address, labels
+  - Medium (500) → Sub-labels and metadata
+- Accent: Playfair Display Italic → Greeting line
+
+Colors:
+- Background: #154734 (Trecasa dark green)
+- Accent (separator, highlights): #C7A948 (gold)
+- Text: White (#FFFFFF)
+- Secondary text (labels, small font): rgba(255,255,255,0.85)
+
+---------------------------------
+🔹 SAFE TEXT AREA & NO CLIPPING
+---------------------------------
+- Maintain at least 15mm left/right padding so long addresses don’t clip.
+- Text should wrap gracefully on smaller screens or PDF auto-scaling.
+- Ensure vertical alignment of both columns (use CSS grid or table layout).
+- Min height: 110px to ensure enough room for text.
+
+---------------------------------
+🔹 OPTIONAL POLISH
+---------------------------------
+- Add soft drop shadow below header:
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08)
+- Keep rounded top corners only.
+- Align red Trecasa brand dot just above or beside the “T” in “TRECASA DESIGN STUDIO” if needed later.

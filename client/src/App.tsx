@@ -29,39 +29,39 @@ import ClientQuotePortal from "@/pages/client-quote-portal";
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Always register all routes and let each page handle auth internally
   return (
     <Switch>
       {/* Public routes */}
       <Route path="/client/:quoteId" component={ClientQuotePortal} />
-
-      {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
-      ) : (
-        <>
-          <Route path="/" component={() => <Redirect to="/quotes" />} />
-          <Route path="/dashboard" component={() => <Redirect to="/quotes" />} />
-          <Route path="/quotations" component={() => <Redirect to="/quotes" />} />
-          <Route path="/quotes" component={QuotesList} />
-          <Route path="/change-orders" component={ChangeOrdersList} />
-          <Route path="/change-orders/:id" component={ChangeOrderDetail} />
-          <Route path="/quotation/:quotationId/change-orders/new" component={ChangeOrderDetail} />
-          <Route path="/projects" component={ProjectsList} />
-          <Route path="/projects/:id" component={ProjectDetail} />
-          <Route path="/business-expenses" component={BusinessExpenses} />
-          <Route path="/quotation/:id/info" component={ProjectInfo} />
-          <Route path="/quotation/:id/scope" component={Scope} />
-          <Route path="/quotation/:id/estimate" component={Estimate} />
-          <Route path="/quotation/:id/print" component={Print} />
-          <Route path="/quotation/:id/agreement" component={Agreement} />
-          <Route path="/admin/rates" component={AdminRates} />
-          <Route path="/admin/templates" component={AdminTemplates} />
-          <Route path="/admin/templates/:id/edit" component={AdminTemplateEditor} />
-          <Route path="/admin/brands" component={AdminBrands} />
-          <Route path="/admin/painting-fc" component={AdminPaintingFc} />
-          <Route path="/admin/global-rules" component={AdminGlobalRules} />
-          <Route path="/admin/audit" component={AdminAuditLog} />
-        </>
-      )}
+      
+      {/* Protected routes - always registered, handle auth internally */}
+      <Route path="/" component={() => {
+        if (isLoading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+        if (!isAuthenticated) return <Landing />;
+        return <Redirect to="/quotes" />;
+      }} />
+      <Route path="/dashboard" component={() => <Redirect to="/quotes" />} />
+      <Route path="/quotations" component={() => <Redirect to="/quotes" />} />
+      <Route path="/quotes" component={QuotesList} />
+      <Route path="/change-orders" component={ChangeOrdersList} />
+      <Route path="/change-orders/:id" component={ChangeOrderDetail} />
+      <Route path="/quotation/:quotationId/change-orders/new" component={ChangeOrderDetail} />
+      <Route path="/projects" component={ProjectsList} />
+      <Route path="/projects/:id" component={ProjectDetail} />
+      <Route path="/business-expenses" component={BusinessExpenses} />
+      <Route path="/quotation/:id/info" component={ProjectInfo} />
+      <Route path="/quotation/:id/scope" component={Scope} />
+      <Route path="/quotation/:id/estimate" component={Estimate} />
+      <Route path="/quotation/:id/print" component={Print} />
+      <Route path="/quotation/:id/agreement" component={Agreement} />
+      <Route path="/admin/rates" component={AdminRates} />
+      <Route path="/admin/templates" component={AdminTemplates} />
+      <Route path="/admin/templates/:id/edit" component={AdminTemplateEditor} />
+      <Route path="/admin/brands" component={AdminBrands} />
+      <Route path="/admin/painting-fc" component={AdminPaintingFc} />
+      <Route path="/admin/global-rules" component={AdminGlobalRules} />
+      <Route path="/admin/audit" component={AdminAuditLog} />
       <Route component={NotFound} />
     </Switch>
   );

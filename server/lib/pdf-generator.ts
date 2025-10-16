@@ -206,31 +206,65 @@ export async function generateQuotationPDF(
           /* Part 2E: Room block to prevent title/row separation */
           .room-block {
             page-break-inside: avoid;
+            margin-top: 14px;
+          }
+          
+          .room-block:first-child {
+            margin-top: 0;
           }
           
           .room-title {
-            margin: 10mm 0 4mm;
-            font-weight: 700;
+            margin-bottom: 4px;
+            font-weight: 600;
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 14pt;
+            font-size: 11pt;
             color: #154734;
+            line-height: 1.4;
           }
           
           .room-table {
             page-break-inside: auto;
+            border-collapse: collapse;
+          }
+          
+          .room-table thead tr {
+            background-color: #F2F2F2;
+            height: 26px;
+          }
+          
+          .room-table thead th {
+            padding: 6px 10px;
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-weight: 600;
+            font-size: 9.5pt;
+            border-bottom: 1px solid #E0E0E0;
+          }
+          
+          .room-table tbody tr {
+            min-height: 24px;
+            border-bottom: 0.6pt solid #EAEAEA;
+          }
+          
+          .room-table tbody td {
+            padding: 5px 8px;
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-size: 9pt;
+            color: #111111;
           }
           
           /* Room subtotal styling */
           .room-subtotal {
             background: #154734;
             color: #FFFFFF;
-            font-weight: 600;
+            font-weight: 500;
           }
           
           .room-subtotal td {
-            padding-top: 8px;
-            padding-bottom: 8px;
-            border-top: 1px solid #0A2A1F;
+            padding: 6px 10px;
+            height: 26px;
+            line-height: 1.2;
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-size: 9.5pt;
           }
           
           /* Part 2A: Summary section styles */

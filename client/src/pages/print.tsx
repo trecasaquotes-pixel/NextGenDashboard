@@ -491,49 +491,49 @@ export default function Print() {
                     </div>
                   </section>
                   
-                  {/* Section C: Room-wise Breakdown */}
-                  <div className="space-y-1" style={{marginTop: '14px'}}>
-                    <h3 className="text-[10pt] font-medium text-[#154734] mb-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Detailed Room-wise Breakdown</h3>
+                  {/* Section C: Detailed Room-wise Breakdown */}
+                  <div className="space-y-1" style={{marginTop: '16px'}}>
+                    <h3 className="text-[11pt] font-bold text-[#1A1A1A] mb-1.5" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Detailed Room-wise Breakdown</h3>
                     
                     {sortRoomEntries(Object.entries(interiorsByRoom)).map(([room, items], roomIdx) => {
                       const roomTotal = items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
-                      const isLastRoom = roomIdx === sortRoomEntries(Object.entries(interiorsByRoom)).length - 1;
                       
                       return (
-                        <section key={room} className="room-block">
-                          <h4 className="room-title font-semibold text-[#154734] mb-1" style={{margin: '2mm 0 1mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
-                          <table className="room-table w-full text-xs zebra-table">
+                        <section key={room} className="room-block" style={{marginTop: roomIdx === 0 ? '0' : '14px'}}>
+                          <h4 className="text-[11pt] font-semibold text-[#154734] mb-1" style={{lineHeight: '1.4', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
+                          <table className="w-full border-collapse text-[9pt]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
                             <thead>
-                              <tr className="bg-gray-100">
-                                <th className="px-2 py-1.5 text-left">Description</th>
-                                <th className="px-2 py-1.5 text-center w-16">L</th>
-                                <th className="px-2 py-1.5 text-center w-16">H</th>
-                                <th className="px-2 py-1.5 text-center w-16">W</th>
-                                <th className="px-2 py-1.5 text-center w-20">SQFT</th>
-                                <th className="px-2 py-1.5 text-right w-24">Rate (₹/sft)</th>
-                                <th className="px-2 py-1.5 text-right w-28">Amount (₹)</th>
+                              <tr style={{backgroundColor: '#F2F2F2', height: '26px'}}>
+                                <th className="text-left font-semibold" style={{padding: '6px 10px', width: '65mm', borderBottom: '1px solid #E0E0E0'}}>Description</th>
+                                <th className="text-center font-semibold" style={{padding: '6px 10px', width: '17mm', borderBottom: '1px solid #E0E0E0'}}>L (ft)</th>
+                                <th className="text-center font-semibold" style={{padding: '6px 10px', width: '17mm', borderBottom: '1px solid #E0E0E0'}}>H (ft)</th>
+                                <th className="text-center font-semibold" style={{padding: '6px 10px', width: '17mm', borderBottom: '1px solid #E0E0E0'}}>W (ft)</th>
+                                <th className="text-center font-semibold" style={{padding: '6px 10px', width: '20mm', borderBottom: '1px solid #E0E0E0'}}>SQFT</th>
+                                <th className="text-right font-semibold" style={{padding: '6px 10px', width: '28mm', borderBottom: '1px solid #E0E0E0'}}>Rate (₹/sft)</th>
+                                <th className="text-right font-semibold" style={{padding: '6px 10px', width: '32mm', borderBottom: '1px solid #E0E0E0'}}>Amount (₹)</th>
                               </tr>
                             </thead>
                             <tbody>
                               {items.map((item, idx) => (
-                                <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                  <td className="px-2 py-1.5">{item.description || "N/A"}</td>
-                                  <td className="px-2 py-1.5 text-center font-mono tabular-nums">{item.length || "-"}</td>
-                                  <td className="px-2 py-1.5 text-center font-mono tabular-nums">{item.height || "-"}</td>
-                                  <td className="px-2 py-1.5 text-center font-mono tabular-nums">{item.width || "-"}</td>
-                                  <td className="px-2 py-1.5 text-center font-mono tabular-nums font-semibold">{item.sqft || "0.00"}</td>
-                                  <td className="px-2 py-1.5 text-right font-mono tabular-nums">
+                                <tr key={item.id} style={{minHeight: '24px', borderBottom: '0.6pt solid #EAEAEA'}}>
+                                  <td style={{padding: '5px 8px', color: '#111111'}}>{item.description || "N/A"}</td>
+                                  <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.length || "-"}</td>
+                                  <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.height || "-"}</td>
+                                  <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.width || "-"}</td>
+                                  <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.sqft || "0.00"}</td>
+                                  <td className="text-right font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>
                                     ₹{item.unitPrice || "0"}{item.isRateOverridden ? "*" : ""}
                                   </td>
-                                  <td className="px-2 py-1.5 text-right font-mono tabular-nums font-semibold">₹{item.totalPrice || "0"}</td>
+                                  <td className="text-right font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>₹{item.totalPrice || "0"}</td>
                                 </tr>
                               ))}
-                              <tr className="room-subtotal bg-[#154734] text-white font-semibold border-t-2 border-[#C7A948]">
-                                <td colSpan={6} className="px-2 py-2.5 text-right">Room Subtotal:</td>
-                                <td className="px-2 py-2.5 text-right font-mono tabular-nums">{formatINR(roomTotal)}</td>
-                              </tr>
                             </tbody>
                           </table>
+                          {/* Room Subtotal Bar */}
+                          <div className="flex justify-between items-center text-white font-medium text-[9.5pt]" style={{backgroundColor: '#154734', padding: '6px 10px', height: '26px', lineHeight: '1.2', fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                            <span>Room Subtotal:</span>
+                            <span>{formatINR(roomTotal)}</span>
+                          </div>
                         </section>
                       );
                     })}
@@ -797,42 +797,42 @@ export default function Print() {
                     </section>
                   )}
                   
-                  {/* Section C: Room-wise False Ceiling Breakdown */}
+                  {/* Section C: Detailed Room-wise Breakdown - False Ceiling */}
                   {falseCeilingItems.length > 0 && (
-                    <div className="space-y-3" style={{marginTop: '14px'}}>
-                      <h3 className="text-[10pt] font-medium text-[#154734] mb-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Detailed Room-wise Breakdown</h3>
+                    <div className="space-y-1" style={{marginTop: '16px'}}>
+                      <h3 className="text-[11pt] font-bold text-[#1A1A1A] mb-1.5" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Detailed Room-wise Breakdown</h3>
                       
                       {sortRoomEntries(Object.entries(falseCeilingByRoom)).map(([room, items], roomIdx) => {
                         const roomArea = items.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
-                        const isLastRoom = roomIdx === sortRoomEntries(Object.entries(falseCeilingByRoom)).length - 1;
                         
                         return (
-                          <section key={room} className="room-block">
-                            <h4 className="room-title font-semibold text-[#154734] mb-2" style={{margin: '2mm 0 1mm', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
-                            <table className="room-table w-full text-xs zebra-table">
+                          <section key={room} className="room-block" style={{marginTop: roomIdx === 0 ? '0' : '14px'}}>
+                            <h4 className="text-[11pt] font-semibold text-[#154734] mb-1" style={{lineHeight: '1.4', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
+                            <table className="w-full border-collapse text-[9pt]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
                               <thead>
-                                <tr className="bg-gray-100">
-                                  <th className="px-2 py-1.5 text-left">Description</th>
-                                  <th className="px-2 py-1.5 text-center w-20">L (ft)</th>
-                                  <th className="px-2 py-1.5 text-center w-20">W (ft)</th>
-                                  <th className="px-2 py-1.5 text-center w-24">Area (SQFT)</th>
+                                <tr style={{backgroundColor: '#F2F2F2', height: '26px'}}>
+                                  <th className="text-left font-semibold" style={{padding: '6px 10px', width: '80mm', borderBottom: '1px solid #E0E0E0'}}>Description</th>
+                                  <th className="text-center font-semibold" style={{padding: '6px 10px', width: '30mm', borderBottom: '1px solid #E0E0E0'}}>L (ft)</th>
+                                  <th className="text-center font-semibold" style={{padding: '6px 10px', width: '30mm', borderBottom: '1px solid #E0E0E0'}}>W (ft)</th>
+                                  <th className="text-center font-semibold" style={{padding: '6px 10px', width: '35mm', borderBottom: '1px solid #E0E0E0'}}>Area (SQFT)</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {items.map((item, idx) => (
-                                  <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                    <td className="px-2 py-1.5">{item.description || "N/A"}</td>
-                                    <td className="px-2 py-1.5 text-center font-mono tabular-nums">{item.length || "-"}</td>
-                                    <td className="px-2 py-1.5 text-center font-mono tabular-nums">{item.width || "-"}</td>
-                                    <td className="px-2 py-1.5 text-center font-mono tabular-nums font-semibold">{item.area || "0.00"}</td>
+                                  <tr key={item.id} style={{minHeight: '24px', borderBottom: '0.6pt solid #EAEAEA'}}>
+                                    <td style={{padding: '5px 8px', color: '#111111'}}>{item.description || "N/A"}</td>
+                                    <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.length || "-"}</td>
+                                    <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.width || "-"}</td>
+                                    <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.area || "0.00"}</td>
                                   </tr>
                                 ))}
-                                <tr className="bg-[#154734] text-white font-semibold border-t-2 border-[#C7A948]">
-                                  <td colSpan={3} className="px-2 py-2.5 text-right">Room Area:</td>
-                                  <td className="px-2 py-2.5 text-center font-mono tabular-nums">{roomArea.toFixed(2)} SQFT</td>
-                                </tr>
                               </tbody>
                             </table>
+                            {/* Room Subtotal Bar */}
+                            <div className="flex justify-between items-center text-white font-medium text-[9.5pt]" style={{backgroundColor: '#154734', padding: '6px 10px', height: '26px', lineHeight: '1.2', fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                              <span>Room Area:</span>
+                              <span>{roomArea.toFixed(2)} SQFT</span>
+                            </div>
                           </section>
                         );
                       })}
