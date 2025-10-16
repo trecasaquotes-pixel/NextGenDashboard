@@ -110,6 +110,28 @@ export async function generateQuotationPDF(
             left: 0;
             right: 0;
             z-index: 1000;
+            min-height: 110px;
+            padding: 16px 24px;
+            background: #154734;
+            color: white;
+            font-family: 'Montserrat', Arial, sans-serif;
+            line-height: 1.3;
+            border-radius: 8px 8px 0 0;
+          }
+          
+          .pdf-header h1 {
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-size: 15pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin: 0 0 4px 0;
+          }
+          
+          .pdf-header .grid {
+            display: grid;
+            grid-template-columns: 70% 30%;
+            gap: 16px;
           }
           
           .pdf-footer {

@@ -363,41 +363,55 @@ export default function Print() {
 
               {/* Print Content */}
               <div id="print-interiors-root" className="print-content bg-white text-black" data-pdf-ready="true">
-                {/* PDF Header - Fixed */}
-                <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none">
-                  {/* Top bar with company name and address */}
-                  <div className="p-3 border-b border-white/20" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
-                    <div className="flex items-center justify-between text-[11px]">
-                      <div>
-                        <div className="font-medium">TRECASA ARCHITECTURE AND INTERIORS <span className="text-[#C7A948]">|</span> Trecasa Interiors</div>
-                        <div className="text-[9px] mt-0.5">H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049</div>
+                {/* PDF Header - Fixed - Official Trecasa Style */}
+                <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
+                  <div className="grid grid-cols-[70%_30%] gap-4">
+                    {/* Left Column */}
+                    <div>
+                      {/* Company Name */}
+                      <h1 className="text-[15pt] font-semibold uppercase tracking-wide mb-1" style={{letterSpacing: '0.4px'}}>
+                        TRECASA DESIGN STUDIO
+                      </h1>
+                      
+                      {/* Company Address */}
+                      <p className="text-[8.5pt] mb-2">
+                        H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049
+                      </p>
+                      
+                      {/* Client and Project Details */}
+                      <div className="text-[9pt] mt-2 space-y-0.5">
+                        <div>
+                          <span className="font-medium">Client Name:</span> <span>{quotation.clientName || "N/A"}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium">Project Address:</span> <span>{quotation.projectAddress || "N/A"}</span>
+                        </div>
                       </div>
-                      <div className="text-right text-[9px]">
-                        <div>contact@trecasainfra.com</div>
-                        <div>+91 9059784422</div>
+                      
+                      {/* Greeting Line */}
+                      <p className="text-[9.5pt] italic mt-1" style={{fontFamily: "'Playfair Display', Georgia, serif", color: '#EAEAEA', lineHeight: '1.2'}}>
+                        Hi {quotation.clientName || "Valued Client"} & Family
+                      </p>
+                    </div>
+                    
+                    {/* Right Column */}
+                    <div className="text-right">
+                      {/* Contact Details */}
+                      <div className="mb-2">
+                        <p className="text-[8.5pt] mb-0.5">contact@trecasainfra.com</p>
+                        <p className="text-[8.5pt] font-semibold">+91 9059784422</p>
+                      </div>
+                      
+                      {/* Issue Date and Quote ID */}
+                      <div className="text-[9pt] font-medium mt-2 space-y-1">
+                        <div>
+                          <span style={{opacity: 0.8}}>Issue Date:</span> <span className="ml-1">{currentDate}</span>
+                        </div>
+                        <div>
+                          <span style={{opacity: 0.8}}>Quote ID:</span> <span className="ml-1">{quotation.quoteId}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Metadata grid */}
-                  <div className="px-3 py-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
-                    <div className="flex items-start justify-between">
-                      <div className="text-[10px] space-y-1">
-                        <div><span className="font-medium">Client Name:</span> <span className="text-gray-300">{quotation.clientName || "N/A"}</span></div>
-                        <div><span className="font-medium">Project Address:</span> <span className="text-gray-300">{quotation.projectAddress || "N/A"}</span></div>
-                      </div>
-                      <div className="text-right text-[9.5px] space-y-1">
-                        <div><span className="font-medium">Issue Date:</span> <span className="text-gray-300">{currentDate}</span></div>
-                        <div><span className="font-medium">Quote ID:</span> <span className="text-gray-300">{quotation.quoteId}</span></div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Greeting line */}
-                  <div className="px-3 pb-3 pt-1">
-                    <p className="text-[11px] text-gray-300 italic" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
-                      Hi {quotation.clientName || "Valued Client"} & Family
-                    </p>
                   </div>
                 </div>
 
@@ -661,41 +675,55 @@ export default function Print() {
 
               {/* Print Content */}
               <div id="print-fc-root" className="print-content bg-white text-black" data-pdf-ready="true">
-                {/* PDF Header - Fixed */}
-                <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none">
-                  {/* Top bar with company name and address */}
-                  <div className="p-3 border-b border-white/20" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
-                    <div className="flex items-center justify-between text-[11px]">
-                      <div>
-                        <div className="font-medium">TRECASA ARCHITECTURE AND INTERIORS <span className="text-[#C7A948]">|</span> Trecasa Interiors</div>
-                        <div className="text-[9px] mt-0.5">H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049</div>
+                {/* PDF Header - Fixed - Official Trecasa Style */}
+                <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
+                  <div className="grid grid-cols-[70%_30%] gap-4">
+                    {/* Left Column */}
+                    <div>
+                      {/* Company Name */}
+                      <h1 className="text-[15pt] font-semibold uppercase tracking-wide mb-1" style={{letterSpacing: '0.4px'}}>
+                        TRECASA DESIGN STUDIO
+                      </h1>
+                      
+                      {/* Company Address */}
+                      <p className="text-[8.5pt] mb-2">
+                        H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049
+                      </p>
+                      
+                      {/* Client and Project Details */}
+                      <div className="text-[9pt] mt-2 space-y-0.5">
+                        <div>
+                          <span className="font-medium">Client Name:</span> <span>{quotation.clientName || "N/A"}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium">Project Address:</span> <span>{quotation.projectAddress || "N/A"}</span>
+                        </div>
                       </div>
-                      <div className="text-right text-[9px]">
-                        <div>contact@trecasainfra.com</div>
-                        <div>+91 9059784422</div>
+                      
+                      {/* Greeting Line */}
+                      <p className="text-[9.5pt] italic mt-1" style={{fontFamily: "'Playfair Display', Georgia, serif", color: '#EAEAEA', lineHeight: '1.2'}}>
+                        Hi {quotation.clientName || "Valued Client"} & Family
+                      </p>
+                    </div>
+                    
+                    {/* Right Column */}
+                    <div className="text-right">
+                      {/* Contact Details */}
+                      <div className="mb-2">
+                        <p className="text-[8.5pt] mb-0.5">contact@trecasainfra.com</p>
+                        <p className="text-[8.5pt] font-semibold">+91 9059784422</p>
+                      </div>
+                      
+                      {/* Issue Date and Quote ID */}
+                      <div className="text-[9pt] font-medium mt-2 space-y-1">
+                        <div>
+                          <span style={{opacity: 0.8}}>Issue Date:</span> <span className="ml-1">{currentDate}</span>
+                        </div>
+                        <div>
+                          <span style={{opacity: 0.8}}>Quote ID:</span> <span className="ml-1">{quotation.quoteId}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Metadata grid */}
-                  <div className="px-3 py-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
-                    <div className="flex items-start justify-between">
-                      <div className="text-[10px] space-y-1">
-                        <div><span className="font-medium">Client Name:</span> <span className="text-gray-300">{quotation.clientName || "N/A"}</span></div>
-                        <div><span className="font-medium">Project Address:</span> <span className="text-gray-300">{quotation.projectAddress || "N/A"}</span></div>
-                      </div>
-                      <div className="text-right text-[9.5px] space-y-1">
-                        <div><span className="font-medium">Issue Date:</span> <span className="text-gray-300">{currentDate}</span></div>
-                        <div><span className="font-medium">Quote ID:</span> <span className="text-gray-300">{quotation.quoteId}</span></div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Greeting line */}
-                  <div className="px-3 pb-3 pt-1">
-                    <p className="text-[11px] text-gray-300 italic" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>
-                      Hi {quotation.clientName || "Valued Client"} & Family
-                    </p>
                   </div>
                 </div>
 
