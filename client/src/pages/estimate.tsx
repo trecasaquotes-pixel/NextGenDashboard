@@ -305,17 +305,23 @@ export default function Estimate() {
                           <span className="text-sm font-mono text-muted-foreground">{roomTotal.toFixed(2)} SQFT</span>
                         </div>
                         <div className="space-y-2">
-                          {roomItems.map((item) => (
-                            <div key={item.id} className="flex items-start justify-between text-sm">
-                              <div className="flex-1">
-                                <p className="text-foreground">{item.description || "Ceiling"}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {item.length} × {item.width} ft
-                                </p>
+                          {roomItems.map((item) => {
+                            const unitPrice = parseFloat(item.unitPrice || "0");
+                            const area = parseFloat(item.area || "0");
+                            const total = area * unitPrice;
+                            
+                            return (
+                              <div key={item.id} className="flex items-start justify-between text-sm">
+                                <div className="flex-1">
+                                  <p className="text-foreground">{item.description || "Ceiling"}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {item.area} SQFT × ₹{unitPrice.toFixed(2)}/sqft
+                                  </p>
+                                </div>
+                                <span className="font-mono text-muted-foreground ml-4">{formatINR(total)}</span>
                               </div>
-                              <span className="font-mono text-muted-foreground ml-4">{item.area} SQFT</span>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     );
