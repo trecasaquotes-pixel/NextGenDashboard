@@ -1,0 +1,59 @@
+UPDATE SCOPE: Modify ONLY the “Materials & Brands” bullets inside the existing Terms & Conditions block (for both Interiors and False Ceiling PDFs). Do NOT change any other T&C text, layout, or styles.
+
+GOAL: Make the Core Materials, Finishes, and Hardware bullets dynamic based on selections in the quotation. If no selections exist, fall back to current static text.
+
+WHERE:
+• The T&C renderer component used on the Print/Agreement PDFs (Interiors + FC). 
+• Keep current container, fonts, spacing, and heading exactly as is.
+
+DATA TO READ:
+• For each interiors/false-ceiling line item:
+  - coreMaterial (string)
+  - finish (string)
+  - hardware (string)
+• Project defaults (if present):
+  - defaults.coreMaterial
+  - defaults.finish
+  - defaults.hardware
+
+LOGIC:
+1) Build three distinct sets from all items (include project defaults for items without explicit values):
+   - CoreSet = unique coreMaterial values
+   - FinishSet = unique finish values
+   - HardwareSet = unique hardware brands
+   * Normalize by trimming and case-insensitive de-dupe.
+
+2) Compose exactly these bullets (replace only the bold parts with dynamic content):
+   • Core Materials: **{CoreSet}** as per approved design requirements. (Blockboard is not used in any scope of work).
+   • Finishes: **{FinishSet}** unless otherwise specified.
+   • Hardware: **{HardwareSet}{OrEquivalent}**, with soft-close mechanisms where applicable.
+   • Glass & Metal Works: (LEAVE THIS BULLET EXACTLY AS IS, unchanged and static.)
+
+3) “OrEquivalent” rule:
+   - If HardwareSet has 2+ brands → append “, or equivalent”
+   - If exactly 1 brand → omit “, or equivalent”
+
+4) Friendly finish phrasing rules (light hints; only when thickness not already in the label):
+   - If value contains “External Laminate” or generic “Laminate” without thickness → use “External laminates (1.0 mm)”
+   - If value contains “Internal Laminate” → “Internal laminates (0.8 mm)”
+   - If value contains “Acrylic” without thickness → “Acrylic (1.5 mm for kitchens)”
+   - If value contains “PU” or “Duco” → keep as “PU-Duco as per design”
+   - Otherwise use the raw label
+
+5) If a category’s set is empty, keep the current static sentence for that category.
+
+STYLE / LAYOUT:
+• Keep the existing T&C font (Montserrat), size, bullets, and spacing unchanged.
+• No extra headings, no new sections.
+• Ensure line wrapping prevents clipping in PDF.
+
+ACCEPTANCE:
+• Changing any line item’s core/finish/hardware updates these bullets in preview + generated PDFs.
+• No duplicate brand/material names appear (case-insensitive).
+• Hardware “or equivalent” appears only when 2+ brands exist.
+• All other T&C content remains exactly as is.
+
+TEST:
+• Case A: Mix of “BWP/BWR (710 Grade Plywood)”, “HDHMR”; finishes “External Laminate”, “Acrylic”, “PU-Duco”; hardware “Hettich”, “Nimmi”.
+• Case B: Single hardware brand → no “or equivalent”.
+• Case C: No selections anywhere → original static bullets remain.
