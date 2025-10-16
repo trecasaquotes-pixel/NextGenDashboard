@@ -257,7 +257,7 @@ export default function Agreement() {
           {/* Agreement Document */}
           <div id="print-agreement-root" className="bg-white text-black" data-pdf-ready="true">
             {/* Branded Header */}
-            <div className="bg-[#0E2F1B] text-white p-6 rounded-t-lg print:rounded-none">
+            <div className="bg-[#154734] text-white p-6 rounded-t-lg print:rounded-none">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
@@ -277,7 +277,7 @@ export default function Agreement() {
             <div className="p-8 space-y-6">
               {/* Title */}
               <div className="text-center border-b-2 border-[#D1B77C] pb-4">
-                <h2 className="text-2xl font-bold text-[#0E2F1B]">SERVICE AGREEMENT</h2>
+                <h2 className="text-2xl font-bold text-[#154734]">SERVICE AGREEMENT</h2>
               </div>
 
               {/* Agreement Content */}

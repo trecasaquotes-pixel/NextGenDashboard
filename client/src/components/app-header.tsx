@@ -1,6 +1,6 @@
 export function AppHeader() {
   return (
-    <header className="w-full" style={{ backgroundColor: '#0E2F1B' }}>
+    <header className="w-full" style={{ backgroundColor: '#154734' }}>
       <div className="container mx-auto px-4 py-6">
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-1">
