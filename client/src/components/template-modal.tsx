@@ -230,10 +230,22 @@ export function TemplateModal({
       // Execute all requests
       await Promise.all([...interiorPromises, ...fcPromises, ...otherPromises]);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/interior-items`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/other-items`] });
+    onSuccess: async () => {
+      // Invalidate all quotation-related queries to ensure all pages refresh
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/interior-items`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/other-items`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] }),
+      ]);
+      
+      // Force refetch for all pages
+      await queryClient.refetchQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0]?.toString() || '';
+          return key.includes(`/api/quotations/${quotationId}`);
+        }
+      });
       
       toast({
         title: "Template applied",

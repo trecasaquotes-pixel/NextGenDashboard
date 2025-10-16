@@ -81,12 +81,21 @@ export function ApplyTemplateModal({
       return data;
     },
     onSuccess: async (data) => {
-      // Invalidate queries and wait for them to refetch
+      // Invalidate all quotation-related queries to ensure all pages refresh
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/interior-items`] }),
         queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/other-items`] }),
         queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] }),
       ]);
+      
+      // Force refetch for all pages by invalidating with refetch
+      await queryClient.refetchQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0]?.toString() || '';
+          return key.includes(`/api/quotations/${quotationId}`);
+        }
+      });
       
       const itemsText = data.applied.itemsAdded === 1 ? "item" : "items";
       let message = `Template applied — ${data.applied.itemsAdded} ${itemsText} added`;

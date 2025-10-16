@@ -1,7 +1,7 @@
 # TRECASA - Interior Design Quotation Application
 
 ## Overview
-TRECASA is a professional web application designed for interior designers to efficiently create, manage, and export detailed quotations. It supports room-based line items, material tracking with brand-based pricing, and robust PDF generation. The application aims to streamline the quotation process, providing a comprehensive tool for generating accurate, branded, and professional estimates to enhance the business operations of interior design studios.
+TRECASA is a professional web application designed for interior designers to efficiently create, manage, and export detailed quotations. It supports room-based line items, material tracking with brand-based pricing, and robust PDF generation with comprehensive material specifications. The application aims to streamline the quotation process, providing a comprehensive tool for generating accurate, branded, and professional estimates to enhance the business operations of interior design studios.
 
 ## User Preferences
 No specific user preferences were provided in the original document.
@@ -23,7 +23,7 @@ No specific user preferences were provided in the original document.
 - **Authentication**: Replit Auth (OpenID Connect) for user sessions, with HMAC-SHA256 render tokens for server-side PDF generation.
 - **Pricing System**: Smart Rate Calculator incorporating brand-based pricing (Core Material, Finish, Hardware) and project-level "Build Type" (Handmade/Factory Finish) for real-time calculation updates. Special handling for wall-related items to always use handmade pricing.
 - **Totals Calculation**: Real-time computation of subtotals, discounts, and GST.
-- **Template System**: Auto-creation of room items based on project categories using predefined templates.
+- **Template System**: Auto-creation of room items based on project categories using predefined templates. Template changes propagate instantly across all pages (Scope, Estimate, Print, PDFs) through comprehensive cache invalidation and refetching.
 - **PDF Generation**: Dual approach with client-side (html2pdf.js) and server-side (Puppeteer with Google Fonts, professional margins, header/footer templates) options. All PDFs feature universal header/footer design with consistent branding. Includes room summary tables and robust page break handling.
   - **Detailed Room-wise Breakdown**: Professional table design with Playfair Display Bold 11pt section title (#1A1A1A), room names in Playfair Display SemiBold 11pt (#154734). Tables feature light gray headers (#F2F2F2, 26px height), Montserrat SemiBold 8pt column labels, data rows with 24px min height and Montserrat Regular 7.5-8pt text. Includes comprehensive columns: Description, L×H×W (combined dimensions), SQFT, Core Material, Finish, Hardware, Rate (₹/sft), and Amount (₹). Room subtotal bars in dark green (#154734) with white text (26px height). Optimized column widths for complete material visibility without text clipping.
 - **Render Token System**: HMAC-signed, time-limited tokens for secure Puppeteer access to protected pages.
