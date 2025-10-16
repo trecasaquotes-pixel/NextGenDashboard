@@ -433,7 +433,27 @@ export default function Scope() {
     if (currentCalc === "SQFT") {
       // SQFT calculation: dimensions -> sqft -> rate -> amount
       if (field === "length" || field === "height" || field === "width") {
-        const calculatedSqft = calculateSqft(newLength, newHeight, newWidth);
+        // Smart calculation: if user is editing height, prefer L×H; if editing width, prefer L×W
+        let calculatedSqft = "0.00";
+        const l = parseFloat(newLength || "0");
+        const h = parseFloat(newHeight || "0");
+        const w = parseFloat(newWidth || "0");
+        
+        if (field === "height" && l > 0 && h > 0) {
+          // User just edited height, use L × H
+          calculatedSqft = (l * h).toFixed(2);
+        } else if (field === "width" && l > 0 && w > 0) {
+          // User just edited width, use L × W
+          calculatedSqft = (l * w).toFixed(2);
+        } else if (field === "length") {
+          // User edited length, use whichever dimension is available
+          if (w > 0) calculatedSqft = (l * w).toFixed(2);
+          else if (h > 0) calculatedSqft = (l * h).toFixed(2);
+        } else {
+          // Fallback to standard calculation
+          calculatedSqft = calculateSqft(newLength, newHeight, newWidth);
+        }
+        
         updatedData.sqft = calculatedSqft;
         
         const sqftValue = parseFloat(calculatedSqft);
