@@ -213,7 +213,7 @@ export async function generateQuotationPDF(
             font-weight: 700;
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 14pt;
-            color: #0E2F1B;
+            color: #154734;
           }
           
           .room-table {
@@ -222,7 +222,7 @@ export async function generateQuotationPDF(
           
           /* Room subtotal styling */
           .room-subtotal {
-            background: #0F3A2B;
+            background: #154734;
             color: #FFFFFF;
             font-weight: 600;
           }
@@ -237,7 +237,7 @@ export async function generateQuotationPDF(
           .summary-section h2 {
             font-family: 'Playfair Display', Georgia, serif;
             font-weight: 700;
-            color: #0F3A2B;
+            color: #154734;
             margin: 0 0 6mm;
           }
           
@@ -278,7 +278,7 @@ export async function generateQuotationPDF(
             font-size: 18px;
             font-weight: 700;
             font-family: 'Playfair Display', Georgia, serif;
-            color: #0F3A2B;
+            color: #154734;
           }
           
           /* Section title */
@@ -286,7 +286,7 @@ export async function generateQuotationPDF(
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 12pt;
             font-weight: 700;
-            color: #0E2F1B;
+            color: #154734;
           }
           
           .header-meta {

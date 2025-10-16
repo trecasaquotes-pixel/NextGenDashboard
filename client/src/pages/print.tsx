@@ -420,22 +420,22 @@ export default function Print() {
                     <table className="summary-table w-full border-collapse text-[9.5px]">
                       <thead>
                         <tr className="bg-[#154734] text-white">
-                          <th className="px-3 py-1.5 text-left font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Room</th>
-                          <th className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total (₹)</th>
+                          <th className="px-3 py-2 text-left font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Room</th>
+                          <th className="px-3 py-2 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total (₹)</th>
                         </tr>
                       </thead>
                       <tbody>
                         {interiorsRoomTotals.map(({room, total}, idx) => (
                           <tr key={room} className="border-b border-gray-200">
-                            <td className="px-3 py-1.5 text-left" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{room}</td>
-                            <td className="px-3 py-1.5 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(total)}</td>
+                            <td className="px-3 py-2 text-left" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{room}</td>
+                            <td className="px-3 py-2 text-right font-medium" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(total)}</td>
                           </tr>
                         ))}
                       </tbody>
                       <tfoot>
                         <tr className="bg-[#FAF8F1] border-t border-[#C7A948]">
-                          <td className="px-3 py-2 text-left font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total</td>
-                          <td className="px-3 py-2 text-right font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(interiorsSubtotal)}</td>
+                          <td className="px-3 py-2.5 text-left font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>Total</td>
+                          <td className="px-3 py-2.5 text-right font-semibold text-[#154734]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>{formatINR(interiorsSubtotal)}</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -505,32 +505,32 @@ export default function Print() {
                           <table className="room-table w-full text-xs zebra-table">
                             <thead>
                               <tr className="bg-gray-100">
-                                <th className="px-2 py-1 text-left">Description</th>
-                                <th className="px-2 py-1 text-center w-16">L</th>
-                                <th className="px-2 py-1 text-center w-16">H</th>
-                                <th className="px-2 py-1 text-center w-16">W</th>
-                                <th className="px-2 py-1 text-center w-20">SQFT</th>
-                                <th className="px-2 py-1 text-right w-24">Rate (₹/sft)</th>
-                                <th className="px-2 py-1 text-right w-28">Amount (₹)</th>
+                                <th className="px-2 py-1.5 text-left">Description</th>
+                                <th className="px-2 py-1.5 text-center w-16">L</th>
+                                <th className="px-2 py-1.5 text-center w-16">H</th>
+                                <th className="px-2 py-1.5 text-center w-16">W</th>
+                                <th className="px-2 py-1.5 text-center w-20">SQFT</th>
+                                <th className="px-2 py-1.5 text-right w-24">Rate (₹/sft)</th>
+                                <th className="px-2 py-1.5 text-right w-28">Amount (₹)</th>
                               </tr>
                             </thead>
                             <tbody>
                               {items.map((item, idx) => (
                                 <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                  <td className="px-2 py-0.5">{item.description || "N/A"}</td>
-                                  <td className="px-2 py-0.5 text-center font-mono tabular-nums">{item.length || "-"}</td>
-                                  <td className="px-2 py-0.5 text-center font-mono tabular-nums">{item.height || "-"}</td>
-                                  <td className="px-2 py-0.5 text-center font-mono tabular-nums">{item.width || "-"}</td>
-                                  <td className="px-2 py-0.5 text-center font-mono tabular-nums font-semibold">{item.sqft || "0.00"}</td>
-                                  <td className="px-2 py-0.5 text-right font-mono tabular-nums">
+                                  <td className="px-2 py-1.5">{item.description || "N/A"}</td>
+                                  <td className="px-2 py-1.5 text-center font-mono tabular-nums">{item.length || "-"}</td>
+                                  <td className="px-2 py-1.5 text-center font-mono tabular-nums">{item.height || "-"}</td>
+                                  <td className="px-2 py-1.5 text-center font-mono tabular-nums">{item.width || "-"}</td>
+                                  <td className="px-2 py-1.5 text-center font-mono tabular-nums font-semibold">{item.sqft || "0.00"}</td>
+                                  <td className="px-2 py-1.5 text-right font-mono tabular-nums">
                                     ₹{item.unitPrice || "0"}{item.isRateOverridden ? "*" : ""}
                                   </td>
-                                  <td className="px-2 py-0.5 text-right font-mono tabular-nums font-semibold">₹{item.totalPrice || "0"}</td>
+                                  <td className="px-2 py-1.5 text-right font-mono tabular-nums font-semibold">₹{item.totalPrice || "0"}</td>
                                 </tr>
                               ))}
                               <tr className="room-subtotal bg-[#154734] text-white font-semibold border-t-2 border-[#C7A948]">
-                                <td colSpan={6} className="px-2 py-2 text-right">Room Subtotal:</td>
-                                <td className="px-2 py-2 text-right font-mono tabular-nums">{formatINR(roomTotal)}</td>
+                                <td colSpan={6} className="px-2 py-2.5 text-right">Room Subtotal:</td>
+                                <td className="px-2 py-2.5 text-right font-mono tabular-nums">{formatINR(roomTotal)}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -812,24 +812,24 @@ export default function Print() {
                             <table className="room-table w-full text-xs zebra-table">
                               <thead>
                                 <tr className="bg-gray-100">
-                                  <th className="px-2 py-1 text-left">Description</th>
-                                  <th className="px-2 py-1 text-center w-20">L (ft)</th>
-                                  <th className="px-2 py-1 text-center w-20">W (ft)</th>
-                                  <th className="px-2 py-1 text-center w-24">Area (SQFT)</th>
+                                  <th className="px-2 py-1.5 text-left">Description</th>
+                                  <th className="px-2 py-1.5 text-center w-20">L (ft)</th>
+                                  <th className="px-2 py-1.5 text-center w-20">W (ft)</th>
+                                  <th className="px-2 py-1.5 text-center w-24">Area (SQFT)</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {items.map((item, idx) => (
                                   <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                    <td className="px-2 py-0.5">{item.description || "N/A"}</td>
-                                    <td className="px-2 py-0.5 text-center font-mono tabular-nums">{item.length || "-"}</td>
-                                    <td className="px-2 py-0.5 text-center font-mono tabular-nums">{item.width || "-"}</td>
-                                    <td className="px-2 py-0.5 text-center font-mono tabular-nums font-semibold">{item.area || "0.00"}</td>
+                                    <td className="px-2 py-1.5">{item.description || "N/A"}</td>
+                                    <td className="px-2 py-1.5 text-center font-mono tabular-nums">{item.length || "-"}</td>
+                                    <td className="px-2 py-1.5 text-center font-mono tabular-nums">{item.width || "-"}</td>
+                                    <td className="px-2 py-1.5 text-center font-mono tabular-nums font-semibold">{item.area || "0.00"}</td>
                                   </tr>
                                 ))}
                                 <tr className="bg-[#154734] text-white font-semibold border-t-2 border-[#C7A948]">
-                                  <td colSpan={3} className="px-2 py-2 text-right">Room Area:</td>
-                                  <td className="px-2 py-2 text-center font-mono tabular-nums">{roomArea.toFixed(2)} SQFT</td>
+                                  <td colSpan={3} className="px-2 py-2.5 text-right">Room Area:</td>
+                                  <td className="px-2 py-2.5 text-center font-mono tabular-nums">{roomArea.toFixed(2)} SQFT</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -846,19 +846,19 @@ export default function Print() {
                       <table className="w-full text-xs zebra-table">
                         <thead>
                           <tr className="bg-gray-100">
-                            <th className="px-2 py-1 text-left">Item Type</th>
-                            <th className="px-2 py-1 text-left">Description</th>
-                            <th className="px-2 py-1 text-center w-28">Type</th>
-                            <th className="px-2 py-1 text-right w-32">Value</th>
+                            <th className="px-2 py-1.5 text-left">Item Type</th>
+                            <th className="px-2 py-1.5 text-left">Description</th>
+                            <th className="px-2 py-1.5 text-center w-28">Type</th>
+                            <th className="px-2 py-1.5 text-right w-32">Value</th>
                           </tr>
                         </thead>
                         <tbody>
                           {otherItems.map((item, idx) => (
                             <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                              <td className="px-2 py-0.5 font-semibold">{item.itemType || "N/A"}</td>
-                              <td className="px-2 py-0.5">{item.description || "N/A"}</td>
-                              <td className="px-2 py-0.5 text-center capitalize">{item.valueType || "lumpsum"}</td>
-                              <td className="px-2 py-0.5 text-right font-mono tabular-nums">{item.value || "0"}</td>
+                              <td className="px-2 py-1.5 font-semibold">{item.itemType || "N/A"}</td>
+                              <td className="px-2 py-1.5">{item.description || "N/A"}</td>
+                              <td className="px-2 py-1.5 text-center capitalize">{item.valueType || "lumpsum"}</td>
+                              <td className="px-2 py-1.5 text-right font-mono tabular-nums">{item.value || "0"}</td>
                             </tr>
                           ))}
                         </tbody>
