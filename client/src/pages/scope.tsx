@@ -1100,6 +1100,7 @@ export default function Scope() {
                     .map((roomType) => {
                     const roomItems = falseCeilingItems.filter((item) => item.roomType === roomType);
                     const totalArea = roomItems.reduce((sum, item) => sum + parseFloat(item.area || "0"), 0);
+                    const roomTotal = roomItems.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
 
                     return (
                       <div key={roomType} className="space-y-4">
@@ -1111,9 +1112,9 @@ export default function Scope() {
                                 <p className="text-sm text-muted-foreground font-mono">Total: {totalArea.toFixed(2)} SQFT</p>
                               )}
                             </div>
-                            {totalArea > 0 && (
-                              <Badge variant="secondary" className="font-mono" data-testid={`badge-fc-room-area-${roomType.toLowerCase()}`}>
-                                Room Area: {totalArea.toFixed(2)} SQFT
+                            {roomTotal > 0 && (
+                              <Badge variant="secondary" className="font-mono" data-testid={`badge-fc-room-total-${roomType.toLowerCase()}`}>
+                                Room Total: {formatINR(roomTotal)}
                               </Badge>
                             )}
                           </div>
@@ -1141,6 +1142,7 @@ export default function Scope() {
                                   <TableHead className="w-[80px] px-1">Width (ft)</TableHead>
                                   <TableHead className="w-[80px] px-1">Area (SQFT)</TableHead>
                                   <TableHead className="w-[100px] px-1">Price (₹/sqft)</TableHead>
+                                  <TableHead className="w-[100px] px-1">Total (₹)</TableHead>
                                   <TableHead className="w-[40px] px-1"></TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -1245,6 +1247,11 @@ export default function Scope() {
                                         className="w-full h-10 font-mono text-center"
                                         data-testid={`input-ceiling-price-${item.id}`}
                                       />
+                                    </TableCell>
+                                    <TableCell className="px-1">
+                                      <span className="font-mono text-sm font-semibold" data-testid={`text-ceiling-total-${item.id}`}>
+                                        {formatINR(parseFloat(item.totalPrice || "0"))}
+                                      </span>
                                     </TableCell>
                                     <TableCell className="px-1">
                                       <Button
