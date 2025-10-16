@@ -35,6 +35,8 @@ const ROOM_ORDER_MAP: Record<string, number> = {
   "Store Room": 35,
   "Utility": 36,
   "Laundry": 37,
+  "Misc": 38,
+  "Puja": 39,
   
   // Fallback
   "Other": 999,
