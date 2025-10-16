@@ -1,0 +1,200 @@
+EXTEND: Agreement Pack to include “Annexure C — Agreement Terms & Conditions”
+
+Goal
+When “Download Agreement Pack” is clicked, the generated single PDF must now contain three annexures after the cover page:
+
+Annexure A — Interiors Quotation (existing)
+
+Annexure B — False Ceiling Quotation (existing)
+
+Annexure C — Agreement Terms & Conditions (new)
+
+Header & footer on every page; fonts Playfair Display (headings) + Montserrat (body).
+
+1) Data source (dynamic fields)
+
+Use the existing quotation snapshot (if approved) or live data to populate:
+
+terms.validityDays (number)
+
+terms.warrantyMonths (number)
+
+terms.paymentSchedule (string; e.g., “50% booking, 40% mid, 10% handover”)
+
+terms.discount.type (“percent” | “flat”), terms.discount.value (number)
+
+terms.gstPercent (number)
+
+terms.roundingEnabled (boolean)
+
+brands.coreMaterials (string array or joined text)
+
+brands.finishes (string; include thickness notes)
+
+brands.hardware (string)
+
+project.clientName, project.address, quote.id, quote.issueDate
+
+Computed totals already used on the cover page (grand total, and the split schedule amounts)
+
+If any field is missing, fall back to sensible defaults used in current T&C preview.
+
+2) Where to place the terms
+
+After Annexure B (FC), insert a page break, then render:
+
+Title: “ANNEXURE C — AGREEMENT TERMS & CONDITIONS” (Playfair 16–18px, 700)
+
+Subtext: “This Agreement is between TRECASA DESIGN STUDIO (‘Service Provider’) and {{clientName}} (‘Client’) for the project at {{address}}. This Agreement incorporates Annexure A (Interiors) and Annexure B (False Ceiling).”
+
+3) Layout & typography
+
+Body text: Montserrat 11px, line-height 1.5.
+
+Clause headings: Montserrat 12.5px, 600, uppercase, brand green (#0F3B2E).
+
+Bullets: 6–8px left padding, 8–10px vertical spacing between items.
+
+Tables (if any): 8–10px cell padding, row height ~32–36px.
+
+Margins: keep the same (top/bottom 18–20mm) to preserve header/footer.
+
+Page numbers continue across the whole pack (“Page n of N”).
+
+4) Clause set (include verbatim; fill the {{placeholders}})
+
+Render the following clauses in order. Variables in {{ }} come from the dynamic fields above. Keep bullets and numbering.
+
+1. Scope of Work
+
+The Service Provider shall execute works strictly as detailed in Annexure A — Interiors Quotation and Annexure B — False Ceiling Quotation (together, the “Scope”).
+
+Any work not expressly listed in the Scope is excluded unless approved via a written change order.
+
+2. Project Timeline
+
+Work shall commence upon receipt of the booking advance and availability of a clear site.
+
+The timeline and handover date shall be mutually agreed in writing and may be adjusted for change orders, material lead times, and site readiness.
+
+3. Commercials
+
+Subtotal (before taxes/discounts): auto-computed from Annexures.
+
+Discount: {{terms.discount.type}} — {{terms.discount.value}}{{ terms.discount.type == 'percent' ? '%' : ' ₹' }} applied on the subtotal.
+
+GST: {{terms.gstPercent}}% extra on the taxable value.
+
+Rounding: {{ terms.roundingEnabled ? 'Enabled to nearest rupee' : 'Not applied' }}.
+
+Grand Total: as shown on the Cover Summary page.
+
+4. Payment Schedule
+
+As per quotation terms: {{terms.paymentSchedule}}.
+
+Based on the Grand Total, payable breakdown is auto-computed and shown on the Cover Summary page.
+
+Delays in payment may suspend works until dues are cleared.
+
+5. Validity & Warranty
+
+Quote Validity: {{terms.validityDays}} days from issue date.
+
+Standard Warranty: {{terms.warrantyMonths}} months against manufacturing defects on modular components from handover date. Normal wear & tear, misuse, water damage, and third-party alterations are excluded.
+
+6. Materials & Brands (Dynamic)
+
+Core Materials: {{brands.coreMaterials || 'BWP/BWR Plywood, HDHMR, HDF, MDF, Particle Board — as per design requirements; Blockboard excluded.'}}
+
+Finishes: {{brands.finishes || 'External laminates 1.0mm; Acrylic 1.5mm for kitchens; PU-Duco as per design; internal laminates 0.8mm unless specified.'}}
+
+Hardware: {{brands.hardware || 'Hafele / Hettich / Nimmi, or equivalent with soft-close mechanisms where applicable.'}}
+
+Glass & Metal: Only where specified. Plain glass included; decorative/special finishes are additional.
+
+7. Site Readiness & Access
+
+The Client shall provide clear site access, electricity, water, storage space, and permissions as needed. Idle time due to site unavailability is chargeable or may extend the schedule.
+
+8. Exclusions
+
+Civil, electrical, and plumbing works are excluded unless explicitly mentioned in the quotation.
+
+Appliances, fixtures, and décor are excluded unless specified.
+
+9. Change Management
+
+Any modifications to the Scope shall be requested in writing. The Service Provider will issue a revised estimate and timeline. Work proceeds upon written approval and advance for the delta.
+
+10. Quality & Approvals
+
+Finishes, shades, and material equivalents may vary slightly due to batch/manufacturing tolerances.
+
+Where a specified brand/finish is unavailable, an equivalent shall be proposed for the Client’s approval.
+
+11. Taxes & Price Adjustments
+
+Government taxes and duties are as applicable on the billing date.
+
+Price revisions may apply for approved change orders or significant market fluctuations (with prior intimation).
+
+12. Safety & Insurance
+
+The Service Provider shall follow reasonable safety practices.
+
+The Client shall ensure site insurance/permissions as required by the building management or local regulations.
+
+13. Intellectual Property
+
+Design concepts, drawings, and templates remain the intellectual property of the Service Provider. Client receives usage rights for the project only.
+
+14. Confidentiality
+
+Both parties shall maintain confidentiality of pricing, drawings, and project data, except where disclosure is required by law.
+
+15. Force Majeure
+
+Delays caused by events beyond reasonable control (e.g., strikes, extreme weather, supply chain disruptions) shall extend timelines proportionately without penalty.
+
+16. Termination
+
+Either party may terminate with 15 days’ written notice.
+
+Payments made are non-refundable. Work completed until the effective date shall be billed proportionately.
+
+17. Governing Law & Dispute Resolution
+
+This Agreement shall be governed by the laws of India.
+
+Disputes shall be subject to the jurisdiction of courts in {{city or 'Client’s project city'}}. Parties may first attempt amicable settlement; failing which, disputes may be referred to a sole arbitrator under the Arbitration & Conciliation Act, 1996.
+
+18. Acceptance & Signatures
+
+By signing, the Client confirms that they have read and agree to these terms and the attached Annexures.
+
+Sign blocks (with date/time stamps) for Client and TRECASA DESIGN STUDIO must appear here (reuse the existing signature component).
+
+5) Template & rendering
+
+Add a new HTML renderer: renderAgreementTermsHtml(quote) that outputs the above structure with brand CSS.
+
+In the agreement pack route (/render/quotation/:id/agreement-pack), insert the Annexure C HTML as the final section, separated by .page-break.
+
+If you are using the single-HTML approach, just append the Annexure C section to the same document. If using multi-PDF merge, generate a third PDF buffer for Terms and merge via pdf-lib (order: Cover → Annexure A → Annexure B → Annexure C).
+
+6) Header & footer (unchanged)
+
+Keep the same brand header and footer with page numbers for Annexure C.
+
+Ensure no clipping: maintain top/bottom margin 18–20mm; body max width 720–760px; line-height 1.5.
+
+7) Acceptance checklist
+
+“Agreement Pack” now downloads one PDF with: Cover summary (totals + schedule), Annexure A, Annexure B, and Annexure C (Terms).
+
+All pages use brand header/footer and fonts (Playfair + Montserrat).
+
+Dynamic fields (validity, warranty, discount, GST, rounding, brands, schedule) correctly reflect the quote’s T&C and brand selections.
+
+Signature blocks appear at the end of Annexure C with timestamps.

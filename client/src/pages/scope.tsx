@@ -658,8 +658,18 @@ export default function Scope() {
                                   <TableRow key={item.id}>
                                     <TableCell className="px-2">
                                       <Input
-                                        value={item.description || ""}
-                                        onChange={(e) => handleInteriorFieldChange(item.id, "description", e.target.value)}
+                                        key={`description-${item.id}-${item.description}`}
+                                        defaultValue={item.description || ""}
+                                        onFocus={(e) => {
+                                          // Select all text on focus so user can easily replace template text
+                                          e.target.select();
+                                        }}
+                                        onBlur={(e) => {
+                                          const currentValue = e.target.value;
+                                          if (currentValue !== (item.description || "")) {
+                                            handleInteriorFieldChange(item.id, "description", currentValue);
+                                          }
+                                        }}
                                         placeholder="Item description"
                                         className="h-12 min-w-[180px]"
                                         data-testid={`input-description-${item.id}`}
@@ -955,8 +965,18 @@ export default function Scope() {
                                   <TableRow key={item.id}>
                                     <TableCell className="px-2">
                                       <Input
-                                        value={item.description || ""}
-                                        onChange={(e) => handleFalseCeilingFieldChange(item.id, "description", e.target.value)}
+                                        key={`ceiling-description-${item.id}-${item.description}`}
+                                        defaultValue={item.description || ""}
+                                        onFocus={(e) => {
+                                          // Select all text on focus so user can easily replace template text
+                                          e.target.select();
+                                        }}
+                                        onBlur={(e) => {
+                                          const currentValue = e.target.value;
+                                          if (currentValue !== (item.description || "")) {
+                                            handleFalseCeilingFieldChange(item.id, "description", currentValue);
+                                          }
+                                        }}
                                         placeholder="Ceiling description"
                                         className="h-12 min-w-[200px]"
                                         data-testid={`input-ceiling-description-${item.id}`}
@@ -1095,8 +1115,18 @@ export default function Scope() {
                                   </TableCell>
                                   <TableCell>
                                     <Input
-                                      value={item.description || ""}
-                                      onChange={(e) => updateOtherItem.mutate({ id: item.id, data: { description: e.target.value } })}
+                                      key={`other-description-${item.id}-${item.description}`}
+                                      defaultValue={item.description || ""}
+                                      onFocus={(e) => {
+                                        // Select all text on focus so user can easily replace template text
+                                        e.target.select();
+                                      }}
+                                      onBlur={(e) => {
+                                        const currentValue = e.target.value;
+                                        if (currentValue !== (item.description || "")) {
+                                          updateOtherItem.mutate({ id: item.id, data: { description: currentValue } });
+                                        }
+                                      }}
                                       placeholder="Description"
                                       className="h-12 min-w-[200px]"
                                       data-testid={`input-other-description-${item.id}`}
@@ -1118,8 +1148,14 @@ export default function Scope() {
                                   </TableCell>
                                   <TableCell>
                                     <Input
-                                      value={item.value || ""}
-                                      onChange={(e) => updateOtherItem.mutate({ id: item.id, data: { value: e.target.value } })}
+                                      key={`other-value-${item.id}-${item.value}`}
+                                      defaultValue={item.value || ""}
+                                      onBlur={(e) => {
+                                        const currentValue = e.target.value;
+                                        if (currentValue !== (item.value || "")) {
+                                          updateOtherItem.mutate({ id: item.id, data: { value: currentValue } });
+                                        }
+                                      }}
                                       placeholder={item.valueType === "count" ? "Enter quantity" : "Enter amount"}
                                       className="h-8"
                                       data-testid={`input-other-value-${item.id}`}
@@ -1127,9 +1163,15 @@ export default function Scope() {
                                   </TableCell>
                                   <TableCell>
                                     <Input
+                                      key={`other-unit-price-${item.id}-${item.unitPrice}`}
                                       type="number"
-                                      value={item.unitPrice || ""}
-                                      onChange={(e) => updateOtherItem.mutate({ id: item.id, data: { unitPrice: e.target.value } })}
+                                      defaultValue={item.unitPrice || ""}
+                                      onBlur={(e) => {
+                                        const currentValue = e.target.value;
+                                        if (currentValue !== (item.unitPrice || "")) {
+                                          updateOtherItem.mutate({ id: item.id, data: { unitPrice: currentValue } });
+                                        }
+                                      }}
                                       placeholder="0.00"
                                       className="h-8"
                                       data-testid={`input-other-unit-price-${item.id}`}
