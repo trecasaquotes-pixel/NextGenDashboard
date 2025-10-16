@@ -530,30 +530,34 @@ export default function Print() {
                       return (
                         <section key={room} className="room-block" style={{marginTop: roomIdx === 0 ? '0' : '14px'}}>
                           <h4 className="text-[11pt] font-semibold text-[#154734] mb-1" style={{lineHeight: '1.4', fontFamily: "'Playfair Display', Georgia, serif"}}>{room}</h4>
-                          <table className="w-full border-collapse text-[9pt]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                          <table className="w-full border-collapse text-[8.5pt]" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
                             <thead>
                               <tr style={{backgroundColor: '#F2F2F2', height: '26px'}}>
-                                <th className="text-left font-semibold" style={{padding: '6px 10px', width: '65mm', borderBottom: '1px solid #E0E0E0'}}>Description</th>
-                                <th className="text-center font-semibold" style={{padding: '6px 10px', width: '17mm', borderBottom: '1px solid #E0E0E0'}}>L (ft)</th>
-                                <th className="text-center font-semibold" style={{padding: '6px 10px', width: '17mm', borderBottom: '1px solid #E0E0E0'}}>H (ft)</th>
-                                <th className="text-center font-semibold" style={{padding: '6px 10px', width: '17mm', borderBottom: '1px solid #E0E0E0'}}>W (ft)</th>
-                                <th className="text-center font-semibold" style={{padding: '6px 10px', width: '20mm', borderBottom: '1px solid #E0E0E0'}}>SQFT</th>
-                                <th className="text-right font-semibold" style={{padding: '6px 10px', width: '28mm', borderBottom: '1px solid #E0E0E0'}}>Rate (₹/sft)</th>
-                                <th className="text-right font-semibold" style={{padding: '6px 10px', width: '32mm', borderBottom: '1px solid #E0E0E0'}}>Amount (₹)</th>
+                                <th className="text-left font-semibold" style={{padding: '6px 8px', width: '35mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>Description</th>
+                                <th className="text-center font-semibold" style={{padding: '6px 5px', width: '18mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>L×H×W</th>
+                                <th className="text-center font-semibold" style={{padding: '6px 5px', width: '13mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>SQFT</th>
+                                <th className="text-left font-semibold" style={{padding: '6px 5px', width: '22mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>Core</th>
+                                <th className="text-left font-semibold" style={{padding: '6px 5px', width: '22mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>Finish</th>
+                                <th className="text-left font-semibold" style={{padding: '6px 5px', width: '18mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>HW</th>
+                                <th className="text-right font-semibold" style={{padding: '6px 5px', width: '20mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>Rate (₹/sft)</th>
+                                <th className="text-right font-semibold" style={{padding: '6px 5px', width: '24mm', borderBottom: '1px solid #E0E0E0', fontSize: '8pt'}}>Amount (₹)</th>
                               </tr>
                             </thead>
                             <tbody>
                               {items.map((item, idx) => (
                                 <tr key={item.id} style={{minHeight: '24px', borderBottom: '0.6pt solid #EAEAEA'}}>
-                                  <td style={{padding: '5px 8px', color: '#111111'}}>{item.description || "N/A"}</td>
-                                  <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.length || "-"}</td>
-                                  <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.height || "-"}</td>
-                                  <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.width || "-"}</td>
-                                  <td className="text-center font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>{item.sqft || "0.00"}</td>
-                                  <td className="text-right font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>
+                                  <td style={{padding: '5px 6px', color: '#111111', fontSize: '8pt'}}>{item.description || "N/A"}</td>
+                                  <td className="text-center font-mono tabular-nums" style={{padding: '5px 4px', color: '#111111', fontSize: '7.5pt'}}>
+                                    {item.length || "-"}×{item.height || "-"}×{item.width || "-"}
+                                  </td>
+                                  <td className="text-center font-mono tabular-nums" style={{padding: '5px 4px', color: '#111111', fontSize: '8pt'}}>{item.sqft || "0.00"}</td>
+                                  <td style={{padding: '5px 4px', color: '#111111', fontSize: '7.5pt'}}>{item.material || "-"}</td>
+                                  <td style={{padding: '5px 4px', color: '#111111', fontSize: '7.5pt'}}>{item.finish || "-"}</td>
+                                  <td style={{padding: '5px 4px', color: '#111111', fontSize: '7.5pt'}}>{item.hardware || "-"}</td>
+                                  <td className="text-right font-mono tabular-nums" style={{padding: '5px 4px', color: '#111111', fontSize: '8pt'}}>
                                     ₹{item.unitPrice || "0"}{item.isRateOverridden ? "*" : ""}
                                   </td>
-                                  <td className="text-right font-mono tabular-nums" style={{padding: '5px 8px', color: '#111111'}}>₹{item.totalPrice || "0"}</td>
+                                  <td className="text-right font-mono tabular-nums" style={{padding: '5px 4px', color: '#111111', fontSize: '8pt'}}>₹{item.totalPrice || "0"}</td>
                                 </tr>
                               ))}
                             </tbody>
