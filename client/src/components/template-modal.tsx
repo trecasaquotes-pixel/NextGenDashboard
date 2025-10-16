@@ -75,7 +75,7 @@ export function TemplateModal({
   // Get unique room names for preview
   const getUniqueRooms = () => {
     const interiorRooms = template.rooms
-      .filter(r => r.tab === "Interiors" && r.defaultItems && r.defaultItems.length > 0)
+      .filter(r => r.tab === "Interiors" && r.defaultItems !== undefined) // Include Misc even if empty
       .map(r => r.label);
     const fcRooms = template.rooms
       .filter(r => r.tab === "FC" && r.fcLine)
