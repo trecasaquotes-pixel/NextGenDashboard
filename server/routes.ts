@@ -459,7 +459,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
-      const validatedData = insertFalseCeilingItemSchema.parse({ ...req.body, quotationId: req.params.id });
+      
+      // Calculate area and totalPrice server-side, discarding any client-sent values
+      const { normalizeFCItemData } = await import('./lib/totals');
+      const normalizedData = normalizeFCItemData({ ...req.body, quotationId: req.params.id });
+      
+      const validatedData = insertFalseCeilingItemSchema.parse(normalizedData);
       const item = await storage.createFalseCeilingItem(validatedData);
       
       // Recalculate quotation totals
@@ -479,7 +484,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
-      const item = await storage.updateFalseCeilingItem(req.params.itemId, req.body);
+      
+      // Get existing item to merge with updates
+      const existingItems = await storage.getFalseCeilingItems(req.params.id);
+      const existingItem = existingItems.find(i => i.id === req.params.itemId);
+      
+      if (!existingItem) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+      
+      // Merge existing data with updates for complete dimension calculation
+      const mergedData = { ...existingItem, ...req.body };
+      
+      // Calculate area and totalPrice server-side, discarding any client-sent values
+      const { normalizeFCItemData } = await import('./lib/totals');
+      const normalizedData = normalizeFCItemData(mergedData);
+      
+      const item = await storage.updateFalseCeilingItem(req.params.itemId, normalizedData);
       
       // Recalculate quotation totals
       const { recalculateQuotationTotals } = await import('./lib/totals');

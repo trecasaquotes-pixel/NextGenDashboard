@@ -20,6 +20,41 @@ function calculateFCItemTotal(item: {
 }
 
 /**
+ * Calculate and normalize FC item data server-side
+ * Overwrites client-sent area and totalPrice with server-calculated values
+ */
+export function normalizeFCItemData(data: {
+  length?: string | null;
+  width?: string | null;
+  unitPrice?: string | null;
+  [key: string]: any;
+}): {
+  area: string;
+  totalPrice: string;
+  [key: string]: any;
+} {
+  const length = parseFloat(data.length || '0');
+  const width = parseFloat(data.width || '0');
+  const unitPrice = parseFloat(data.unitPrice || '0');
+  
+  // Calculate area
+  const area = (length > 0 && width > 0) ? (length * width).toFixed(2) : '0.00';
+  
+  // Calculate total price
+  const areaNum = parseFloat(area);
+  const totalPrice = (areaNum * unitPrice).toFixed(2);
+  
+  // Return data with server-calculated values, discarding any client-sent area/totalPrice
+  const { area: _discardedArea, totalPrice: _discardedTotal, ...rest } = data;
+  
+  return {
+    ...rest,
+    area,
+    totalPrice,
+  };
+}
+
+/**
  * Recalculate quotation totals from interior and false ceiling items
  * FC totals are recomputed from canonical dimensions to ensure accuracy
  */
@@ -28,10 +63,10 @@ export async function recalculateQuotationTotals(quotationId: string, storage: I
   const interiorItems = await storage.getInteriorItems(quotationId);
   const fcItems = await storage.getFalseCeilingItems(quotationId);
   
-  // Calculate interiors subtotal (sum of all interior item amounts)
+  // Calculate interiors subtotal (sum of all interior item totals)
   const interiorsSubtotal = interiorItems.reduce((sum, item) => {
-    const amount = parseFloat(item.amount || "0");
-    return sum + (isNaN(amount) ? 0 : amount);
+    const total = parseFloat(item.totalPrice || "0");
+    return sum + (isNaN(total) ? 0 : total);
   }, 0);
   
   // Calculate false ceiling subtotal - recompute from canonical dimensions
