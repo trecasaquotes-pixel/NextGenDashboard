@@ -160,6 +160,7 @@ export default function Scope() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
     },
     onError: handleMutationError,
   });
@@ -170,6 +171,7 @@ export default function Scope() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
     },
     onError: handleMutationError,
   });
@@ -180,6 +182,7 @@ export default function Scope() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
     },
     onError: handleMutationError,
   });
