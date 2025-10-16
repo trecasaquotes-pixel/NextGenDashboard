@@ -6,7 +6,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download, Settings, LayoutTemplate, Tag, Paintbrush, Sliders, History, Trash2, TrendingUp, Briefcase, Building2 } from "lucide-react";
+import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download, Settings, LayoutTemplate, Tag, Paintbrush, Sliders, History, Trash2, TrendingUp, Briefcase, Building2, Copy } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -129,6 +129,39 @@ export default function QuotesList() {
       toast({
         title: "Error",
         description: "Failed to delete quotation",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: async (quotationId: string) => {
+      const response = await apiRequest("POST", `/api/quotations/${quotationId}/duplicate`, {});
+      return response.json();
+    },
+    onSuccess: (data: Quotation) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/quotations"] });
+      toast({
+        title: "Quotation Duplicated",
+        description: `Created duplicate with Quote ID: ${data.quoteId}`,
+      });
+      navigate(`/quotation/${data.id}/info`);
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to duplicate quotation",
         variant: "destructive",
       });
     },
@@ -387,6 +420,14 @@ export default function QuotesList() {
                               Print
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => duplicateMutation.mutate(quotation.id)}
+                              disabled={duplicateMutation.isPending}
+                              data-testid={`action-duplicate-${quotation.id}`}
+                            >
+                              <Copy className="mr-2 h-4 w-4" />
+                              Duplicate
+                            </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => {
                                 window.location.href = `/api/quotations/${quotation.id}/backup/download`;

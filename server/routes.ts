@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get and duplicate all interior items
       const interiorItemsList = await storage.getInteriorItems(req.params.id);
       for (const item of interiorItemsList) {
-        const { id, createdAt, updatedAt, ...itemData } = item;
+        const { id, createdAt, ...itemData } = item;
         await storage.createInteriorItem({
           ...itemData,
           quotationId: duplicateQuotation.id,
@@ -215,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get and duplicate all false ceiling items
       const fcItemsList = await storage.getFalseCeilingItems(req.params.id);
       for (const item of fcItemsList) {
-        const { id, createdAt, updatedAt, ...itemData } = item;
+        const { id, createdAt, ...itemData } = item;
         await storage.createFalseCeilingItem({
           ...itemData,
           quotationId: duplicateQuotation.id,
@@ -225,7 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get and duplicate all other items
       const otherItemsList = await storage.getOtherItems(req.params.id);
       for (const item of otherItemsList) {
-        const { id, createdAt, updatedAt, ...itemData } = item;
+        const { id, createdAt, ...itemData } = item;
         await storage.createOtherItem({
           ...itemData,
           quotationId: duplicateQuotation.id,
