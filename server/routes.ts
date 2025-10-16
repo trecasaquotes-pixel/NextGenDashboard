@@ -179,6 +179,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Duplicate quotation with all items
+  app.post('/api/quotations/:id/duplicate', isAuthenticated, async (req: any, res) => {
+    try {
+      const originalQuotation = await storage.getQuotation(req.params.id);
+      if (!originalQuotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      if (originalQuotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      // Generate new quote ID
+      const newQuoteId = generateQuoteId();
+
+      // Create duplicate quotation with new quote ID
+      const { id, createdAt, updatedAt, ...quotationData } = originalQuotation;
+      const duplicateQuotation = await storage.createQuotation({
+        ...quotationData,
+        quoteId: newQuoteId,
+        projectName: `${quotationData.projectName} (Copy)`,
+        status: "draft", // Reset status to draft
+      });
+
+      // Get and duplicate all interior items
+      const interiorItemsList = await storage.getInteriorItems(req.params.id);
+      for (const item of interiorItemsList) {
+        const { id, createdAt, updatedAt, ...itemData } = item;
+        await storage.createInteriorItem({
+          ...itemData,
+          quotationId: duplicateQuotation.id,
+        });
+      }
+
+      // Get and duplicate all false ceiling items
+      const fcItemsList = await storage.getFalseCeilingItems(req.params.id);
+      for (const item of fcItemsList) {
+        const { id, createdAt, updatedAt, ...itemData } = item;
+        await storage.createFalseCeilingItem({
+          ...itemData,
+          quotationId: duplicateQuotation.id,
+        });
+      }
+
+      // Get and duplicate all other items
+      const otherItemsList = await storage.getOtherItems(req.params.id);
+      for (const item of otherItemsList) {
+        const { id, createdAt, updatedAt, ...itemData } = item;
+        await storage.createOtherItem({
+          ...itemData,
+          quotationId: duplicateQuotation.id,
+        });
+      }
+
+      res.status(201).json(duplicateQuotation);
+    } catch (error) {
+      console.error("Error duplicating quotation:", error);
+      res.status(500).json({ message: "Failed to duplicate quotation" });
+    }
+  });
+
   // Apply template to quotation (create rooms and items)
   app.post('/api/quotations/:id/apply-template', isAuthenticated, async (req: any, res) => {
     try {
