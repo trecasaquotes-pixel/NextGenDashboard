@@ -446,7 +446,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const items = await storage.getFalseCeilingItems(req.params.id);
-      res.json(items);
+      
+      // Normalize each item to ensure area and totalPrice are calculated from canonical dimensions
+      const { normalizeFCItemData } = await import('./lib/totals');
+      const normalizedItems = items.map(item => {
+        const normalized = normalizeFCItemData(item);
+        return {
+          ...item,
+          area: normalized.area,
+          totalPrice: normalized.totalPrice,
+        };
+      });
+      
+      res.json(normalizedItems);
     } catch (error) {
       console.error("Error fetching false ceiling items:", error);
       res.status(500).json({ message: "Failed to fetch false ceiling items" });
