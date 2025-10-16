@@ -461,6 +461,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const validatedData = insertFalseCeilingItemSchema.parse({ ...req.body, quotationId: req.params.id });
       const item = await storage.createFalseCeilingItem(validatedData);
+      
+      // Recalculate quotation totals
+      const { recalculateQuotationTotals } = await import('./lib/totals');
+      await recalculateQuotationTotals(req.params.id, storage);
+      
       res.status(201).json(item);
     } catch (error) {
       console.error("Error creating false ceiling item:", error);
@@ -475,6 +480,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden" });
       }
       const item = await storage.updateFalseCeilingItem(req.params.itemId, req.body);
+      
+      // Recalculate quotation totals
+      const { recalculateQuotationTotals } = await import('./lib/totals');
+      await recalculateQuotationTotals(req.params.id, storage);
+      
       res.json(item);
     } catch (error) {
       console.error("Error updating false ceiling item:", error);
@@ -489,6 +499,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden" });
       }
       await storage.deleteFalseCeilingItem(req.params.itemId);
+      
+      // Recalculate quotation totals
+      const { recalculateQuotationTotals } = await import('./lib/totals');
+      await recalculateQuotationTotals(req.params.id, storage);
+      
       res.status(204).send();
     } catch (error) {
       console.error("Error deleting false ceiling item:", error);

@@ -601,6 +601,18 @@ export default function Scope() {
       const newWidth = field === "width" ? normalizedValue : item.width;
       const calculatedArea = calculateArea(newLength, newWidth);
       updatedData.area = calculatedArea;
+      
+      // Recalculate total price with new area
+      const unitPrice = parseFloat(item.unitPrice || "0");
+      const area = parseFloat(calculatedArea || "0");
+      updatedData.totalPrice = (area * unitPrice).toFixed(2);
+    }
+
+    // Recalculate total price if unit price changes
+    if (field === "unitPrice") {
+      const area = parseFloat(item.area || "0");
+      const unitPrice = parseFloat(normalizedValue || "0");
+      updatedData.totalPrice = (area * unitPrice).toFixed(2);
     }
 
     updateFalseCeilingItem.mutate({ id, data: updatedData });
