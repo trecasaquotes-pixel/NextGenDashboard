@@ -9,10 +9,12 @@ No specific user preferences were provided in the original document.
 ## System Architecture
 
 ### UI/UX Decisions
-- **Branding**: TRECASA DESIGN STUDIO with a luxury aesthetic, deep green header, gold accents, red dot branding, and deep teal primary color.
-- **Typography**: Inter for UI elements and JetBrains Mono for data, with Playfair Display (serif) for PDF headings and Montserrat (sans-serif) for PDF body text.
+- **Branding**: TRECASA DESIGN STUDIO with a luxury aesthetic, deep green (#154734) header, gold (#C7A948) accents, red dot branding, and deep teal primary color.
+- **Typography**: Montserrat for UI elements and Playfair Display (serif) for PDF headings and body text.
 - **Components**: Shadcn UI with custom theming and Tailwind CSS for responsive design.
-- **Header/Footer**: Consistent branding with "TRECASA DESIGN STUDIO", tagline "Luxury Interiors | Architecture | Build", and a footer with copyright and contact information.
+- **Universal PDF Header/Footer**: Standardized across all PDF exports (Interiors, False Ceiling, Agreement):
+  - **Header**: 110px height, #154734 dark green background, two-column 70/30 grid layout. Left column: Company name (Montserrat SemiBold 15pt uppercase), full address (8.5pt), client/project details (9pt), greeting "Hi [Client] & Family" (Playfair Display Italic 9.5pt). Right column: Contact details (email/phone 8.5pt), Issue Date and Quote ID (9pt). Rounded top corners (8px).
+  - **Footer**: 40px height, #C7A948 gold border-top (1px), centered text "© 2025 TRECASA DESIGN STUDIO | www.trecasadesignstudio.com | @trecasa.designstudio" with red dot indicator. Montserrat Regular 8pt, #666666 color.
 
 ### Technical Implementations
 - **Frontend**: React with Wouter for routing, TanStack Query for server state management, and React Hook Form with Zod for form validation.
@@ -22,8 +24,7 @@ No specific user preferences were provided in the original document.
 - **Pricing System**: Smart Rate Calculator incorporating brand-based pricing (Core Material, Finish, Hardware) and project-level "Build Type" (Handmade/Factory Finish) for real-time calculation updates. Special handling for wall-related items to always use handmade pricing.
 - **Totals Calculation**: Real-time computation of subtotals, discounts, and GST.
 - **Template System**: Auto-creation of room items based on project categories using predefined templates.
-- **PDF Generation**: Dual approach with client-side (html2pdf.js) and server-side (Puppeteer with Google Fonts, professional margins, header/footer templates, page numbering) options. Includes room summary tables and robust page break handling.
-  - **Official PDF Header Design**: Two-column layout (70% left, 30% right) with dark green background (#154734), 110px min height, 16px/24px padding. Left column: Company name (Montserrat SemiBold 15pt uppercase), full address (8.5pt), client/project details (9pt), and greeting (Playfair Display Italic 9.5pt). Right column: Contact details (email/phone 8.5pt) and metadata (Issue Date, Quote ID 9pt) right-aligned. Rounded top corners (8px).
+- **PDF Generation**: Dual approach with client-side (html2pdf.js) and server-side (Puppeteer with Google Fonts, professional margins, header/footer templates) options. All PDFs feature universal header/footer design with consistent branding. Includes room summary tables and robust page break handling.
   - **Detailed Room-wise Breakdown**: Professional table design with Playfair Display Bold 11pt section title (#1A1A1A), room names in Playfair Display SemiBold 11pt (#154734). Tables feature light gray headers (#F2F2F2, 26px height), Montserrat SemiBold 9.5pt column labels, data rows with 24px min height and Montserrat Regular 9pt text. Room subtotal bars in dark green (#154734) with white text (26px height). Precise column widths for optimal readability and no text clipping.
 - **Render Token System**: HMAC-signed, time-limited tokens for secure Puppeteer access to protected pages.
 - **Agreement Pack**: Functionality to merge multiple PDFs (service agreement, annexure, quotation) into a single document.

@@ -45,7 +45,7 @@ export default function Print() {
     }
   }, [isAuthenticated, authLoading, toast]);
 
-  const { data: quotation } = useQuery<Quotation>({
+  const { data: quotation, isLoading: quotationLoading, error: quotationError } = useQuery<Quotation>({
     queryKey: [`/api/quotations/${quotationId}`],
     enabled: !!quotationId && isAuthenticated,
   });
@@ -151,12 +151,28 @@ export default function Print() {
     return null;
   }
 
-  if (authLoading || !quotation) {
+  // Show error if quotation query failed
+  if (quotationError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-destructive">Error loading quotation</p>
+          <p className="text-sm text-muted-foreground">{String(quotationError)}</p>
+          <Button onClick={() => navigate("/")}>Back to Quotes</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state while auth or quotation is loading
+  if (authLoading || quotationLoading || !quotation) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Loading quotation...</p>
+          <p className="text-muted-foreground">
+            {authLoading ? "Authenticating..." : "Loading quotation..."}
+          </p>
         </div>
       </div>
     );
@@ -415,12 +431,11 @@ export default function Print() {
                   </div>
                 </div>
 
-                {/* PDF Footer - Fixed */}
-                <div className="pdf-footer text-[8.5px] text-gray-600 border-t border-gray-200" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
-                  <div className="text-center">
-                    © 2025 Trecasa Design Studio <span className="text-red-600">•</span> www.trecasainfra.com <span className="text-red-600">•</span> contact@trecasainfra.com
+                {/* PDF Footer - Universal Footer */}
+                <div className="pdf-footer bg-white border-t border-[#C7A948] flex items-center justify-center" style={{height: '40px', padding: '10px 0', fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                  <div className="text-center text-[8pt] text-[#666666]">
+                    © 2025 TRECASA DESIGN STUDIO <span className="mx-2">|</span> www.trecasadesignstudio.com <span className="mx-2">|</span> @trecasa.designstudio <span className="inline-block w-[5px] h-[5px] rounded-full bg-red-600 ml-2" style={{verticalAlign: 'middle'}}></span>
                   </div>
-                  <div className="page-num"></div>
                 </div>
 
                 {/* PDF Body - Content */}
@@ -599,7 +614,7 @@ export default function Print() {
 
                   {/* Signatures */}
                   <div className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid" data-testid="signature-block-interiors">
-                    <h3 className="text-sm font-semibold text-[#154734] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
+                    <h3 className="text-sm font-semibold text-[#154734] border-t-2 border-[#C7A948] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Client Signature */}
                       <div className="space-y-2 break-inside-avoid">
@@ -727,12 +742,11 @@ export default function Print() {
                   </div>
                 </div>
 
-                {/* PDF Footer - Fixed */}
-                <div className="pdf-footer text-[8.5px] text-gray-600 border-t border-gray-200" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
-                  <div className="text-center">
-                    © 2025 Trecasa Design Studio <span className="text-red-600">•</span> www.trecasainfra.com <span className="text-red-600">•</span> contact@trecasainfra.com
+                {/* PDF Footer - Universal Footer */}
+                <div className="pdf-footer bg-white border-t border-[#C7A948] flex items-center justify-center" style={{height: '40px', padding: '10px 0', fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                  <div className="text-center text-[8pt] text-[#666666]">
+                    © 2025 TRECASA DESIGN STUDIO <span className="mx-2">|</span> www.trecasadesignstudio.com <span className="mx-2">|</span> @trecasa.designstudio <span className="inline-block w-[5px] h-[5px] rounded-full bg-red-600 ml-2" style={{verticalAlign: 'middle'}}></span>
                   </div>
-                  <div className="page-num"></div>
                 </div>
 
                 {/* PDF Body - Content */}
@@ -915,7 +929,7 @@ export default function Print() {
                           <td className="py-1 text-right pr-4">GST (18%):</td>
                           <td className="py-1 text-right font-mono tabular-nums">{formatINR(fcGst)}</td>
                         </tr>
-                        <tr className="final-total row border-t-2 border-[#D1B77C]">
+                        <tr className="final-total row border-t-2 border-[#C7A948]">
                           <td className="py-3 text-right pr-4">
                             <div className="text-[8px] text-[#154734] mb-1" style={{fontFamily: "'Montserrat', sans-serif"}}>Final False Ceiling Quote</div>
                           </td>
@@ -970,7 +984,7 @@ export default function Print() {
 
                   {/* Signatures */}
                   <div className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid" data-testid="signature-block-false-ceiling">
-                    <h3 className="text-sm font-semibold text-[#154734] border-t-2 border-[#D1B77C] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
+                    <h3 className="text-sm font-semibold text-[#154734] border-t-2 border-[#C7A948] pt-2 border-b border-gray-300 pb-1" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>SIGNATURES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Client Signature */}
                       <div className="space-y-2 break-inside-avoid">

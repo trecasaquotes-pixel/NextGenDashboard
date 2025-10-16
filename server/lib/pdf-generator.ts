@@ -139,23 +139,17 @@ export async function generateQuotationPDF(
             bottom: 0;
             left: 0;
             right: 0;
-            height: 15mm;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Montserrat', Arial, sans-serif;
-            font-size: 8.5pt;
+            font-size: 8pt;
             color: #666666;
-            padding: 0 12.7mm;
-            border-top: 1px solid #E0E0E0;
+            padding: 10px 0;
+            border-top: 1px solid #C7A948;
             background: white;
             z-index: 1000;
-          }
-          
-          /* Page numbers in footer */
-          .pdf-footer .page-num::after {
-            content: "Page " counter(page) " of " counter(pages);
-            margin: 0 8px;
           }
           
           .pdf-body {
@@ -315,7 +309,7 @@ export async function generateQuotationPDF(
           }
           
           .summary-grand td {
-            border-top: 2px solid #D1B77C;
+            border-top: 2px solid #C7A948;
             font-weight: 700;
           }
           
@@ -329,7 +323,7 @@ export async function generateQuotationPDF(
           }
           
           .summary-totals .final-total {
-            border-top: 2px solid #D1B77C;
+            border-top: 2px solid #C7A948;
             padding-top: 6px;
             font-size: 18px;
             font-weight: 700;

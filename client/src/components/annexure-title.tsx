@@ -16,15 +16,15 @@ export function AnnexureTitle({ letter, title, quoteId, clientName }: AnnexureTi
           </h1>
           <div className="w-3 h-3 rounded-full bg-red-600"></div>
         </div>
-        <p className="text-[#D1B77C] text-lg text-center">Luxury Interiors | Architecture | Build</p>
+        <p className="text-[#C7A948] text-lg text-center">Luxury Interiors | Architecture | Build</p>
       </div>
 
       {/* Annexure Title */}
-      <div className="border-4 border-[#D1B77C] p-12 rounded-lg max-w-2xl w-full text-center">
+      <div className="border-4 border-[#C7A948] p-12 rounded-lg max-w-2xl w-full text-center">
         <div className="space-y-6">
           <div>
             <p className="text-6xl font-bold text-[#0E2F1B] mb-2">ANNEXURE {letter}</p>
-            <div className="h-1 bg-[#D1B77C] w-32 mx-auto"></div>
+            <div className="h-1 bg-[#C7A948] w-32 mx-auto"></div>
           </div>
           
           <h2 className="text-3xl font-semibold text-[#0E2F1B] mt-8">

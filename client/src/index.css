@@ -18,7 +18,7 @@
 
   /* Trecasa Brand Colors */
   --trecasa-green: 144 54% 12%;       /* Deep Green #0E2F1B */
-  --trecasa-gold: 42 49% 65%;         /* Gold #D1B77C */
+  --trecasa-gold: 46 54% 53%;         /* Gold #C7A948 */
   --trecasa-red: 360 72% 45%;         /* Red Dot #C42021 */
   --trecasa-offwhite: 60 33% 98%;     /* Off-white #FAFAF8 */
   --trecasa-gray: 0 0% 23%;           /* Warm Gray #3B3B3B */
@@ -61,7 +61,7 @@
 
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 42 49% 65%;              /* Trecasa Gold */
+  --secondary: 46 54% 53%;              /* Trecasa Gold */
 
   --secondary-foreground: 144 54% 12%;  /* Green text on gold */
 
@@ -69,7 +69,7 @@
 
   --muted-foreground: 0 0% 45%;
 
-  --accent: 42 49% 65%;                 /* Trecasa Gold */
+  --accent: 46 54% 53%;                 /* Trecasa Gold */
 
   --accent-foreground: 144 54% 12%;
 
@@ -80,7 +80,7 @@
   --input: 144 15% 75%;
   --ring: 144 54% 12%;
   --chart-1: 144 54% 12%;
-  --chart-2: 42 49% 65%;
+  --chart-2: 46 54% 53%;
   --chart-3: 360 72% 45%;
   --chart-4: 0 0% 23%;
   --chart-5: 142 50% 50%;
@@ -165,7 +165,7 @@
 
   --sidebar-accent: 144 20% 16%;
 
-  --sidebar-accent-foreground: 42 49% 70%;  /* Lighter gold */
+  --sidebar-accent-foreground: 46 54% 70%;  /* Lighter gold */
 
   --sidebar-ring: 144 54% 25%;
 
@@ -179,7 +179,7 @@
 
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 42 49% 70%;              /* Lighter gold for dark mode */
+  --secondary: 46 54% 70%;              /* Lighter gold for dark mode */
 
   --secondary-foreground: 144 54% 12%;
 
@@ -187,7 +187,7 @@
 
   --muted-foreground: 0 0% 65%;
 
-  --accent: 42 49% 70%;                 /* Lighter gold for dark mode */
+  --accent: 46 54% 70%;                 /* Lighter gold for dark mode */
 
   --accent-foreground: 144 54% 12%;
 
@@ -198,7 +198,7 @@
   --input: 144 20% 28%;
   --ring: 144 54% 25%;
   --chart-1: 144 54% 35%;
-  --chart-2: 42 49% 65%;
+  --chart-2: 46 54% 53%;
   --chart-3: 360 72% 55%;
   --chart-4: 0 0% 70%;
   --chart-5: 142 50% 60%;
@@ -449,27 +449,30 @@
     margin: 0 0 4px 0 !important;
   }
 
-  /* Fixed footer on every page with page counter */
+  /* Fixed footer on every page - Universal Trecasa Design */
   .pdf-footer {
     position: fixed;
-    bottom: -80px;
+    bottom: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: 40px;
     background: white;
-    border-top: 2px solid #D1B77C;
-    padding: 12px 20px;
+    border-top: 1px solid #C7A948;
+    padding: 10px 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    font-size: 11px;
-    color: #666;
+    font-size: 8pt;
+    color: #666666;
     z-index: 9999;
+    font-family: 'Montserrat', Arial, sans-serif !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  /* Page counter using built-in CSS counters */
+  /* Hide legacy page counter for universal footer */
   .pdf-footer::after {
-    content: "Page " counter(page) " of " counter(pages);
+    content: none;
   }
 
   /* Content spacing to avoid header/footer overlap */

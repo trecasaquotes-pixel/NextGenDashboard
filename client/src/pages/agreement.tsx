@@ -256,19 +256,54 @@ export default function Agreement() {
 
           {/* Agreement Document */}
           <div id="print-agreement-root" className="bg-white text-black" data-pdf-ready="true">
-            {/* Branded Header */}
-            <div className="bg-[#154734] text-white p-6 rounded-t-lg print:rounded-none">
-              <div className="flex items-start justify-between">
+            {/* Universal Header - Official Trecasa Style */}
+            <div className="bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
+              <div className="grid grid-cols-[70%_30%] gap-4">
+                {/* Left Column */}
                 <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-3xl font-bold">TRECASA DESIGN STUDIO</h1>
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-600"></div>
+                  {/* Company Name */}
+                  <h1 className="text-[15pt] font-semibold uppercase tracking-wide mb-1" style={{letterSpacing: '0.4px'}}>
+                    TRECASA DESIGN STUDIO
+                  </h1>
+                  
+                  {/* Company Address */}
+                  <p className="text-[8.5pt] mb-2">
+                    H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049
+                  </p>
+                  
+                  {/* Client and Project Details */}
+                  <div className="text-[9pt] mt-2 space-y-0.5">
+                    <div>
+                      <span className="font-medium">Client Name:</span> <span>{quotation.clientName || "N/A"}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Project Address:</span> <span>{quotation.projectAddress || "N/A"}</span>
+                    </div>
                   </div>
-                  <p className="text-[#D1B77C] text-sm">Luxury Interiors | Architecture | Build</p>
+                  
+                  {/* Greeting Line */}
+                  <p className="text-[9.5pt] italic mt-1" style={{fontFamily: "'Playfair Display', Georgia, serif", color: '#EAEAEA', lineHeight: '1.2'}}>
+                    Hi {quotation.clientName || "Valued Client"} & Family
+                  </p>
                 </div>
-                <div className="text-right text-sm space-y-1">
-                  <p><strong>Quote ID:</strong> {quotation.quoteId}</p>
-                  <p><strong>Date:</strong> {currentDate}</p>
+                
+                {/* Right Column */}
+                <div className="text-right">
+                  {/* Contact Details */}
+                  <div className="mb-2">
+                    <p className="text-[8.5pt] mb-0.5">contact@trecasainfra.com</p>
+                    <p className="text-[8.5pt] font-semibold">+91 9059784422</p>
+                  </div>
+                  
+                  {/* Issue Date and Quote ID */}
+                  <div className="text-[9pt] font-medium mt-2 space-y-1">
+                    <div>
+                      <span style={{opacity: 0.8}}>Issue Date:</span> <span className="ml-1">{currentDate}</span>
+                    </div>
+                    <div>
+                      <span style={{opacity: 0.8}}>Quote ID:</span> <span className="ml-1">{quotation.quoteId}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -276,7 +311,7 @@ export default function Agreement() {
             {/* Content */}
             <div className="p-8 space-y-6">
               {/* Title */}
-              <div className="text-center border-b-2 border-[#D1B77C] pb-4">
+              <div className="text-center border-b-2 border-[#C7A948] pb-4">
                 <h2 className="text-2xl font-bold text-[#154734]">SERVICE AGREEMENT</h2>
               </div>
 
@@ -433,11 +468,13 @@ export default function Agreement() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Branded Footer */}
-            <div className="bg-gray-100 p-4 text-center text-sm text-gray-600 border-t-2 border-[#D1B77C] rounded-b-lg print:rounded-none">
-              <p>© 2025 TRECASA DESIGN STUDIO | www.trecasadesignstudio.com | @trecasa.designstudio</p>
+              {/* Universal Footer */}
+              <div className="bg-white border-t border-[#C7A948] p-4 flex items-center justify-center rounded-b-lg print:rounded-none mt-8" style={{height: '40px', padding: '10px 0', fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                <div className="text-center text-[8pt] text-[#666666]">
+                  © 2025 TRECASA DESIGN STUDIO <span className="mx-2">|</span> www.trecasadesignstudio.com <span className="mx-2">|</span> @trecasa.designstudio <span className="inline-block w-[5px] h-[5px] rounded-full bg-red-600 ml-2" style={{verticalAlign: 'middle'}}></span>
+                </div>
+              </div>
             </div>
           </div>
 

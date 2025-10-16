@@ -15,7 +15,7 @@ export function AppHeader() {
           </div>
           <p 
             className="text-sm md:text-base font-light tracking-wider"
-            style={{ color: '#D1B77C' }}
+            style={{ color: '#C7A948' }}
           >
             Luxury Interiors | Architecture | Build
           </p>
@@ -23,7 +23,7 @@ export function AppHeader() {
       </div>
       <div 
         className="w-full h-[2px]"
-        style={{ backgroundColor: '#D1B77C' }}
+        style={{ backgroundColor: '#C7A948' }}
       />
     </header>
   );
