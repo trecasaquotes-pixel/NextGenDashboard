@@ -214,8 +214,8 @@ export default function Estimate() {
   const finalTotal = discounted + gstAmount;
 
   // Extract unique room types from items and sort them
-  const interiorRoomTypes = sortRoomNames(Array.from(new Set(interiorItems.map(item => item.roomType))));
-  const fcRoomTypes = sortRoomNames(Array.from(new Set(falseCeilingItems.map(item => item.roomType))));
+  const interiorRoomTypes = sortRoomNames(Array.from(new Set(interiorItems.map(item => item.roomType).filter(Boolean))));
+  const fcRoomTypes = sortRoomNames(Array.from(new Set(falseCeilingItems.map(item => item.roomType).filter(Boolean))));
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
