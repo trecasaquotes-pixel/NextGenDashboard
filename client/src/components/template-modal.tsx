@@ -135,36 +135,53 @@ export function TemplateModal({
 
       // Step 4: Create interior items
       const interiorPromises = template.rooms
-        .filter(r => r.tab === "Interiors" && r.defaultItems && r.defaultItems.length > 0)
+        .filter(r => r.tab === "Interiors" && r.defaultItems !== undefined) // Include Misc even if empty
         .filter(r => !existingRooms.has(r.label)) // Skip if room exists (append mode)
         .filter(r => {
-          // Include standard rooms or selected optional rooms
-          const isOptional = ["Foyer", "Utility", "Puja", "Study", "Balcony", "Other"].includes(r.key);
+          // Misc is always included, other rooms are optional
+          if (r.key === "Other") return true; // Always include Misc
+          const isOptional = ["Foyer", "Utility", "Puja", "Study", "Balcony"].includes(r.key);
           return !isOptional || selectedOptionalRoomKeys.includes(r.key);
         })
-        .flatMap(room => 
-          room.defaultItems!.map(item => {
-            const itemData: any = {
+        .flatMap(room => {
+          // If room has items, create them; otherwise create empty room placeholder
+          if (room.defaultItems!.length > 0) {
+            return room.defaultItems!.map(item => {
+              const itemData: any = {
+                quotationId,
+                roomType: room.label,
+                description: item.description,
+                calc: item.calc,
+                buildType: item.buildType || "handmade",
+                material: item.core || "Generic Ply",
+                finish: item.finish || "Generic Laminate",
+                hardware: item.hardware || "Nimmi",
+              };
+              return apiRequest("POST", `/api/quotations/${quotationId}/interior-items`, itemData);
+            });
+          } else {
+            // Create empty placeholder item for Misc room
+            return [apiRequest("POST", `/api/quotations/${quotationId}/interior-items`, {
               quotationId,
               roomType: room.label,
-              description: item.description,
-              calc: item.calc,
-              buildType: item.buildType || "handmade",
-              material: item.core || "Generic Ply",
-              finish: item.finish || "Generic Laminate",
-              hardware: item.hardware || "Nimmi",
-            };
-            return apiRequest("POST", `/api/quotations/${quotationId}/interior-items`, itemData);
-          })
-        );
+              description: "",
+              calc: "LSUM",
+              buildType: "handmade",
+              material: "Generic Ply",
+              finish: "Generic Laminate",
+              hardware: "Nimmi",
+            })];
+          }
+        });
 
       // Step 5: Create FC items
       const fcPromises = template.rooms
         .filter(r => r.tab === "FC" && r.fcLine)
         .filter(r => !existingRooms.has(r.label)) // Skip if room exists (append mode)
         .filter(r => {
-          // Include standard rooms or selected optional rooms
-          const isOptional = ["Foyer", "Utility", "Puja", "Study", "Balcony", "Other"].includes(r.key);
+          // Misc is always included, other rooms are optional
+          if (r.key === "Other") return true; // Always include Misc
+          const isOptional = ["Foyer", "Utility", "Puja", "Study", "Balcony"].includes(r.key);
           return !isOptional || selectedOptionalRoomKeys.includes(r.key);
         })
         .map(room => {
