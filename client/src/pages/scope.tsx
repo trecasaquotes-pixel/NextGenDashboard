@@ -503,7 +503,7 @@ export default function Scope() {
   // Handler for manual rate override
   const handleRateOverride = (id: string, value: string) => {
     const item = interiorItems.find((i) => i.id === id);
-    if (!item || item.calc !== 'SQFT') return;
+    if (!item || item.calc === 'LSUM') return; // Only LSUM doesn't have rates
 
     // Empty value resets to auto
     if (value === "" || value === null) {
