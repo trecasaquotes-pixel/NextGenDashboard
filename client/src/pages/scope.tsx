@@ -1125,6 +1125,7 @@ export default function Scope() {
                                   <TableHead className="w-[80px] px-1">Length (ft)</TableHead>
                                   <TableHead className="w-[80px] px-1">Width (ft)</TableHead>
                                   <TableHead className="w-[80px] px-1">Area (SQFT)</TableHead>
+                                  <TableHead className="w-[100px] px-1">Price (₹/sqft)</TableHead>
                                   <TableHead className="w-[40px] px-1"></TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -1204,6 +1205,31 @@ export default function Scope() {
                                       <span className="font-mono text-sm font-semibold" data-testid={`text-ceiling-area-${item.id}`}>
                                         {item.area || "0.00"}
                                       </span>
+                                    </TableCell>
+                                    <TableCell className="px-1">
+                                      <Input
+                                        key={`ceiling-price-${item.id}-${item.unitPrice}`}
+                                        type="text"
+                                        inputMode="decimal"
+                                        pattern="^\d*(\.\d{0,2})?$"
+                                        placeholder="0.00"
+                                        defaultValue={item.unitPrice || ""}
+                                        onChange={(e) => {
+                                          e.target.value = sanitizeDecimalInput(e.target.value);
+                                        }}
+                                        onBlur={(e) => {
+                                          const currentValue = e.target.value;
+                                          if (currentValue !== (item.unitPrice || "")) {
+                                            handleFalseCeilingFieldChange(item.id, "unitPrice", currentValue);
+                                          }
+                                        }}
+                                        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+                                        }}
+                                        className="w-full h-10 font-mono text-center"
+                                        data-testid={`input-ceiling-price-${item.id}`}
+                                      />
                                     </TableCell>
                                     <TableCell className="px-1">
                                       <Button
