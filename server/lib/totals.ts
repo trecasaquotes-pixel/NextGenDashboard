@@ -23,6 +23,7 @@ export async function recalculateQuotationTotals(quotationId: string, storage: I
   // Update quotation with new totals
   await storage.updateQuotation(quotationId, {
     totals: {
+      updatedAt: Date.now(),
       interiorsSubtotal,
       fcSubtotal,
       grandSubtotal,
