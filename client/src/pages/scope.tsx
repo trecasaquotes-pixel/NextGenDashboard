@@ -18,6 +18,8 @@ import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { TemplateModal } from "@/components/template-modal";
 import { ApplyTemplateModal } from "@/components/apply-template-modal";
+import { useQuotationLock } from "@/hooks/use-quotation-lock";
+import { LockStatusBanner } from "@/components/lock-status-banner";
 import {
   Select,
   SelectContent,
@@ -87,6 +89,9 @@ export default function Scope() {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showApplyTemplateModal, setShowApplyTemplateModal] = useState(false);
   const [totalsUpdatedAt, setTotalsUpdatedAt] = useState<number | null>(null);
+  
+  // Quotation locking
+  const { isLockedByOthers, lockedByName } = useQuotationLock(quotationId);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -643,6 +648,8 @@ export default function Scope() {
             Back to Project Info
           </Button>
 
+          <LockStatusBanner isLockedByOthers={isLockedByOthers} lockedByName={lockedByName} />
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <div className="space-y-1">
@@ -654,6 +661,7 @@ export default function Scope() {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowTemplateModal(true)}
+                  disabled={isLockedByOthers}
                   data-testid="button-apply-template"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
@@ -739,6 +747,7 @@ export default function Scope() {
                               finish: "Generic Laminate",
                               hardware: "Nimmi",
                             })}
+                            disabled={isLockedByOthers}
                             data-testid={`button-add-interior-${roomType.toLowerCase()}`}
                           >
                             <Plus className="mr-2 h-4 w-4" />
@@ -1131,6 +1140,7 @@ export default function Scope() {
                               quotationId: quotationId!,
                               roomType,
                             })}
+                            disabled={isLockedByOthers}
                             data-testid={`button-add-ceiling-${roomType.toLowerCase()}`}
                           >
                             <Plus className="mr-2 h-4 w-4" />
@@ -1291,6 +1301,7 @@ export default function Scope() {
                           itemType: "Paint",
                           valueType: "lumpsum",
                         })}
+                        disabled={isLockedByOthers}
                         data-testid="button-add-other"
                       >
                         <Plus className="mr-2 h-4 w-4" />

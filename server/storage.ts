@@ -66,6 +66,13 @@ export interface IStorage {
   getQuotationVersions(quotationId: string): Promise<QuotationVersion[]>;
   createQuotationVersion(version: NewQuotationVersion): Promise<QuotationVersion>;
   getLatestVersionNumber(quotationId: string): Promise<number>;
+
+  // Quotation locking operations
+  verifyLockOwnership(quotationId: string, userId: string): Promise<{ hasLock: boolean; lockedByName?: string }>;
+  acquireLock(quotationId: string, userId: string): Promise<{ success: boolean; lockedBy?: string; lockedByName?: string }>;
+  releaseLock(quotationId: string, userId: string): Promise<{ success: boolean }>;
+  updateLockHeartbeat(quotationId: string, userId: string): Promise<{ success: boolean }>;
+  checkLockStatus(quotationId: string): Promise<{ isLocked: boolean; lockedBy?: string; lockedByName?: string; lockedAt?: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -282,6 +289,179 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
     
     return versions.length > 0 ? versions[0].versionNumber : 0;
+  }
+
+  // Quotation locking operations
+  private LOCK_TIMEOUT_MS = 30000; // 30 seconds
+
+  async verifyLockOwnership(quotationId: string, userId: string): Promise<{ hasLock: boolean; lockedByName?: string }> {
+    const now = Date.now();
+    const expireThreshold = now - this.LOCK_TIMEOUT_MS;
+
+    const [quotation] = await db
+      .select()
+      .from(quotations)
+      .where(eq(quotations.id, quotationId));
+
+    if (!quotation) {
+      return { hasLock: false };
+    }
+
+    // No lock exists - allow operation
+    if (!quotation.lockedBy) {
+      return { hasLock: true };
+    }
+
+    // Check if lock is expired
+    if (!quotation.lockHeartbeat || quotation.lockHeartbeat <= expireThreshold) {
+      return { hasLock: true };
+    }
+
+    // Lock exists and is active
+    if (quotation.lockedBy === userId) {
+      return { hasLock: true };
+    }
+
+    // Locked by someone else
+    const [lockHolder] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, quotation.lockedBy));
+
+    return {
+      hasLock: false,
+      lockedByName: lockHolder ? `${lockHolder.firstName || ''} ${lockHolder.lastName || ''}`.trim() || lockHolder.email || 'Unknown User' : 'Unknown User',
+    };
+  }
+
+  async acquireLock(quotationId: string, userId: string): Promise<{ success: boolean; lockedBy?: string; lockedByName?: string }> {
+    const now = Date.now();
+    const expireThreshold = now - this.LOCK_TIMEOUT_MS;
+
+    // Get current lock status
+    const [quotation] = await db
+      .select()
+      .from(quotations)
+      .where(eq(quotations.id, quotationId));
+
+    if (!quotation) {
+      return { success: false };
+    }
+
+    // Check if already locked by someone else
+    if (quotation.lockedBy && quotation.lockedBy !== userId) {
+      // Check if lock is still active (heartbeat within timeout)
+      if (quotation.lockHeartbeat && quotation.lockHeartbeat > expireThreshold) {
+        // Lock is still active, fetch user name
+        const [lockHolder] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, quotation.lockedBy));
+        
+        return {
+          success: false,
+          lockedBy: quotation.lockedBy,
+          lockedByName: lockHolder ? `${lockHolder.firstName || ''} ${lockHolder.lastName || ''}`.trim() || lockHolder.email || 'Unknown User' : 'Unknown User',
+        };
+      }
+    }
+
+    // Acquire or refresh lock
+    await db
+      .update(quotations)
+      .set({
+        lockedBy: userId,
+        lockedAt: now,
+        lockHeartbeat: now,
+      })
+      .where(eq(quotations.id, quotationId));
+
+    return { success: true };
+  }
+
+  async releaseLock(quotationId: string, userId: string): Promise<{ success: boolean }> {
+    const [quotation] = await db
+      .select()
+      .from(quotations)
+      .where(eq(quotations.id, quotationId));
+
+    if (!quotation) {
+      return { success: false };
+    }
+
+    // Only release if locked by this user
+    if (quotation.lockedBy === userId) {
+      await db
+        .update(quotations)
+        .set({
+          lockedBy: null,
+          lockedAt: null,
+          lockHeartbeat: null,
+        })
+        .where(eq(quotations.id, quotationId));
+      return { success: true };
+    }
+
+    return { success: false };
+  }
+
+  async updateLockHeartbeat(quotationId: string, userId: string): Promise<{ success: boolean }> {
+    const [quotation] = await db
+      .select()
+      .from(quotations)
+      .where(eq(quotations.id, quotationId));
+
+    if (!quotation || quotation.lockedBy !== userId) {
+      return { success: false };
+    }
+
+    await db
+      .update(quotations)
+      .set({ lockHeartbeat: Date.now() })
+      .where(eq(quotations.id, quotationId));
+
+    return { success: true };
+  }
+
+  async checkLockStatus(quotationId: string): Promise<{ isLocked: boolean; lockedBy?: string; lockedByName?: string; lockedAt?: number }> {
+    const now = Date.now();
+    const expireThreshold = now - this.LOCK_TIMEOUT_MS;
+
+    const [quotation] = await db
+      .select()
+      .from(quotations)
+      .where(eq(quotations.id, quotationId));
+
+    if (!quotation || !quotation.lockedBy) {
+      return { isLocked: false };
+    }
+
+    // Check if lock is expired
+    if (!quotation.lockHeartbeat || quotation.lockHeartbeat <= expireThreshold) {
+      // Auto-release expired lock
+      await db
+        .update(quotations)
+        .set({
+          lockedBy: null,
+          lockedAt: null,
+          lockHeartbeat: null,
+        })
+        .where(eq(quotations.id, quotationId));
+      return { isLocked: false };
+    }
+
+    // Lock is active, get user name
+    const [lockHolder] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, quotation.lockedBy));
+
+    return {
+      isLocked: true,
+      lockedBy: quotation.lockedBy,
+      lockedByName: lockHolder ? `${lockHolder.firstName || ''} ${lockHolder.lastName || ''}`.trim() || lockHolder.email || 'Unknown User' : 'Unknown User',
+      lockedAt: quotation.lockedAt || undefined,
+    };
   }
 }
 

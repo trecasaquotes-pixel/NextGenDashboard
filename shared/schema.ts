@@ -136,6 +136,11 @@ export const quotations = pgTable("quotations", {
   clientToken: text("client_token"), // Random token for share URL
   clientTokenExpiresAt: bigint("client_token_expires_at", { mode: "number" }), // Unix timestamp in ms
   
+  // Quotation Locking (to prevent concurrent edits)
+  lockedBy: varchar("locked_by"), // User ID who currently holds the lock
+  lockedAt: bigint("locked_at", { mode: "number" }), // Unix timestamp when lock was acquired
+  lockHeartbeat: bigint("lock_heartbeat", { mode: "number" }), // Last heartbeat timestamp (lock auto-expires after 30s of inactivity)
+  
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

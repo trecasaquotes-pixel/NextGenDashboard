@@ -168,6 +168,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden" });
       }
       
+      // Verify lock ownership
+      const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
+      if (!lockCheck.hasLock) {
+        return res.status(423).json({ 
+          message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
+          lockedBy: lockCheck.lockedByName 
+        });
+      }
+      
       // Determine change type based on what was updated
       let changeType: 'update_info' | 'update_pricing' | 'status_change' = 'update_info';
       if (req.body.status !== undefined && req.body.status !== quotation.status) {
@@ -229,6 +238,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching version history:", error);
       res.status(500).json({ message: "Failed to fetch version history" });
+    }
+  });
+
+  // Quotation locking endpoints
+  
+  // Get lock status
+  app.get('/api/quotations/:id/lock', isAuthenticated, async (req: any, res) => {
+    try {
+      const quotation = await storage.getQuotation(req.params.id);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const lockStatus = await storage.checkLockStatus(req.params.id);
+      res.json(lockStatus);
+    } catch (error) {
+      console.error("Error checking lock status:", error);
+      res.status(500).json({ message: "Failed to check lock status" });
+    }
+  });
+
+  // Acquire lock
+  app.post('/api/quotations/:id/lock', isAuthenticated, async (req: any, res) => {
+    try {
+      const quotation = await storage.getQuotation(req.params.id);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const result = await storage.acquireLock(req.params.id, req.user.claims.sub);
+      
+      if (!result.success) {
+        return res.status(423).json({ 
+          message: "Quotation is locked",
+          lockedBy: result.lockedBy,
+          lockedByName: result.lockedByName,
+        });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error acquiring lock:", error);
+      res.status(500).json({ message: "Failed to acquire lock" });
+    }
+  });
+
+  // Update lock heartbeat
+  app.patch('/api/quotations/:id/lock', isAuthenticated, async (req: any, res) => {
+    try {
+      const result = await storage.updateLockHeartbeat(req.params.id, req.user.claims.sub);
+      
+      if (!result.success) {
+        return res.status(403).json({ message: "Lock not held by current user" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating lock heartbeat:", error);
+      res.status(500).json({ message: "Failed to update lock heartbeat" });
+    }
+  });
+
+  // Release lock
+  app.delete('/api/quotations/:id/lock', isAuthenticated, async (req: any, res) => {
+    try {
+      const result = await storage.releaseLock(req.params.id, req.user.claims.sub);
+      
+      if (!result.success) {
+        return res.status(403).json({ message: "Lock not held by current user" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error releasing lock:", error);
+      res.status(500).json({ message: "Failed to release lock" });
     }
   });
 
@@ -506,6 +596,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden" });
       }
       
+      // Verify lock ownership
+      const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
+      if (!lockCheck.hasLock) {
+        return res.status(423).json({ 
+          message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
+          lockedBy: lockCheck.lockedByName 
+        });
+      }
+      
       // Normalize pricing data server-side
       const { normalizeInteriorItemData } = await import('./lib/pricing');
       const normalizedData = normalizeInteriorItemData({ ...req.body, quotationId: req.params.id });
@@ -545,6 +644,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      // Verify lock ownership
+      const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
+      if (!lockCheck.hasLock) {
+        return res.status(423).json({ 
+          message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
+          lockedBy: lockCheck.lockedByName 
+        });
       }
       
       // Get existing item to merge with partial update
@@ -593,6 +701,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      // Verify lock ownership
+      const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
+      if (!lockCheck.hasLock) {
+        return res.status(423).json({ 
+          message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
+          lockedBy: lockCheck.lockedByName 
+        });
       }
       
       // Get item description before deleting for version history
@@ -669,6 +786,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden" });
       }
       
+      // Verify lock ownership
+      const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
+      if (!lockCheck.hasLock) {
+        return res.status(423).json({ 
+          message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
+          lockedBy: lockCheck.lockedByName 
+        });
+      }
+      
       // Calculate area and totalPrice server-side, discarding any client-sent values
       const { normalizeFCItemData } = await import('./lib/totals');
       const normalizedData = normalizeFCItemData({ ...req.body, quotationId: req.params.id });
@@ -692,6 +818,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      // Verify lock ownership
+      const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
+      if (!lockCheck.hasLock) {
+        return res.status(423).json({ 
+          message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
+          lockedBy: lockCheck.lockedByName 
+        });
       }
       
       // Get existing item to merge with updates
@@ -728,6 +863,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
+      
+      // Verify lock ownership
+      const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
+      if (!lockCheck.hasLock) {
+        return res.status(423).json({ 
+          message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
+          lockedBy: lockCheck.lockedByName 
+        });
+      }
+      
       await storage.deleteFalseCeilingItem(req.params.itemId);
       
       // Recalculate quotation totals
@@ -775,6 +920,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
+      
+      // Verify lock ownership
+      const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
+      if (!lockCheck.hasLock) {
+        return res.status(423).json({ 
+          message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
+          lockedBy: lockCheck.lockedByName 
+        });
+      }
+      
       const validatedData = insertOtherItemSchema.parse({ ...req.body, quotationId: req.params.id });
       const item = await storage.createOtherItem(validatedData);
       res.status(201).json(item);
@@ -790,6 +945,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
+      
+      // Verify lock ownership
+      const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
+      if (!lockCheck.hasLock) {
+        return res.status(423).json({ 
+          message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
+          lockedBy: lockCheck.lockedByName 
+        });
+      }
+      
       const item = await storage.updateOtherItem(req.params.itemId, req.body);
       res.json(item);
     } catch (error) {
@@ -804,6 +969,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
+      
+      // Verify lock ownership
+      const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
+      if (!lockCheck.hasLock) {
+        return res.status(423).json({ 
+          message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
+          lockedBy: lockCheck.lockedByName 
+        });
+      }
+      
       await storage.deleteOtherItem(req.params.itemId);
       res.status(204).send();
     } catch (error) {
