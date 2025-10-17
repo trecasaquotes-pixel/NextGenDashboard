@@ -112,6 +112,51 @@ export default function Print() {
     if (!quotation) return;
     
     setIsGeneratingPDF(true);
+    
+    // Try server-side PDF generation first (Puppeteer)
+    try {
+      toast({
+        title: "Generating PDF...",
+        description: "Creating high-quality PDF on server",
+      });
+
+      const response = await fetch(`/api/quotations/${quotationId}/pdf/${type}`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const typeLabel = type === "interiors" ? "Interiors" : "FalseCeiling";
+        link.download = `TRECASA_${quotation.quoteId}_${typeLabel}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast({
+          title: "Success",
+          description: "Server-generated PDF downloaded successfully",
+        });
+        setIsGeneratingPDF(false);
+        return;
+      }
+      
+      // Server failed, fall back to client-side
+      console.warn(`Server PDF generation failed (${response.status}), falling back to client-side`);
+      toast({
+        title: "Switching to client-side...",
+        description: "Server unavailable, using browser fallback",
+      });
+    } catch (serverError) {
+      console.error('Server PDF error:', serverError);
+      toast({
+        title: "Switching to client-side...",
+        description: "Server unavailable, using browser fallback",
+      });
+    }
+    
+    // Client-side fallback (html2pdf)
     try {
       const elementId = type === "interiors" ? "print-interiors-root" : "print-fc-root";
       const element = document.getElementById(elementId);
@@ -119,11 +164,6 @@ export default function Print() {
       if (!element) {
         throw new Error(`Element ${elementId} not found`);
       }
-
-      toast({
-        title: "Generating PDF...",
-        description: "Please wait while we create your PDF",
-      });
 
       const pdfBytes = await htmlToPdfBytes(element);
       const typeLabel = type === "interiors" ? "Interiors" : "FalseCeiling";
@@ -133,7 +173,7 @@ export default function Print() {
 
       toast({
         title: "Success",
-        description: "PDF downloaded successfully",
+        description: "Client-generated PDF downloaded successfully",
       });
     } catch (error) {
       console.error("Error generating PDF:", error);
@@ -560,7 +600,7 @@ export default function Print() {
                   </section>
                   
                   {/* Section C: Detailed Room-wise Breakdown */}
-                  <div className="space-y-1" style={{marginTop: '16px'}}>
+                  <div className="space-y-1 page-break-before" style={{marginTop: '16px'}}>
                     <h3 className="text-[11pt] font-bold text-[#1A1A1A] mb-1.5" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Detailed Room-wise Breakdown</h3>
                     
                     {sortRoomEntries(Object.entries(interiorsByRoom)).map(([room, items], roomIdx) => {
@@ -619,7 +659,7 @@ export default function Print() {
                   )}
 
                   {/* Section D: Notes/Terms */}
-                  <div className="space-y-1 break-inside-avoid" style={{marginTop: '14px'}}>
+                  <div className="space-y-1 break-inside-avoid page-break-before" style={{marginTop: '14px'}}>
                     <h3 className="text-[10pt] font-medium text-[#154734] mb-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>TERMS & CONDITIONS</h3>
                     <ul className="text-[9.5px] space-y-1 list-disc list-inside text-gray-700" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
                       {(() => {
@@ -922,7 +962,7 @@ export default function Print() {
                   
                   {/* Section C: Detailed Room-wise Breakdown - False Ceiling */}
                   {falseCeilingItems.length > 0 && (
-                    <div className="space-y-1" style={{marginTop: '16px'}}>
+                    <div className="space-y-1 page-break-before" style={{marginTop: '16px'}}>
                       <h3 className="text-[11pt] font-bold text-[#1A1A1A] mb-1.5" style={{fontFamily: "'Playfair Display', Georgia, serif"}}>Detailed Room-wise Breakdown</h3>
                       
                       {sortRoomEntries(Object.entries(falseCeilingByRoom)).map(([room, items], roomIdx) => {
@@ -1037,7 +1077,7 @@ export default function Print() {
                   </div>
 
                   {/* Notes/Terms */}
-                  <div className="space-y-1 break-inside-avoid" style={{marginTop: '14px'}}>
+                  <div className="space-y-1 break-inside-avoid page-break-before" style={{marginTop: '14px'}}>
                     <h3 className="text-[10pt] font-medium text-[#154734] mb-2" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>TERMS & CONDITIONS</h3>
                     <ul className="text-[9.5px] space-y-1 list-disc list-inside text-gray-700" style={{fontFamily: "'Montserrat', Arial, sans-serif"}}>
                       {(() => {

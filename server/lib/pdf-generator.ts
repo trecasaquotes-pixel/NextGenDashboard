@@ -90,12 +90,14 @@ export async function generateQuotationPDF(
     // Generate render token for authentication
     const token = generateRenderToken(quotation.id);
     
-    // Navigate to the appropriate render page
+    // Navigate to the appropriate render page with section parameter
     let url: string;
     if (type === 'agreement') {
       url = `${baseUrl}/render/quotation/${quotation.id}/agreement?token=${encodeURIComponent(token)}`;
     } else {
-      url = `${baseUrl}/render/quotation/${quotation.id}/print?token=${encodeURIComponent(token)}`;
+      // Pass section parameter for interiors or false-ceiling
+      const section = type === 'interiors' ? 'interiors' : 'false-ceiling';
+      url = `${baseUrl}/render/quotation/${quotation.id}/print?section=${section}&token=${encodeURIComponent(token)}`;
     }
     
     console.log(`[PDF Generator] Navigating to ${url}`);
@@ -153,86 +155,10 @@ export async function generateQuotationPDF(
             line-height: 1.2;
           }
           
-          /* Fixed header & footer that repeat across pages */
-          .pdf-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            min-height: 110px;
-            padding: 16px 24px;
-            background: #18492d;
-            color: white;
-            font-family: 'Montserrat', Arial, sans-serif;
-            line-height: 1.3;
-            border-radius: 8px 8px 0 0;
-          }
-          
-          .pdf-header h1 {
-            font-family: 'Montserrat', Arial, sans-serif;
-            font-size: 15pt;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 0 0 6px 0;
-          }
-          
-          .pdf-header .address-text {
-            font-size: 8.5pt;
-            line-height: 1.4;
-          }
-          
-          .pdf-header .client-project {
-            font-size: 9pt;
-            line-height: 1.4;
-          }
-          
-          .pdf-header .greeting {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 9.5pt;
-            font-style: italic;
-            margin-top: 8px;
-          }
-          
-          .pdf-header .contact-details {
-            font-size: 8.5pt;
-            line-height: 1.4;
-          }
-          
-          .pdf-header .issue-date,
-          .pdf-header .quote-id {
-            font-size: 9pt;
-            font-weight: 500;
-          }
-          
-          .pdf-header .grid {
-            display: grid;
-            grid-template-columns: 70% 30%;
-            gap: 16px;
-          }
-          
-          .pdf-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Montserrat', Arial, sans-serif;
-            font-size: 8pt;
-            color: #666666;
-            padding: 10px 0;
-            border-top: 1px solid #C7A948;
-            background: white;
-            z-index: 1000;
-          }
-          
+          /* Body content - margins handled by Puppeteer displayHeaderFooter */
           .pdf-body {
-            margin-top: 32mm;
-            margin-bottom: 26mm;
+            padding-top: 0;
+            padding-bottom: 0;
           }
           
           /* Page breaks */
@@ -556,22 +482,19 @@ export async function generateQuotationPDF(
       `
     });
 
-    // Generate PDF with professional margins (CSS handles header/footer)
-    console.log(`[PDF Generator] Generating PDF for ${type}`);
-    const pdfBytes = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '18mm',
-        right: '14mm',
-        bottom: '22mm',
-        left: '14mm',
-      },
-      displayHeaderFooter: false,
-    });
-
-    // Convert Uint8Array to Buffer
-    const pdfBuffer = Buffer.from(pdfBytes);
+    // Determine title text for header
+    let titleText: string;
+    if (type === 'interiors') {
+      titleText = 'Interiors Quotation';
+    } else if (type === 'false-ceiling') {
+      titleText = 'False Ceiling Quotation';
+    } else {
+      titleText = 'Service Agreement & Annexures';
+    }
+    
+    // Generate PDF using new emitPdf with displayHeaderFooter
+    console.log(`[PDF Generator] Generating PDF for ${type} with title: ${titleText}`);
+    const pdfBuffer = await emitPdf(page, titleText);
     console.log(`[PDF Generator] PDF generated successfully, size: ${pdfBuffer.length} bytes`);
     return pdfBuffer;
     
