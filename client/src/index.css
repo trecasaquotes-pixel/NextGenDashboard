@@ -17,9 +17,9 @@
   --elevate-2: rgba(0,0,0, .08);
 
   /* Trecasa Brand Colors */
-  --trecasa-green: 144 54% 12%;       /* Deep Green #0E2F1B */
+  --trecasa-green: 144 51% 19%;       /* Brand Green #18492d */
   --trecasa-gold: 46 54% 53%;         /* Gold #C7A948 */
-  --trecasa-red: 360 72% 45%;         /* Red Dot #C42021 */
+  --trecasa-red: 0 65% 43%;           /* Red Accent #b52626 */
   --trecasa-offwhite: 60 33% 98%;     /* Off-white #FAFAF8 */
   --trecasa-gray: 0 0% 23%;           /* Warm Gray #3B3B3B */
 
@@ -41,15 +41,15 @@
 
   --sidebar-border: 144 15% 88%;
 
-  --sidebar-primary: 144 54% 12%;       /* Trecasa Green */
+  --sidebar-primary: 144 51% 19%;       /* Trecasa Green */
 
   --sidebar-primary-foreground: 0 0% 100%;
 
   --sidebar-accent: 42 30% 92%;         /* Light gold tint */
 
-  --sidebar-accent-foreground: 144 54% 12%;
+  --sidebar-accent-foreground: 144 51% 19%;
 
-  --sidebar-ring: 144 54% 12%;
+  --sidebar-ring: 144 51% 19%;
 
   --popover: 0 0% 100%;
 
@@ -57,13 +57,13 @@
 
   --popover-border: 144 20% 85%;
 
-  --primary: 144 54% 12%;               /* Trecasa Green */
+  --primary: 144 51% 19%;               /* Trecasa Green */
 
   --primary-foreground: 0 0% 100%;
 
   --secondary: 46 54% 53%;              /* Trecasa Gold */
 
-  --secondary-foreground: 144 54% 12%;  /* Green text on gold */
+  --secondary-foreground: 144 51% 19%;  /* Green text on gold */
 
   --muted: 144 20% 90%;
 
@@ -71,17 +71,17 @@
 
   --accent: 46 54% 53%;                 /* Trecasa Gold */
 
-  --accent-foreground: 144 54% 12%;
+  --accent-foreground: 144 51% 19%;
 
-  --destructive: 360 72% 45%;           /* Trecasa Red */
+  --destructive: 0 65% 43%;             /* Trecasa Red */
 
   --destructive-foreground: 0 0% 100%;
 
   --input: 144 15% 75%;
-  --ring: 144 54% 12%;
-  --chart-1: 144 54% 12%;
+  --ring: 144 51% 19%;
+  --chart-1: 144 51% 19%;
   --chart-2: 46 54% 53%;
-  --chart-3: 360 72% 45%;
+  --chart-3: 0 65% 43%;
   --chart-4: 0 0% 23%;
   --chart-5: 142 50% 50%;
 
@@ -159,7 +159,7 @@
 
   --sidebar-border: 144 20% 18%;
 
-  --sidebar-primary: 144 54% 25%;       /* Lighter green for dark mode */
+  --sidebar-primary: 144 51% 28%;       /* Lighter green for dark mode */
 
   --sidebar-primary-foreground: 0 0% 100%;
 
@@ -167,7 +167,7 @@
 
   --sidebar-accent-foreground: 46 54% 70%;  /* Lighter gold */
 
-  --sidebar-ring: 144 54% 25%;
+  --sidebar-ring: 144 51% 28%;
 
   --popover: 144 25% 12%;
 
@@ -175,13 +175,13 @@
 
   --popover-border: 144 20% 18%;
 
-  --primary: 144 54% 25%;               /* Lighter green for dark mode */
+  --primary: 144 51% 28%;               /* Lighter green for dark mode */
 
   --primary-foreground: 0 0% 100%;
 
   --secondary: 46 54% 70%;              /* Lighter gold for dark mode */
 
-  --secondary-foreground: 144 54% 12%;
+  --secondary-foreground: 144 51% 19%;
 
   --muted: 144 20% 14%;
 
@@ -189,17 +189,17 @@
 
   --accent: 46 54% 70%;                 /* Lighter gold for dark mode */
 
-  --accent-foreground: 144 54% 12%;
+  --accent-foreground: 144 51% 19%;
 
-  --destructive: 360 72% 55%;           /* Lighter red for dark mode */
+  --destructive: 0 65% 55%;             /* Lighter red for dark mode */
 
   --destructive-foreground: 0 0% 100%;
 
   --input: 144 20% 28%;
-  --ring: 144 54% 25%;
-  --chart-1: 144 54% 35%;
+  --ring: 144 51% 28%;
+  --chart-1: 144 51% 35%;
   --chart-2: 46 54% 53%;
-  --chart-3: 360 72% 55%;
+  --chart-3: 0 65% 55%;
   --chart-4: 0 0% 70%;
   --chart-5: 142 50% 60%;
 
