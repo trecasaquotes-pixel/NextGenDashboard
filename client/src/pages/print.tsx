@@ -214,15 +214,20 @@ export default function Print() {
     }))
   );
 
-  // Calculate actual subtotals from room totals (use actual data, not stale database values)
-  const actualInteriorsSubtotal = interiorsRoomTotals.reduce((sum, { total }) => sum + total, 0);
-  const actualFcSubtotal = fcRoomTotals.reduce((sum, { total }) => sum + total, 0);
-  const actualGrandSubtotal = actualInteriorsSubtotal + actualFcSubtotal;
+  // Use server-calculated subtotals when available (more reliable), fallback to recalculation
+  const serverInteriorsSubtotal = safeN(quotation?.totals?.interiorsSubtotal);
+  const serverFcSubtotal = safeN(quotation?.totals?.fcSubtotal);
+  const serverGrandSubtotal = safeN(quotation?.totals?.grandSubtotal);
+  
+  // Fallback: Calculate from room totals if server totals not available
+  const calculatedInteriorsSubtotal = interiorsRoomTotals.reduce((sum, { total }) => sum + total, 0);
+  const calculatedFcSubtotal = fcRoomTotals.reduce((sum, { total }) => sum + total, 0);
+  const calculatedGrandSubtotal = calculatedInteriorsSubtotal + calculatedFcSubtotal;
 
-  // Use actual subtotals for all calculations
-  const interiorsSubtotal = actualInteriorsSubtotal;
-  const fcSubtotal = actualFcSubtotal;
-  const grandSubtotal = actualGrandSubtotal;
+  // Use server totals if available, otherwise use calculated
+  const interiorsSubtotal = serverInteriorsSubtotal > 0 ? serverInteriorsSubtotal : calculatedInteriorsSubtotal;
+  const fcSubtotal = serverFcSubtotal > 0 ? serverFcSubtotal : calculatedFcSubtotal;
+  const grandSubtotal = serverGrandSubtotal > 0 ? serverGrandSubtotal : calculatedGrandSubtotal;
   const discountValue = safeN(quotation.discountValue);
   
   // Calculate discount allocation for each tab
