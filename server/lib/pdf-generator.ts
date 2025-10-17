@@ -1,6 +1,56 @@
 import puppeteer from 'puppeteer';
+import type { Page } from 'puppeteer';
 import type { Quotation } from '@shared/schema';
 import { generateRenderToken } from './render-token';
+
+/**
+ * Generate PDF with universal header/footer templates
+ * Uses Puppeteer's native displayHeaderFooter with branded templates
+ */
+export async function emitPdf(page: Page, titleText: string): Promise<Buffer> {
+  // TODO: Load and embed logo as base64
+  const logoBase64 = ''; // Placeholder - will embed actual logo
+  
+  const pdfBytes = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    displayHeaderFooter: true,
+    margin: { top: '80px', bottom: '60px', left: '18mm', right: '18mm' },
+    headerTemplate: `
+      <style>
+        *{font-family:Montserrat,Arial,sans-serif;font-size:10px;margin:0;padding:0}
+        .bar{height:70px;background:#18492d;width:100%;position:relative}
+        .wrap{width:100%;padding:8px 18mm;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box}
+        .title{color:#fff;font-weight:600;letter-spacing:.2px;font-size:15px}
+        .muted{color:#cfd8d3;font-size:10px}
+        .dot{width:6px;height:6px;border-radius:50%;background:#b52626;display:inline-block;margin-left:8px}
+        .logo{height:22px;vertical-align:middle;margin-right:10px}
+      </style>
+      <div class="bar"></div>
+      <div class="wrap">
+        <div class="title">
+          ${logoBase64 ? `<img class="logo" src="data:image/svg+xml;base64,${logoBase64}" />` : ''}
+          TRECASA DESIGN STUDIO — ${titleText}
+        </div>
+        <div class="muted">Generated: <span class="date"></span><span class="dot"></span></div>
+      </div>
+    `,
+    footerTemplate: `
+      <style>
+        *{font-family:Montserrat,Arial,sans-serif;font-size:10px;color:#444;margin:0;padding:0}
+        .wrap{width:100%;padding:8px 18mm;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box}
+        .sep{margin:0 8px;color:#999}
+      </style>
+      <div class="wrap">
+        <div>© 2025 Trecasa Design Studio<span class="sep">•</span>www.trecasadesignstudio.com<span class="sep">•</span>@trecasa.designstudio</div>
+        <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
+      </div>
+    `,
+  });
+  
+  // Convert Uint8Array to Buffer
+  return Buffer.from(pdfBytes);
+}
 
 /**
  * Generate PDF for a specific quotation view
@@ -112,7 +162,7 @@ export async function generateQuotationPDF(
             z-index: 1000;
             min-height: 110px;
             padding: 16px 24px;
-            background: #154734;
+            background: #18492d;
             color: white;
             font-family: 'Montserrat', Arial, sans-serif;
             line-height: 1.3;
@@ -232,9 +282,9 @@ export async function generateQuotationPDF(
           
           /* Part 2C: Status dot styling */
           .status-dot {
-            width: 10px;
-            height: 10px;
-            background: #C42021;
+            width: 6px;
+            height: 6px;
+            background: #b52626;
             border-radius: 50%;
             display: inline-block;
             margin-left: 8px;
@@ -276,7 +326,7 @@ export async function generateQuotationPDF(
             font-weight: 600;
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 11pt;
-            color: #154734;
+            color: #18492d;
             line-height: 1.3;
           }
           
@@ -315,7 +365,7 @@ export async function generateQuotationPDF(
           
           /* Room subtotal styling */
           .room-subtotal {
-            background: #154734;
+            background: #18492d;
             color: #FFFFFF;
             font-weight: 500;
           }
@@ -332,7 +382,7 @@ export async function generateQuotationPDF(
           .summary-section h2 {
             font-family: 'Playfair Display', Georgia, serif;
             font-weight: 700;
-            color: #154734;
+            color: #18492d;
             margin: 0 0 6mm;
           }
           
@@ -373,7 +423,7 @@ export async function generateQuotationPDF(
             font-size: 18px;
             font-weight: 700;
             font-family: 'Playfair Display', Georgia, serif;
-            color: #154734;
+            color: #18492d;
           }
           
           /* Section title */
@@ -400,7 +450,7 @@ export async function generateQuotationPDF(
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 11pt;
             font-weight: 700;
-            color: #154734;
+            color: #18492d;
             margin-bottom: 10px;
             margin-top: 16px;
           }
@@ -444,7 +494,7 @@ export async function generateQuotationPDF(
             min-height: 900px;
             text-align: center;
             padding: 60px 40px;
-            background: linear-gradient(135deg, #154734 0%, #1a5a42 100%);
+            background: linear-gradient(135deg, #18492d 0%, #1d5938 100%);
             color: white;
           }
           
