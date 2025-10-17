@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -41,11 +41,13 @@ import {
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { formatINR, safeN } from "@/lib/money";
+import { NewQuotationDialog } from "@/components/new-quotation-dialog";
 
 export default function QuotesList() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const [showNewQuotationDialog, setShowNewQuotationDialog] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -64,43 +66,6 @@ export default function QuotesList() {
   const { data: quotations, isLoading } = useQuery<Quotation[]>({
     queryKey: ["/api/quotations"],
     enabled: isAuthenticated,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/quotations", {
-        projectName: "New Project",
-        projectType: "Villa",
-        clientName: "Client Name",
-        clientPhone: "",
-        projectAddress: "",
-        status: "draft",
-      });
-      const newQuotation = await response.json();
-      return newQuotation;
-    },
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/quotations"] });
-      navigate(`/quotation/${data.id}/info`);
-    },
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Error",
-        description: "Failed to create quotation",
-        variant: "destructive",
-      });
-    },
   });
 
   const deleteMutation = useMutation({
@@ -296,8 +261,7 @@ export default function QuotesList() {
                 Download All Data
               </Button>
               <Button
-                onClick={() => createMutation.mutate()}
-                disabled={createMutation.isPending}
+                onClick={() => setShowNewQuotationDialog(true)}
                 data-testid="button-new-quotation"
               >
                 <Plus className="mr-2 h-4 w-4" />
@@ -358,13 +322,24 @@ export default function QuotesList() {
                         {new Date(quotation.createdAt!).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" data-testid={`button-actions-${quotation.id}`}>
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => duplicateMutation.mutate(quotation.id)}
+                            disabled={duplicateMutation.isPending}
+                            title="Duplicate quotation"
+                            data-testid={`button-duplicate-${quotation.id}`}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" data-testid={`button-actions-${quotation.id}`}>
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
@@ -396,14 +371,6 @@ export default function QuotesList() {
                               Print
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => duplicateMutation.mutate(quotation.id)}
-                              disabled={duplicateMutation.isPending}
-                              data-testid={`action-duplicate-${quotation.id}`}
-                            >
-                              <Copy className="mr-2 h-4 w-4" />
-                              Duplicate
-                            </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => {
                                 window.location.href = `/api/quotations/${quotation.id}/backup/download`;
@@ -446,6 +413,7 @@ export default function QuotesList() {
                             </AlertDialog>
                           </DropdownMenuContent>
                         </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -461,8 +429,7 @@ export default function QuotesList() {
                 <h3 className="text-xl font-semibold mb-2">No quotations yet</h3>
                 <p className="text-muted-foreground mb-6">Get started by creating your first quotation</p>
                 <Button
-                  onClick={() => createMutation.mutate()}
-                  disabled={createMutation.isPending}
+                  onClick={() => setShowNewQuotationDialog(true)}
                   data-testid="button-create-first"
                 >
                   <Plus className="mr-2 h-4 w-4" />
@@ -475,6 +442,12 @@ export default function QuotesList() {
       </main>
 
       <AppFooter />
+
+      <NewQuotationDialog
+        open={showNewQuotationDialog}
+        onOpenChange={setShowNewQuotationDialog}
+        onSuccess={(quotation) => navigate(`/quotation/${quotation.id}/info`)}
+      />
     </div>
   );
 }
