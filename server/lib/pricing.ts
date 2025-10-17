@@ -133,6 +133,7 @@ export function normalizeInteriorItemData(data: {
   length?: string | null;
   height?: string | null;
   width?: string | null;
+  sqft?: string | null;
   buildType: string;
   material: string;
   finish: string;
@@ -155,7 +156,15 @@ export function normalizeInteriorItemData(data: {
   
   // Calculate square footage based on calc type
   const calc = (data.calc || 'SQFT') as CalcType;
-  const sqft = calculateSqft(calc, length, height, width);
+  let sqft: number;
+  
+  if (calc === 'COUNT') {
+    // For COUNT, use the sqft field directly (it stores quantity)
+    sqft = parseFloat(data.sqft || '0');
+  } else {
+    // For SQFT and LSUM, calculate from dimensions
+    sqft = calculateSqft(calc, length, height, width);
+  }
   
   // Determine effective build type (considering wall items)
   const projectBuildType = (data.buildType || 'handmade') as BuildType;

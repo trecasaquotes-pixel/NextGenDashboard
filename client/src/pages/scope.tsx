@@ -497,6 +497,12 @@ export default function Scope() {
       // COUNT calculation: quantity (stored in sqft field) × rate -> amount
       if (field === "sqft" || field === "material" || field === "finish" || field === "hardware" || field === "description" || field === "calc") {
         const quantity = parseFloat(field === "sqft" ? normalizedValue : (item.sqft || "0"));
+        
+        // Update sqft if it's being changed
+        if (field === "sqft") {
+          updatedData.sqft = normalizedValue;
+        }
+        
         const rateAuto = calculateRate(
           effectiveBuildType,
           newMaterial as CoreMaterial,
