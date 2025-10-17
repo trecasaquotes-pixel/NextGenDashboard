@@ -155,6 +155,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden" });
       }
       const updated = await storage.updateQuotation(req.params.id, req.body);
+      
+      // Recalculate totals if discount fields were updated
+      if (req.body.discountType !== undefined || req.body.discountValue !== undefined) {
+        const { recalculateQuotationTotals } = await import('./lib/totals');
+        await recalculateQuotationTotals(req.params.id, storage);
+      }
+      
       res.json(updated);
     } catch (error) {
       console.error("Error updating quotation:", error);
@@ -452,7 +459,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
-      const validatedData = insertInteriorItemSchema.parse({ ...req.body, quotationId: req.params.id });
+      
+      // Normalize pricing data server-side
+      const { normalizeInteriorItemData } = await import('./lib/pricing');
+      const normalizedData = normalizeInteriorItemData({ ...req.body, quotationId: req.params.id });
+      
+      const validatedData = insertInteriorItemSchema.parse(normalizedData);
       const item = await storage.createInteriorItem(validatedData);
       
       // Recalculate quotation totals
@@ -472,7 +484,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
-      const item = await storage.updateInteriorItem(req.params.itemId, req.body);
+      
+      // Get existing item to merge with partial update
+      const interiorItems = await storage.getInteriorItems(req.params.id);
+      const existingItem = interiorItems.find(item => item.id === req.params.itemId);
+      
+      if (!existingItem) {
+        return res.status(404).json({ message: "Interior item not found" });
+      }
+      
+      // Merge partial update with existing data
+      const mergedData = {
+        ...existingItem,
+        ...req.body,
+      };
+      
+      // Normalize pricing data server-side
+      const { normalizeInteriorItemData } = await import('./lib/pricing');
+      const normalizedData = normalizeInteriorItemData(mergedData);
+      
+      const item = await storage.updateInteriorItem(req.params.itemId, normalizedData);
       
       // Recalculate quotation totals
       const { recalculateQuotationTotals } = await import('./lib/totals');

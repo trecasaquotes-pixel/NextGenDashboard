@@ -199,19 +199,24 @@ export default function Estimate() {
   const fcSubtotal = safeN(quotation?.totals?.fcSubtotal);
   const grandSubtotal = safeN(quotation?.totals?.grandSubtotal);
 
-  // Calculate discount amount
-  const discountAmount = discountType === "percent" 
-    ? (grandSubtotal * safeN(discountValue)) / 100 
-    : safeN(discountValue);
+  // Use server-calculated totals if available, otherwise calculate client-side
+  const discountAmount = quotation?.totals?.discountAmount !== undefined 
+    ? safeN(quotation.totals.discountAmount)
+    : discountType === "percent" 
+      ? (grandSubtotal * safeN(discountValue)) / 100 
+      : safeN(discountValue);
 
-  // Calculate discounted amount (prevent negative)
-  const discounted = Math.max(0, grandSubtotal - discountAmount);
+  const discounted = quotation?.totals?.afterDiscount !== undefined
+    ? safeN(quotation.totals.afterDiscount)
+    : Math.max(0, grandSubtotal - discountAmount);
 
-  // Calculate GST (18%)
-  const gstAmount = discounted * 0.18;
+  const gstAmount = quotation?.totals?.gstAmount !== undefined
+    ? safeN(quotation.totals.gstAmount)
+    : discounted * 0.18;
 
-  // Calculate final total
-  const finalTotal = discounted + gstAmount;
+  const finalTotal = quotation?.totals?.finalTotal !== undefined
+    ? safeN(quotation.totals.finalTotal)
+    : discounted + gstAmount;
 
   // Extract unique room types from items and sort them
   const interiorRoomTypes = sortRoomNames(Array.from(new Set(interiorItems.map(item => item.roomType).filter(Boolean))));

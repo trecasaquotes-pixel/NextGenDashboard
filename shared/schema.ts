@@ -71,11 +71,15 @@ export const quotations = pgTable("quotations", {
     ratesByItemKey: Record<string, any>;
   }>(), // Snapshot of rates/brands/rules at approval time
   
-  // Totals (calculated subtotals)
+  // Totals (calculated subtotals and financial summary)
   totals: jsonb("totals").$type<{
     interiorsSubtotal: number;
     fcSubtotal: number;
     grandSubtotal: number;
+    discountAmount?: number;
+    afterDiscount?: number;
+    gstAmount?: number;
+    finalTotal?: number;
     updatedAt: number;
   }>(),
   

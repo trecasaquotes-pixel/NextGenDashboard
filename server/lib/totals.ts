@@ -55,6 +55,34 @@ export function normalizeFCItemData(data: {
 }
 
 /**
+ * Round to 2 decimal places for currency
+ */
+function roundCurrency(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+/**
+ * Calculate discount amount from grand subtotal
+ */
+export function calculateDiscountAmount(
+  grandSubtotal: number,
+  discountType: string,
+  discountValue: number
+): number {
+  if (discountType === 'percent') {
+    return roundCurrency((grandSubtotal * discountValue) / 100);
+  }
+  return roundCurrency(discountValue); // Fixed amount - ensure proper rounding
+}
+
+/**
+ * Calculate GST at 18% on the discounted amount
+ */
+export function calculateGSTAmount(amountAfterDiscount: number): number {
+  return roundCurrency(amountAfterDiscount * 0.18);
+}
+
+/**
  * Recalculate quotation totals from interior and false ceiling items
  * FC totals are recomputed from canonical dimensions to ensure accuracy
  */
@@ -62,20 +90,33 @@ export async function recalculateQuotationTotals(quotationId: string, storage: I
   // Fetch all items
   const interiorItems = await storage.getInteriorItems(quotationId);
   const fcItems = await storage.getFalseCeilingItems(quotationId);
+  const quotation = await storage.getQuotation(quotationId);
+  
+  if (!quotation) {
+    throw new Error('Quotation not found');
+  }
   
   // Calculate interiors subtotal (sum of all interior item totals)
-  const interiorsSubtotal = interiorItems.reduce((sum, item) => {
+  const interiorsSubtotal = roundCurrency(interiorItems.reduce((sum, item) => {
     const total = parseFloat(item.totalPrice || "0");
     return sum + (isNaN(total) ? 0 : total);
-  }, 0);
+  }, 0));
   
   // Calculate false ceiling subtotal - recompute from canonical dimensions
-  const fcSubtotal = fcItems.reduce((sum, item) => {
+  const fcSubtotal = roundCurrency(fcItems.reduce((sum, item) => {
     return sum + calculateFCItemTotal(item);
-  }, 0);
+  }, 0));
   
   // Calculate grand subtotal
-  const grandSubtotal = interiorsSubtotal + fcSubtotal;
+  const grandSubtotal = roundCurrency(interiorsSubtotal + fcSubtotal);
+  
+  // Calculate discount and GST for validation purposes
+  const discountType = quotation.discountType || 'percent';
+  const discountValue = parseFloat(quotation.discountValue || '0');
+  const discountAmount = calculateDiscountAmount(grandSubtotal, discountType, discountValue);
+  const afterDiscount = Math.max(0, roundCurrency(grandSubtotal - discountAmount));
+  const gstAmount = calculateGSTAmount(afterDiscount);
+  const finalTotal = roundCurrency(afterDiscount + gstAmount);
   
   // Update quotation with new totals
   await storage.updateQuotation(quotationId, {
@@ -84,6 +125,10 @@ export async function recalculateQuotationTotals(quotationId: string, storage: I
       interiorsSubtotal,
       fcSubtotal,
       grandSubtotal,
+      discountAmount,
+      afterDiscount,
+      gstAmount,
+      finalTotal,
     },
   });
   
@@ -91,5 +136,9 @@ export async function recalculateQuotationTotals(quotationId: string, storage: I
     interiorsSubtotal,
     fcSubtotal,
     grandSubtotal,
+    discountAmount,
+    afterDiscount,
+    gstAmount,
+    finalTotal,
   };
 }
