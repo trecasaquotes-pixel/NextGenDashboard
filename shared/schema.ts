@@ -862,11 +862,12 @@ export const changeOrderItemsRelations = relations(changeOrderItems, ({ one }) =
 export const insertChangeOrderSchema = createInsertSchema(changeOrders, {
   title: z.string().min(1, "Title is required").max(200),
   description: z.string().optional(),
-  status: z.enum(["draft", "sent", "approved", "rejected"]),
-  discountType: z.enum(["percent", "amount"]),
+  status: z.enum(["draft", "sent", "approved", "rejected"]).optional(),
+  discountType: z.enum(["percent", "amount"]).optional(),
   discountValue: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
 }).omit({
   id: true,
+  userId: true,
   changeOrderId: true,
   createdAt: true,
   updatedAt: true,

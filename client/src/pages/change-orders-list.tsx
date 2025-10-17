@@ -105,9 +105,8 @@ export default function ChangeOrdersList() {
         quotationId: selectedQuotationId,
         title: title.trim(),
         description: description.trim(),
-        status: "draft",
       });
-      return response;
+      return await response.json();
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/change-orders"] });
