@@ -21,7 +21,8 @@ import { registerAdminGlobalRulesRoutes } from "./routes.admin.globalRules";
 import { registerAdminAuditRoutes } from "./routes.admin.audit";
 import { registerClientQuoteRoutes } from "./routes/client-quote";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or, inArray } from "drizzle-orm";
+import { quotations } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -2179,6 +2180,347 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching business expenses stats:", error);
       res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  // Analytics & Business Insights Routes
+
+  // P4-1: Dashboard Overview Analytics
+  app.get('/api/analytics/dashboard', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get all quotations for the user
+      const allQuotations = await db.query.quotations.findMany({
+        where: eq(quotations.userId, userId),
+      });
+
+      // Calculate key metrics
+      const totalQuotations = allQuotations.length;
+      const acceptedQuotations = allQuotations.filter(q => q.status === 'accepted' || q.status === 'approved');
+      const activeQuotations = allQuotations.filter(q => q.status === 'draft' || q.status === 'sent');
+      
+      const totalRevenue = acceptedQuotations.reduce((sum, q) => sum + (q.grandTotal || 0) / 100, 0);
+      const conversionRate = totalQuotations > 0 ? (acceptedQuotations.length / totalQuotations) * 100 : 0;
+
+      // Status distribution
+      const statusDistribution = allQuotations.reduce((acc: any, q) => {
+        const status = q.status || 'draft';
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Monthly revenue trend (last 6 months)
+      const now = new Date();
+      const monthlyRevenue: { month: string; revenue: number; count: number }[] = [];
+      
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        
+        const monthData = acceptedQuotations.reduce((acc, q) => {
+          if (q.updatedAt) {
+            const qDate = new Date(q.updatedAt);
+            const qMonthKey = `${qDate.getFullYear()}-${String(qDate.getMonth() + 1).padStart(2, '0')}`;
+            if (qMonthKey === monthKey) {
+              acc.revenue += (q.grandTotal || 0) / 100;
+              acc.count += 1;
+            }
+          }
+          return acc;
+        }, { revenue: 0, count: 0 });
+        
+        monthlyRevenue.push({
+          month: monthKey,
+          ...monthData,
+        });
+      }
+
+      // Average quote value
+      const avgQuoteValue = acceptedQuotations.length > 0 
+        ? totalRevenue / acceptedQuotations.length 
+        : 0;
+
+      res.json({
+        overview: {
+          totalQuotations,
+          activeQuotations: activeQuotations.length,
+          acceptedQuotations: acceptedQuotations.length,
+          totalRevenue,
+          conversionRate: Math.round(conversionRate * 10) / 10,
+          avgQuoteValue: Math.round(avgQuoteValue),
+        },
+        statusDistribution,
+        monthlyRevenue,
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard analytics:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard analytics" });
+    }
+  });
+
+  // P4-2: Quotation Analytics
+  app.get('/api/analytics/quotations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const allQuotations = await db.query.quotations.findMany({
+        where: eq(quotations.userId, userId),
+      });
+
+      // Value analysis by status
+      const valueByStatus = allQuotations.reduce((acc: any, q) => {
+        const status = q.status || 'draft';
+        if (!acc[status]) {
+          acc[status] = { count: 0, value: 0 };
+        }
+        acc[status].count += 1;
+        acc[status].value += (q.grandTotal || 0) / 100;
+        return acc;
+      }, {});
+
+      // Category analysis (using projectType)
+      const categoryAnalysis = allQuotations.reduce((acc: any, q) => {
+        const category = q.projectType || 'Unknown';
+        if (!acc[category]) {
+          acc[category] = { count: 0, totalValue: 0, accepted: 0 };
+        }
+        acc[category].count += 1;
+        acc[category].totalValue += (q.grandTotal || 0) / 100;
+        if (q.status === 'accepted' || q.status === 'approved') {
+          acc[category].accepted += 1;
+        }
+        return acc;
+      }, {});
+
+      // Build type analysis
+      const buildTypeAnalysis = allQuotations.reduce((acc: any, q) => {
+        const buildType = q.buildType || 'Unknown';
+        if (!acc[buildType]) {
+          acc[buildType] = { count: 0, totalValue: 0 };
+        }
+        acc[buildType].count += 1;
+        acc[buildType].totalValue += (q.grandTotal || 0) / 100;
+        return acc;
+      }, {});
+
+      // Quote value ranges
+      const valueRanges = {
+        '0-1L': 0,
+        '1-3L': 0,
+        '3-5L': 0,
+        '5-10L': 0,
+        '10L+': 0,
+      };
+
+      allQuotations.forEach(q => {
+        const value = (q.grandTotal || 0) / 100;
+        if (value < 100000) valueRanges['0-1L']++;
+        else if (value < 300000) valueRanges['1-3L']++;
+        else if (value < 500000) valueRanges['3-5L']++;
+        else if (value < 1000000) valueRanges['5-10L']++;
+        else valueRanges['10L+']++;
+      });
+
+      res.json({
+        valueByStatus,
+        categoryAnalysis,
+        buildTypeAnalysis,
+        valueRanges,
+      });
+    } catch (error) {
+      console.error("Error fetching quotation analytics:", error);
+      res.status(500).json({ message: "Failed to fetch quotation analytics" });
+    }
+  });
+
+  // P4-3: Financial Reports
+  app.get('/api/analytics/financials', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get revenue from accepted quotations
+      const acceptedQuotations = await db.query.quotations.findMany({
+        where: and(
+          eq(quotations.userId, userId),
+          or(
+            eq(quotations.status, 'accepted'),
+            eq(quotations.status, 'approved')
+          )
+        ),
+      });
+
+      const totalRevenue = acceptedQuotations.reduce((sum, q) => sum + (q.grandTotal || 0) / 100, 0);
+
+      // Get all projects with expenses
+      const allProjects = await db.query.projects.findMany({
+        where: eq(projects.userId, userId),
+        with: {
+          expenses: true,
+        },
+      });
+
+      // Calculate total project expenses
+      const projectExpenses = allProjects.reduce((sum, p) => {
+        const pExpenses = p.expenses?.reduce((s: number, e: any) => s + parseFloat(e.amount || "0"), 0) || 0;
+        return sum + pExpenses;
+      }, 0);
+
+      // Get business expenses
+      const allBusinessExpenses = await db.query.businessExpenses.findMany({
+        where: eq(businessExpenses.userId, userId),
+      });
+
+      const totalBusinessExpenses = allBusinessExpenses.reduce((sum: number, e: any) => sum + parseFloat(e.amount || "0"), 0);
+      const totalExpenses = projectExpenses + totalBusinessExpenses;
+      const netProfit = totalRevenue - totalExpenses;
+      const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+
+      // Monthly financial summary (last 6 months)
+      const now = new Date();
+      const monthlyFinancials: any[] = [];
+      
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        
+        // Revenue for this month
+        const monthRevenue = acceptedQuotations.reduce((sum, q) => {
+          if (q.updatedAt) {
+            const qDate = new Date(q.updatedAt);
+            const qMonthKey = `${qDate.getFullYear()}-${String(qDate.getMonth() + 1).padStart(2, '0')}`;
+            if (qMonthKey === monthKey) {
+              return sum + (q.grandTotal || 0) / 100;
+            }
+          }
+          return sum;
+        }, 0);
+
+        // Expenses for this month (business only for now)
+        const monthExpenses = allBusinessExpenses.reduce((sum: number, e: any) => {
+          if (e.paymentDate) {
+            const eDate = new Date(e.paymentDate);
+            const eMonthKey = `${eDate.getFullYear()}-${String(eDate.getMonth() + 1).padStart(2, '0')}`;
+            if (eMonthKey === monthKey) {
+              return sum + parseFloat(e.amount || "0");
+            }
+          }
+          return sum;
+        }, 0);
+
+        monthlyFinancials.push({
+          month: monthKey,
+          revenue: monthRevenue,
+          expenses: monthExpenses,
+          profit: monthRevenue - monthExpenses,
+        });
+      }
+
+      // Expense breakdown by category
+      const expenseByCategory = allBusinessExpenses.reduce((acc: any, e: any) => {
+        const category = e.category || 'Other';
+        acc[category] = (acc[category] || 0) + parseFloat(e.amount || "0");
+        return acc;
+      }, {});
+
+      res.json({
+        summary: {
+          totalRevenue,
+          totalExpenses,
+          projectExpenses,
+          businessExpenses: totalBusinessExpenses,
+          netProfit,
+          profitMargin: Math.round(profitMargin * 10) / 10,
+        },
+        monthlyFinancials,
+        expenseByCategory,
+      });
+    } catch (error) {
+      console.error("Error fetching financial analytics:", error);
+      res.status(500).json({ message: "Failed to fetch financial analytics" });
+    }
+  });
+
+  // P4-4: Material & Product Analytics
+  app.get('/api/analytics/materials', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get all quotations to analyze their items
+      const userQuotations = await db.query.quotations.findMany({
+        where: eq(quotations.userId, userId),
+      });
+
+      const quotationIds = userQuotations.map(q => q.id);
+
+      // Get all interior items for these quotations
+      const allInteriorItems = await db.query.interiorItems.findMany({
+        where: inArray(interiorItems.quotationId, quotationIds.length > 0 ? quotationIds : ['none']),
+      });
+
+      // Material usage analysis
+      const materialUsage: any = {};
+      const finishUsage: any = {};
+      const hardwareUsage: any = {};
+      const roomTypeUsage: any = {};
+
+      allInteriorItems.forEach(item => {
+        // Materials
+        if (item.material) {
+          materialUsage[item.material] = (materialUsage[item.material] || 0) + 1;
+        }
+        // Finishes
+        if (item.finish) {
+          finishUsage[item.finish] = (finishUsage[item.finish] || 0) + 1;
+        }
+        // Hardware
+        if (item.hardware) {
+          hardwareUsage[item.hardware] = (hardwareUsage[item.hardware] || 0) + 1;
+        }
+        // Room types
+        if (item.roomType) {
+          roomTypeUsage[item.roomType] = (roomTypeUsage[item.roomType] || 0) + 1;
+        }
+      });
+
+      // Top materials by usage
+      const topMaterials = Object.entries(materialUsage)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a: any, b: any) => b.count - a.count)
+        .slice(0, 10);
+
+      const topFinishes = Object.entries(finishUsage)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a: any, b: any) => b.count - a.count)
+        .slice(0, 10);
+
+      const topHardware = Object.entries(hardwareUsage)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a: any, b: any) => b.count - a.count)
+        .slice(0, 10);
+
+      // Room analysis
+      const roomAnalysis = Object.entries(roomTypeUsage)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a: any, b: any) => b.count - a.count);
+
+      // Calculation type distribution
+      const calcTypeDistribution = allInteriorItems.reduce((acc: any, item) => {
+        const type = item.calc || 'SQFT';
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {});
+
+      res.json({
+        topMaterials,
+        topFinishes,
+        topHardware,
+        roomAnalysis,
+        calcTypeDistribution,
+        totalItems: allInteriorItems.length,
+      });
+    } catch (error) {
+      console.error("Error fetching material analytics:", error);
+      res.status(500).json({ message: "Failed to fetch material analytics" });
     }
   });
 

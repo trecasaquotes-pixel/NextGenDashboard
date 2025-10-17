@@ -6,7 +6,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download, Settings, LayoutTemplate, Tag, Paintbrush, Sliders, History, Trash2, TrendingUp, Briefcase, Building2, Copy, AlertCircle, Clock } from "lucide-react";
+import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download, Settings, LayoutTemplate, Tag, Paintbrush, Sliders, History, Trash2, TrendingUp, Briefcase, Building2, Copy, AlertCircle, Clock, BarChart3 } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -232,6 +232,10 @@ export default function QuotesList() {
               <DropdownMenuItem onClick={() => navigate("/business-expenses")} data-testid="button-business-expenses">
                 <Building2 className="mr-2 h-4 w-4" />
                 <span>Business Expenses</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/analytics")} data-testid="button-analytics">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                <span>Business Insights</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/admin/rates")} data-testid="button-admin-rates">
