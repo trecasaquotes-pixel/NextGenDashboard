@@ -6,7 +6,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download, Settings, LayoutTemplate, Tag, Paintbrush, Sliders, History, Trash2, TrendingUp, Briefcase, Building2, Copy } from "lucide-react";
+import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download, Settings, LayoutTemplate, Tag, Paintbrush, Sliders, History, Trash2, TrendingUp, Briefcase, Building2, Copy, AlertCircle, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -150,6 +150,35 @@ export default function QuotesList() {
   const getQuoteTotal = (quotation: Quotation): string => {
     // Always show grand subtotal (without GST)
     return formatINR(safeN(quotation.totals?.grandSubtotal));
+  };
+
+  const getDaysSince = (date: string | Date): number => {
+    const now = new Date();
+    const then = new Date(date);
+    const diffMs = now.getTime() - then.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  };
+
+  const getFollowUpStatus = (quotation: Quotation): { needsFollowUp: boolean; message: string; urgency: 'low' | 'medium' | 'high' } => {
+    const daysSinceUpdated = getDaysSince(quotation.updatedAt!);
+    const daysSinceCreated = getDaysSince(quotation.createdAt!);
+    
+    // For sent quotations, use updatedAt as proxy for when it was sent
+    if (quotation.status === "sent") {
+      if (daysSinceUpdated >= 7) {
+        return { needsFollowUp: true, message: `${daysSinceUpdated}d awaiting response`, urgency: 'high' };
+      } else if (daysSinceUpdated >= 3) {
+        return { needsFollowUp: true, message: `${daysSinceUpdated}d awaiting response`, urgency: 'medium' };
+      } else {
+        return { needsFollowUp: false, message: `${daysSinceUpdated}d ago`, urgency: 'low' };
+      }
+    }
+    
+    if (quotation.status === "draft" && daysSinceCreated >= 14) {
+      return { needsFollowUp: true, message: `Draft ${daysSinceCreated}d old`, urgency: 'medium' };
+    }
+    
+    return { needsFollowUp: false, message: '', urgency: 'low' };
   };
 
   const getUserInitials = () => {
@@ -311,9 +340,27 @@ export default function QuotesList() {
                         {quotation.projectType || "—"}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={getStatusColor(quotation.status)} data-testid={`status-${quotation.id}`}>
-                          {quotation.status}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className={getStatusColor(quotation.status)} data-testid={`status-${quotation.id}`}>
+                            {quotation.status}
+                          </Badge>
+                          {(() => {
+                            const followUp = getFollowUpStatus(quotation);
+                            if (followUp.needsFollowUp) {
+                              return (
+                                <div className="flex items-center gap-1" title={followUp.message}>
+                                  {followUp.urgency === 'high' ? (
+                                    <AlertCircle className="h-4 w-4 text-destructive" data-testid={`alert-high-${quotation.id}`} />
+                                  ) : (
+                                    <Clock className="h-4 w-4 text-orange-500" data-testid={`alert-medium-${quotation.id}`} />
+                                  )}
+                                  <span className="text-xs text-muted-foreground">{followUp.message}</span>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
                       </TableCell>
                       <TableCell className="text-right font-mono font-semibold" data-testid={`total-${quotation.id}`}>
                         {getQuoteTotal(quotation)}
