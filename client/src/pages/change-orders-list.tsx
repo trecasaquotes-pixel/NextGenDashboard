@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -8,8 +8,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, MoreVertical, FileText, Trash2 } from "lucide-react";
 import { useLocation } from "wouter";
-import type { ChangeOrder } from "@shared/schema";
+import type { ChangeOrder, Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,10 +44,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { formatINR, safeN } from "@/lib/money";
-import { useState } from "react";
 
 export default function ChangeOrdersList() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -47,6 +64,12 @@ export default function ChangeOrdersList() {
   const [, navigate] = useLocation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedChangeOrderId, setSelectedChangeOrderId] = useState<string | null>(null);
+  
+  // Create dialog state
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [selectedQuotationId, setSelectedQuotationId] = useState<string>("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -64,6 +87,48 @@ export default function ChangeOrdersList() {
   const { data: changeOrders, isLoading } = useQuery<any[]>({
     queryKey: ["/api/change-orders"],
     enabled: isAuthenticated,
+  });
+
+  // Fetch quotations for selection
+  const { data: quotations } = useQuery<Quotation[]>({
+    queryKey: ["/api/quotations"],
+    enabled: isAuthenticated && createDialogOpen,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedQuotationId || !title.trim()) {
+        throw new Error("Please select a quotation and enter a title");
+      }
+      
+      const response = await apiRequest("POST", "/api/change-orders", {
+        quotationId: selectedQuotationId,
+        title: title.trim(),
+        description: description.trim(),
+        status: "draft",
+      });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/change-orders"] });
+      toast({
+        title: "Change Order Created",
+        description: "The change order has been successfully created.",
+      });
+      setCreateDialogOpen(false);
+      setSelectedQuotationId("");
+      setTitle("");
+      setDescription("");
+      // Navigate to the new change order
+      navigate(`/change-orders/${data.id}`);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create change order",
+        variant: "destructive",
+      });
+    },
   });
 
   const deleteMutation = useMutation({
@@ -108,6 +173,14 @@ export default function ChangeOrdersList() {
     if (selectedChangeOrderId) {
       deleteMutation.mutate(selectedChangeOrderId);
     }
+  };
+
+  const handleCreateClick = () => {
+    setCreateDialogOpen(true);
+  };
+
+  const handleCreateSubmit = () => {
+    createMutation.mutate();
   };
 
   const getStatusBadge = (status: string) => {
@@ -172,13 +245,22 @@ export default function ChangeOrdersList() {
               <h1 className="text-3xl font-bold text-foreground" data-testid="heading-change-orders">Change Orders</h1>
               <p className="text-muted-foreground">Manage project modifications and additions</p>
             </div>
-            <Button
-              onClick={() => navigate("/quotes")}
-              variant="outline"
-              data-testid="button-back-to-quotes"
-            >
-              Back to Quotes
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleCreateClick}
+                data-testid="button-create-change-order"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Change Order
+              </Button>
+              <Button
+                onClick={() => navigate("/quotes")}
+                variant="outline"
+                data-testid="button-back-to-quotes"
+              >
+                Back to Quotes
+              </Button>
+            </div>
           </div>
 
           <Card>
@@ -190,6 +272,10 @@ export default function ChangeOrdersList() {
                   <p className="text-muted-foreground mb-6">
                     Create change orders from your quotations to track project modifications
                   </p>
+                  <Button onClick={handleCreateClick} data-testid="button-create-first-change-order">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Change Order
+                  </Button>
                 </div>
               ) : (
                 <Table>
@@ -270,6 +356,81 @@ export default function ChangeOrdersList() {
 
       <AppFooter />
 
+      {/* Create Change Order Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent data-testid="dialog-create-change-order">
+          <DialogHeader>
+            <DialogTitle>Create Change Order</DialogTitle>
+            <DialogDescription>
+              Add a change order to track modifications to an existing quotation
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="quotation">Select Quotation</Label>
+              <Select value={selectedQuotationId} onValueChange={setSelectedQuotationId}>
+                <SelectTrigger id="quotation" data-testid="select-quotation">
+                  <SelectValue placeholder="Choose a quotation" />
+                </SelectTrigger>
+                <SelectContent>
+                  {quotations?.map((quote) => (
+                    <SelectItem 
+                      key={quote.id} 
+                      value={quote.id}
+                      data-testid={`option-quotation-${quote.id}`}
+                    >
+                      {quote.quoteId} - {quote.projectName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                placeholder="e.g., Additional Kitchen Cabinets"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                data-testid="input-title"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Textarea
+                id="description"
+                placeholder="Detailed explanation of changes..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                data-testid="textarea-description"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreateDialogOpen(false)}
+              data-testid="button-cancel-create"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateSubmit}
+              disabled={!selectedQuotationId || !title.trim() || createMutation.isPending}
+              data-testid="button-submit-create"
+            >
+              {createMutation.isPending ? "Creating..." : "Create Change Order"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
