@@ -21,6 +21,11 @@ No specific user preferences were provided in the original document.
 - **Backend**: Express.js server.
 - **Database**: PostgreSQL with Drizzle ORM.
 - **Authentication**: Replit Auth (OpenID Connect) for user sessions, with HMAC-SHA256 render tokens for server-side PDF generation.
+- **Data Validation & Integrity**: Comprehensive server-side validation using Zod schemas with business rules:
+    - **Project Info**: Required fields (client name 2+ chars, project name 3+ chars), email/phone format validation, build type enum
+    - **Interior Items**: Description length (2-200 chars), dimension ranges (length 0-1000ft, height 0-100ft, width 0-1000ft), SQFT/quantity limits (0-100K), rate overrides (0-1M), calculation type enum validation
+    - **False Ceiling**: Description validation, area (0-100K sqft), rate (0-100K) validation
+    - **Discounts**: Percentage limits (0-100%), proper error messaging for validation failures
 - **Pricing System**: Smart Rate Calculator incorporating brand-based pricing (Core Material, Finish, Hardware) and project-level "Build Type" (Handmade/Factory Finish) for real-time calculation updates. Special handling for wall-related items to always use handmade pricing.
 - **Totals Calculation**: Real-time computation of subtotals, discounts, and GST.
 - **Template System**: Auto-creation of room items based on project categories using predefined templates. Template changes propagate instantly across all pages (Scope, Estimate, Print, PDFs) through comprehensive cache invalidation and refetching.

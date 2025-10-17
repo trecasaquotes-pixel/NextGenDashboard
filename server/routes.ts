@@ -3,7 +3,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog, brands, insertChangeOrderSchema, insertChangeOrderItemSchema, changeOrders, changeOrderItems, insertProjectSchema, insertProjectExpenseSchema, projects, projectExpenses, insertBusinessExpenseSchema, businessExpenses } from "@shared/schema";
+import { insertQuotationSchema, insertInteriorItemSchema, insertFalseCeilingItemSchema, insertOtherItemSchema, validatedQuotationSchema, validatedInteriorItemSchema, validatedFalseCeilingItemSchema, applyTemplateSchema, type ApplyTemplateResponse, templates, templateRooms, templateItems, rates, interiorItems, falseCeilingItems, globalRules, auditLog, brands, insertChangeOrderSchema, insertChangeOrderItemSchema, changeOrders, changeOrderItems, insertProjectSchema, insertProjectExpenseSchema, projects, projectExpenses, insertBusinessExpenseSchema, businessExpenses } from "@shared/schema";
+import { z } from "zod";
 import { generateQuoteId } from "./utils/generateQuoteId";
 import { createQuoteBackupZip, createAllDataBackupZip, backupDatabaseToFiles, buildQuoteZip } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
@@ -130,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         acceptedAt: undefined
       };
       
-      const validatedData = insertQuotationSchema.parse({ 
+      const validatedData = validatedQuotationSchema.parse({ 
         ...req.body, 
         userId, 
         quoteId,
@@ -141,6 +142,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(quotation);
     } catch (error) {
       console.error("Error creating quotation:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+        });
+      }
       res.status(400).json({ message: "Failed to create quotation" });
     }
   });
@@ -464,7 +471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { normalizeInteriorItemData } = await import('./lib/pricing');
       const normalizedData = normalizeInteriorItemData({ ...req.body, quotationId: req.params.id });
       
-      const validatedData = insertInteriorItemSchema.parse(normalizedData);
+      const validatedData = validatedInteriorItemSchema.parse(normalizedData);
       const item = await storage.createInteriorItem(validatedData);
       
       // Recalculate quotation totals
@@ -474,6 +481,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(item);
     } catch (error) {
       console.error("Error creating interior item:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+        });
+      }
       res.status(400).json({ message: "Failed to create interior item" });
     }
   });

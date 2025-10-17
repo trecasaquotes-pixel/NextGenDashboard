@@ -326,6 +326,65 @@ export const insertAgreementSchema = createInsertSchema(agreements).omit({
   createdAt: true,
 });
 
+// Enhanced validation schemas with business rules
+export const validatedQuotationSchema = insertQuotationSchema.extend({
+  projectName: z.string().min(3, "Project name must be at least 3 characters").max(100, "Project name too long"),
+  clientName: z.string().min(2, "Client name must be at least 2 characters").max(100, "Client name too long"),
+  clientEmail: z.string().email("Invalid email address").optional().or(z.literal("")),
+  clientPhone: z.string().regex(/^[\d\s\-\+\(\)]*$/, "Invalid phone number format").optional().or(z.literal("")),
+  buildType: z.enum(["handmade", "factory"], { errorMap: () => ({ message: "Build type must be handmade or factory" }) }),
+  discountValue: z.string().refine(
+    (val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 0 && num <= 100;
+    },
+    { message: "Discount must be between 0 and 100" }
+  ).optional(),
+});
+
+export const validatedInteriorItemSchema = insertInteriorItemSchema.extend({
+  description: z.string().min(2, "Description must be at least 2 characters").max(200, "Description too long"),
+  calc: z.enum(["SQFT", "COUNT", "LSUM"], { errorMap: () => ({ message: "Calculation type must be SQFT, COUNT, or LSUM" }) }),
+  length: z.string().refine(
+    (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 1000),
+    { message: "Length must be between 0 and 1000 feet" }
+  ).optional().nullable(),
+  height: z.string().refine(
+    (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 100),
+    { message: "Height must be between 0 and 100 feet" }
+  ).optional().nullable(),
+  width: z.string().refine(
+    (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 1000),
+    { message: "Width must be between 0 and 1000 feet" }
+  ).optional().nullable(),
+  sqft: z.string().refine(
+    (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 100000),
+    { message: "SQFT/Quantity must be between 0 and 100,000" }
+  ).optional().nullable(),
+  rateOverride: z.string().refine(
+    (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 1000000),
+    { message: "Rate must be between 0 and 1,000,000" }
+  ).optional().nullable(),
+});
+
+export const validatedFalseCeilingItemSchema = insertFalseCeilingItemSchema.extend({
+  description: z.string().min(2, "Description must be at least 2 characters").max(200, "Description too long"),
+  area: z.string().refine(
+    (val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 0 && num <= 100000;
+    },
+    { message: "Area must be between 0 and 100,000 sqft" }
+  ),
+  rate: z.string().refine(
+    (val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 0 && num <= 100000;
+    },
+    { message: "Rate must be between 0 and 100,000" }
+  ),
+});
+
 // TypeScript types
 export type InsertQuotation = z.infer<typeof insertQuotationSchema>;
 export type Quotation = typeof quotations.$inferSelect;
