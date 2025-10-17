@@ -107,38 +107,38 @@ function buildDynamicMaterialsBullets(items: MaterialsData): string[] {
     return finish;
   };
   
-  // Build bullet strings
+  // Build bullet strings with improved formatting
   const bullets: string[] = [];
   
   // Core Materials bullet
   if (coreSet.size > 0) {
-    const coreList = Array.from(coreSet).join(', ');
-    bullets.push(`Core Materials: ${coreList} as per approved design requirements. (Blockboard is not used in any scope of work).`);
+    const coreList = Array.from(coreSet).sort().join(', ');
+    bullets.push(`CORE MATERIALS — ${coreList} (BWP/BWR grade) as per approved design requirements. Note: Blockboard is not used in any scope of work.`);
   } else {
-    bullets.push("Core Materials: BWP/BWR grade plywood (710 Grade) as per approved design. (Blockboard is not used in any scope of work).");
+    bullets.push("CORE MATERIALS — BWP/BWR grade plywood (710 Grade) as per approved design. Note: Blockboard is not used in any scope of work.");
   }
   
   // Finishes bullet
   if (finishSet.size > 0) {
     const formattedFinishes = Array.from(finishSet).map(formatFinish);
-    const uniqueFormatted = Array.from(new Set(formattedFinishes));
+    const uniqueFormatted = Array.from(new Set(formattedFinishes)).sort();
     const finishList = uniqueFormatted.join(', ');
-    bullets.push(`Finishes: ${finishList} unless otherwise specified.`);
+    bullets.push(`FINISHES — ${finishList}, unless otherwise specified in design drawings.`);
   } else {
-    bullets.push("Finishes: External laminates (1.0 mm), Internal laminates (0.8 mm), Acrylic (1.5 mm for kitchens), PU-Duco as per design.");
+    bullets.push("FINISHES — External laminates (1.0 mm), Internal laminates (0.8 mm), Acrylic (1.5 mm for kitchens), PU-Duco as per design.");
   }
   
   // Hardware bullet
   if (hardwareSet.size > 0) {
-    const hardwareList = Array.from(hardwareSet).join(', ');
-    const orEquivalent = hardwareSet.size >= 2 ? ', or equivalent' : '';
-    bullets.push(`Hardware: ${hardwareList}${orEquivalent}, with soft-close mechanisms where applicable.`);
+    const hardwareList = Array.from(hardwareSet).sort().join(', ');
+    const orEquivalent = hardwareSet.size >= 2 ? ' or equivalent' : '';
+    bullets.push(`HARDWARE — ${hardwareList}${orEquivalent}, with soft-close mechanisms where applicable.`);
   } else {
-    bullets.push("Hardware: Hettich/Ebco/equivalent with soft-close mechanisms where applicable.");
+    bullets.push("HARDWARE — Hettich/Ebco or equivalent, with soft-close mechanisms where applicable.");
   }
   
   // Glass & Metal Works bullet (always static)
-  bullets.push("Glass & Metal Works: 5mm/8mm toughened glass, stainless steel/powder-coated mild steel as per design specifications.");
+  bullets.push("GLASS & METAL WORKS — 5mm/8mm toughened glass, stainless steel or powder-coated mild steel as per design specifications.");
   
   return bullets;
 }
@@ -159,12 +159,12 @@ export function renderTerms(lines: string[], vars: TermsVars = {}, materialsData
         const bullets = buildDynamicMaterialsBullets(materialsData);
         return `MATERIALS & BRANDS:\n${bullets.map(b => `  • ${b}`).join('\n')}`;
       }
-      // Fallback to expanded static version with bullets
+      // Fallback to enhanced static version with bullets
       return `MATERIALS & BRANDS:
-  • Core Materials: BWP/BWR grade plywood (710 Grade) as per approved design. (Blockboard is not used in any scope of work).
-  • Finishes: External laminates (1.0 mm), Internal laminates (0.8 mm), Acrylic (1.5 mm for kitchens), PU-Duco as per design.
-  • Hardware: Hettich/Ebco/equivalent with soft-close mechanisms where applicable.
-  • Glass & Metal Works: 5mm/8mm toughened glass, stainless steel/powder-coated mild steel as per design specifications.`;
+  • CORE MATERIALS — BWP/BWR grade plywood (710 Grade) as per approved design. Note: Blockboard is not used in any scope of work.
+  • FINISHES — External laminates (1.0 mm), Internal laminates (0.8 mm), Acrylic (1.5 mm for kitchens), PU-Duco as per design.
+  • HARDWARE — Hettich/Ebco or equivalent, with soft-close mechanisms where applicable.
+  • GLASS & METAL WORKS — 5mm/8mm toughened glass, stainless steel or powder-coated mild steel as per design specifications.`;
     }
     
     // Standard variable replacements

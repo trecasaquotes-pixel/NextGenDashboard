@@ -384,6 +384,40 @@ export default function Print() {
 
               {/* Print Content */}
               <div id="print-interiors-root" className="print-content bg-white text-black" data-pdf-ready="true">
+                {/* Professional Cover Page - Shows in PDF only */}
+                <div className="cover-page">
+                  <div className="cover-logo">TRECASA</div>
+                  <div className="cover-tagline">Design Studio</div>
+                  
+                  <div className="cover-divider"></div>
+                  
+                  <div className="cover-title">
+                    Interior Design<br/>Quotation
+                  </div>
+                  
+                  <div className="cover-divider"></div>
+                  
+                  <div className="cover-details">
+                    <div className="mb-3">
+                      <strong>For:</strong> {quotation.clientName || "Valued Client"}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Project:</strong> {quotation.projectName || "Untitled Project"}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Quote ID:</strong> {quotation.quoteId}
+                    </div>
+                    <div>
+                      <strong>Date:</strong> {currentDate}
+                    </div>
+                  </div>
+                  
+                  <div className="cover-footer">
+                    H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad<br/>
+                    contact@trecasainfra.com | +91 9059784422
+                  </div>
+                </div>
+                
                 {/* PDF Header - Fixed - Official Trecasa Style */}
                 <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
                   <div className="grid grid-cols-[70%_30%] gap-4">
@@ -703,6 +737,40 @@ export default function Print() {
 
               {/* Print Content */}
               <div id="print-fc-root" className="print-content bg-white text-black" data-pdf-ready="true">
+                {/* Professional Cover Page - Shows in PDF only */}
+                <div className="cover-page">
+                  <div className="cover-logo">TRECASA</div>
+                  <div className="cover-tagline">Design Studio</div>
+                  
+                  <div className="cover-divider"></div>
+                  
+                  <div className="cover-title">
+                    False Ceiling<br/>Quotation
+                  </div>
+                  
+                  <div className="cover-divider"></div>
+                  
+                  <div className="cover-details">
+                    <div className="mb-3">
+                      <strong>For:</strong> {quotation.clientName || "Valued Client"}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Project:</strong> {quotation.projectName || "Untitled Project"}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Quote ID:</strong> {quotation.quoteId}
+                    </div>
+                    <div>
+                      <strong>Date:</strong> {currentDate}
+                    </div>
+                  </div>
+                  
+                  <div className="cover-footer">
+                    H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad<br/>
+                    contact@trecasainfra.com | +91 9059784422
+                  </div>
+                </div>
+                
                 {/* PDF Header - Fixed - Official Trecasa Style */}
                 <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
                   <div className="grid grid-cols-[70%_30%] gap-4">

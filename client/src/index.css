@@ -398,6 +398,17 @@
   }
 }
 
+/* Cover page visibility control - OUTSIDE @media print block */
+/* Hide on screen by default */
+.cover-page {
+  display: none !important;
+}
+
+/* Show when parent has pdf-export-mode class (for html2pdf client-side generation) */
+.pdf-export-mode .cover-page {
+  display: flex !important;
+}
+
 /* Print Styles for PDF Export */
 @media print {
   /* Page setup with margins for header/footer */
@@ -554,5 +565,10 @@
 
   .pdf-header .header-meta div {
     line-height: 1.3 !important;
+  }
+  
+  /* Show cover page in print/PDF context (for Puppeteer server-side generation) */
+  .cover-page {
+    display: flex !important;
   }
 }

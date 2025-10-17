@@ -2,6 +2,9 @@ import html2pdf from 'html2pdf.js';
 import { PDFDocument } from 'pdf-lib';
 
 export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
+  // Temporarily add class to show cover page during PDF generation
+  rootEl.classList.add('pdf-export-mode');
+  
   const opt = {
     margin: [10, 10, 10, 10] as [number, number, number, number],
     filename: 'temp.pdf',
@@ -21,6 +24,10 @@ export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
 
   const pdfBlob = await html2pdf().set(opt).from(rootEl).outputPdf('blob');
   const arrayBuffer = await pdfBlob.arrayBuffer();
+  
+  // Remove the temporary class after generation
+  rootEl.classList.remove('pdf-export-mode');
+  
   return new Uint8Array(arrayBuffer);
 }
 

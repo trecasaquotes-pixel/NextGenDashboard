@@ -91,11 +91,11 @@ export async function generateQuotationPDF(
         @media print {
           body {
             font-family: 'Montserrat', Arial, sans-serif;
-            font-size: 9.5pt;
+            font-size: 9pt;
             color: #1A1A1A;
             margin: 0;
             padding: 0;
-            line-height: 1.3;
+            line-height: 1.35;
           }
           
           h1, h2, h3, h4 {
@@ -124,8 +124,36 @@ export async function generateQuotationPDF(
             font-size: 15pt;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin: 0 0 4px 0;
+            letter-spacing: 0.5px;
+            margin: 0 0 6px 0;
+          }
+          
+          .pdf-header .address-text {
+            font-size: 8.5pt;
+            line-height: 1.4;
+          }
+          
+          .pdf-header .client-project {
+            font-size: 9pt;
+            line-height: 1.4;
+          }
+          
+          .pdf-header .greeting {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 9.5pt;
+            font-style: italic;
+            margin-top: 8px;
+          }
+          
+          .pdf-header .contact-details {
+            font-size: 8.5pt;
+            line-height: 1.4;
+          }
+          
+          .pdf-header .issue-date,
+          .pdf-header .quote-id {
+            font-size: 9pt;
+            font-weight: 500;
           }
           
           .pdf-header .grid {
@@ -219,28 +247,43 @@ export async function generateQuotationPDF(
             justify-content: space-between;
           }
           
-          /* Part 2E: Room block to prevent title/row separation */
+          /* Enhanced room block page break handling */
           .room-block {
             page-break-inside: avoid;
-            margin-top: 14px;
+            margin-top: 16px;
+            min-height: 60px;
           }
           
           .room-block:first-child {
             margin-top: 0;
           }
           
+          /* Ensure room title stays with at least first 2 rows */
+          .room-title + .room-table thead {
+            page-break-after: avoid;
+          }
+          
+          .room-table tbody tr:first-child {
+            page-break-before: avoid;
+          }
+          
+          .room-table tbody tr:nth-child(2) {
+            page-break-before: avoid;
+          }
+          
           .room-title {
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             font-weight: 600;
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 11pt;
             color: #154734;
-            line-height: 1.4;
+            line-height: 1.3;
           }
           
           .room-table {
             page-break-inside: auto;
             border-collapse: collapse;
+            width: 100%;
           }
           
           .room-table thead tr {
@@ -249,23 +292,25 @@ export async function generateQuotationPDF(
           }
           
           .room-table thead th {
-            padding: 6px 10px;
+            padding: 6px 8px;
             font-family: 'Montserrat', Arial, sans-serif;
             font-weight: 600;
-            font-size: 9.5pt;
+            font-size: 8pt;
             border-bottom: 1px solid #E0E0E0;
+            text-align: left;
           }
           
           .room-table tbody tr {
             min-height: 24px;
-            border-bottom: 0.6pt solid #EAEAEA;
+            border-bottom: 0.5pt solid #EAEAEA;
           }
           
           .room-table tbody td {
-            padding: 5px 8px;
+            padding: 6px 8px;
             font-family: 'Montserrat', Arial, sans-serif;
-            font-size: 9pt;
-            color: #111111;
+            font-size: 7.5pt;
+            color: #1A1A1A;
+            line-height: 1.3;
           }
           
           /* Room subtotal styling */
@@ -334,13 +379,128 @@ export async function generateQuotationPDF(
           /* Section title */
           .section-title {
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 12pt;
+            font-size: 11pt;
             font-weight: 700;
-            color: #154734;
+            color: #1A1A1A;
+            margin-bottom: 8px;
           }
           
           .header-meta {
             font-family: 'Montserrat', Arial, sans-serif;
+          }
+          
+          /* Terms & Conditions styling */
+          .terms-section {
+            font-size: 8.5pt;
+            line-height: 1.45;
+            margin-top: 14px;
+          }
+          
+          .terms-section h2, .terms-section h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 11pt;
+            font-weight: 700;
+            color: #154734;
+            margin-bottom: 10px;
+            margin-top: 16px;
+          }
+          
+          .terms-section p, .terms-section li {
+            margin-bottom: 8px;
+            font-family: 'Montserrat', Arial, sans-serif;
+          }
+          
+          .terms-section ul {
+            padding-left: 20px;
+            margin: 6px 0;
+          }
+          
+          .terms-section li {
+            margin-bottom: 6px;
+            line-height: 1.4;
+          }
+          
+          /* Materials & Brands enhanced styling */
+          .materials-section {
+            background-color: #F8F9FA;
+            padding: 10px 14px;
+            border-left: 3px solid #C7A948;
+            margin: 10px 0;
+            page-break-inside: avoid;
+          }
+          
+          .materials-section li {
+            font-size: 8.5pt;
+            margin-bottom: 5px;
+          }
+          
+          /* Cover Page Styling - Force display in PDF */
+          .cover-page {
+            display: flex !important;
+            page-break-after: always;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 900px;
+            text-align: center;
+            padding: 60px 40px;
+            background: linear-gradient(135deg, #154734 0%, #1a5a42 100%);
+            color: white;
+          }
+          
+          .cover-logo {
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-size: 32pt;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+          }
+          
+          .cover-tagline {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 14pt;
+            font-style: italic;
+            color: #C7A948;
+            margin-bottom: 60px;
+          }
+          
+          .cover-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 28pt;
+            font-weight: 700;
+            margin-bottom: 40px;
+            line-height: 1.3;
+          }
+          
+          .cover-divider {
+            width: 80px;
+            height: 3px;
+            background-color: #C7A948;
+            margin: 30px auto;
+          }
+          
+          .cover-details {
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-size: 13pt;
+            margin-top: 40px;
+            line-height: 1.8;
+          }
+          
+          .cover-details strong {
+            color: #C7A948;
+            font-weight: 600;
+          }
+          
+          .cover-footer {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-size: 9pt;
+            color: rgba(255, 255, 255, 0.7);
           }
         }
       `
