@@ -1092,7 +1092,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Agreement Pack PDF merger - Combines Interiors + False Ceiling + Agreement into single PDF
+  // Agreement Pack PDF merger - Combines Interiors + False Ceiling + Agreement into single PDF with continuous page numbering
   app.get('/api/quotations/:id/pdf/agreement-pack', async (req: any, res) => {
     try {
       const quotation = await storage.getQuotation(req.params.id);
@@ -1113,15 +1113,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const host = req.get('host');
       const baseUrl = `${protocol}://${host}`;
 
-      console.log(`[PDF] Generating Agreement Pack for ${quotation.quoteId}`);
-      const { generateQuotationPDF } = await import('./lib/pdf-generator');
+      console.log(`[PDF] Generating Agreement Pack for ${quotation.quoteId} with continuous page numbering`);
+      const { generateQuotationPDF, addContinuousPageNumbers } = await import('./lib/pdf-generator');
       const { PDFDocument } = await import('pdf-lib');
 
-      // Generate all 3 PDFs
+      // Generate all 3 PDFs WITHOUT page numbers (we'll add them after merging)
       const [interiorsPdf, falseCeilingPdf, agreementPdf] = await Promise.all([
-        generateQuotationPDF(quotation, 'interiors', baseUrl),
-        generateQuotationPDF(quotation, 'false-ceiling', baseUrl),
-        generateQuotationPDF(quotation, 'agreement', baseUrl),
+        generateQuotationPDF(quotation, 'interiors', baseUrl, false),
+        generateQuotationPDF(quotation, 'false-ceiling', baseUrl, false),
+        generateQuotationPDF(quotation, 'agreement', baseUrl, false),
       ]);
 
       // Merge PDFs using pdf-lib
@@ -1141,6 +1141,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const agreementDoc = await PDFDocument.load(agreementPdf);
       const agreementPages = await mergedPdf.copyPages(agreementDoc, agreementDoc.getPageIndices());
       agreementPages.forEach(page => mergedPdf.addPage(page));
+
+      // Add continuous page numbers across all sections
+      await addContinuousPageNumbers(mergedPdf);
 
       const mergedPdfBytes = await mergedPdf.save();
 

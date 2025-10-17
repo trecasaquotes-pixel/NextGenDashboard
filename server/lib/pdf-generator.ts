@@ -2,14 +2,38 @@ import puppeteer from 'puppeteer';
 import type { Page } from 'puppeteer';
 import type { Quotation } from '@shared/schema';
 import { generateRenderToken } from './render-token';
+import { PDFDocument, rgb } from 'pdf-lib';
 
 /**
  * Generate PDF with universal header/footer templates
  * Uses Puppeteer's native displayHeaderFooter with branded templates
  */
-export async function emitPdf(page: Page, titleText: string): Promise<Buffer> {
+export async function emitPdf(page: Page, titleText: string, includePageNumbers: boolean = true): Promise<Buffer> {
   // TODO: Load and embed logo as base64
   const logoBase64 = ''; // Placeholder - will embed actual logo
+  
+  const footerTemplate = includePageNumbers
+    ? `
+      <style>
+        *{font-family:Montserrat,Arial,sans-serif;font-size:10px;color:#444;margin:0;padding:0}
+        .wrap{width:100%;padding:8px 18mm;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box}
+        .sep{margin:0 8px;color:#999}
+      </style>
+      <div class="wrap">
+        <div>© 2025 Trecasa Design Studio<span class="sep">•</span>www.trecasadesignstudio.com<span class="sep">•</span>@trecasa.designstudio</div>
+        <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
+      </div>
+    `
+    : `
+      <style>
+        *{font-family:Montserrat,Arial,sans-serif;font-size:10px;color:#444;margin:0;padding:0}
+        .wrap{width:100%;padding:8px 18mm;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+        .sep{margin:0 8px;color:#999}
+      </style>
+      <div class="wrap">
+        <div>© 2025 Trecasa Design Studio<span class="sep">•</span>www.trecasadesignstudio.com<span class="sep">•</span>@trecasa.designstudio</div>
+      </div>
+    `;
   
   const pdfBytes = await page.pdf({
     format: 'A4',
@@ -35,17 +59,7 @@ export async function emitPdf(page: Page, titleText: string): Promise<Buffer> {
         <div class="muted">Generated: <span class="date"></span><span class="dot"></span></div>
       </div>
     `,
-    footerTemplate: `
-      <style>
-        *{font-family:Montserrat,Arial,sans-serif;font-size:10px;color:#444;margin:0;padding:0}
-        .wrap{width:100%;padding:8px 18mm;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box}
-        .sep{margin:0 8px;color:#999}
-      </style>
-      <div class="wrap">
-        <div>© 2025 Trecasa Design Studio<span class="sep">•</span>www.trecasadesignstudio.com<span class="sep">•</span>@trecasa.designstudio</div>
-        <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
-      </div>
-    `,
+    footerTemplate,
   });
   
   // Convert Uint8Array to Buffer
@@ -57,12 +71,14 @@ export async function emitPdf(page: Page, titleText: string): Promise<Buffer> {
  * @param quotation - The quotation data
  * @param type - Type of PDF to generate ('interiors' | 'false-ceiling' | 'agreement')
  * @param baseUrl - Base URL of the application (e.g. 'http://localhost:5000')
+ * @param includePageNumbers - Whether to include page numbers in footer (default: true)
  * @returns PDF buffer
  */
 export async function generateQuotationPDF(
   quotation: Quotation,
   type: 'interiors' | 'false-ceiling' | 'agreement',
-  baseUrl: string
+  baseUrl: string,
+  includePageNumbers: boolean = true
 ): Promise<Buffer> {
   let browser;
   
@@ -493,8 +509,8 @@ export async function generateQuotationPDF(
     }
     
     // Generate PDF using new emitPdf with displayHeaderFooter
-    console.log(`[PDF Generator] Generating PDF for ${type} with title: ${titleText}`);
-    const pdfBuffer = await emitPdf(page, titleText);
+    console.log(`[PDF Generator] Generating PDF for ${type} with title: ${titleText}, includePageNumbers: ${includePageNumbers}`);
+    const pdfBuffer = await emitPdf(page, titleText, includePageNumbers);
     console.log(`[PDF Generator] PDF generated successfully, size: ${pdfBuffer.length} bytes`);
     return pdfBuffer;
     
@@ -539,4 +555,34 @@ export async function generateAllQuotationPDFs(
     console.error('[PDF Generator] Error generating all PDFs:', error);
     throw error;
   }
+}
+
+/**
+ * Add continuous page numbers to a merged PDF
+ * @param pdfDoc - PDFDocument instance from pdf-lib
+ * @returns Modified PDFDocument with continuous page numbers
+ */
+export async function addContinuousPageNumbers(pdfDoc: PDFDocument): Promise<PDFDocument> {
+  const pages = pdfDoc.getPages();
+  const totalPages = pages.length;
+  
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    const { width, height } = page.getSize();
+    const pageNumber = i + 1;
+    
+    // Draw page number in footer area (right side, matching Puppeteer footer style)
+    const fontSize = 10;
+    const text = `Page ${pageNumber} of ${totalPages}`;
+    const textWidth = text.length * (fontSize * 0.5); // Approximate width
+    
+    page.drawText(text, {
+      x: width - textWidth - 51, // 18mm right margin = ~51pt
+      y: 30, // Bottom margin area
+      size: fontSize,
+      color: rgb(0.27, 0.27, 0.27), // #444 in RGB
+    });
+  }
+  
+  return pdfDoc;
 }

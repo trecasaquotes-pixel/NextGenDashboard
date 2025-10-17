@@ -187,6 +187,102 @@ export default function Print() {
     }
   };
 
+  const handleDownloadAgreementPack = async () => {
+    if (!quotation) return;
+    
+    setIsGeneratingPDF(true);
+    
+    // Try server-side PDF generation first
+    try {
+      toast({
+        title: "Generating Agreement Pack...",
+        description: "Creating merged PDF with all sections",
+      });
+
+      const response = await fetch(`/api/quotations/${quotationId}/pdf/agreement-pack`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `TRECASA_${quotation.quoteId}_AgreementPack.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast({
+          title: "Success",
+          description: "Server-generated Agreement Pack downloaded successfully",
+        });
+        setIsGeneratingPDF(false);
+        return;
+      }
+      
+      // Server failed, fall back to client-side merging
+      console.warn(`Server Agreement Pack generation failed (${response.status}), falling back to client-side`);
+      toast({
+        title: "Switching to client-side...",
+        description: "Generating and merging PDFs in browser",
+      });
+    } catch (serverError) {
+      console.error('Server Agreement Pack error:', serverError);
+      toast({
+        title: "Switching to client-side...",
+        description: "Generating and merging PDFs in browser",
+      });
+    }
+    
+    // Client-side fallback: Generate and merge PDFs
+    try {
+      const { PDFDocument } = await import('pdf-lib');
+      
+      // Check if both elements exist (they might not due to tab visibility)
+      const interiorsEl = document.getElementById("print-interiors-root");
+      const fcEl = document.getElementById("print-fc-root");
+      
+      if (!interiorsEl || !fcEl) {
+        throw new Error("Agreement Pack requires both Interiors and FC content. Please download individual PDFs instead or use server-side generation when available.");
+      }
+      
+      // Generate Interiors PDF
+      const interiorsPdfBytes = await htmlToPdfBytes(interiorsEl);
+      
+      // Generate False Ceiling PDF
+      const fcPdfBytes = await htmlToPdfBytes(fcEl);
+      
+      // Merge PDFs
+      const mergedPdf = await PDFDocument.create();
+      
+      const interiorsDoc = await PDFDocument.load(interiorsPdfBytes);
+      const interiorPages = await mergedPdf.copyPages(interiorsDoc, interiorsDoc.getPageIndices());
+      interiorPages.forEach(page => mergedPdf.addPage(page));
+      
+      const fcDoc = await PDFDocument.load(fcPdfBytes);
+      const fcPages = await mergedPdf.copyPages(fcDoc, fcDoc.getPageIndices());
+      fcPages.forEach(page => mergedPdf.addPage(page));
+      
+      const mergedPdfBytes = await mergedPdf.save();
+      
+      await downloadBytesAs(`TRECASA_${quotation.quoteId}_AgreementPack.pdf`, new Uint8Array(mergedPdfBytes));
+
+      toast({
+        title: "Success",
+        description: "Client-generated Agreement Pack downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error generating Agreement Pack:", error);
+      toast({
+        title: "Agreement Pack Unavailable",
+        description: error instanceof Error ? error.message : "Please download individual PDFs instead.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   if (!match) {
     return null;
   }
@@ -349,6 +445,15 @@ export default function Print() {
                 <Archive className="mr-2 h-4 w-4" />
                 Download Backup ZIP
               </Button>
+              <Button 
+                variant="default"
+                onClick={handleDownloadAgreementPack}
+                disabled={isGeneratingPDF}
+                data-testid="button-download-agreement-pack"
+              >
+                <Printer className="mr-2 h-4 w-4" />
+                {isGeneratingPDF ? "Generating..." : "Download Agreement Pack"}
+              </Button>
             </div>
 
             <div className="flex items-center gap-3">
@@ -407,8 +512,8 @@ export default function Print() {
               <TabsTrigger value="false-ceiling" data-testid="tab-print-false-ceiling">False Ceiling</TabsTrigger>
             </TabsList>
 
-            {/* Interiors Tab */}
-            <TabsContent value="interiors" className="space-y-6">
+            {/* Interiors Tab - Always rendered, visibility controlled by CSS */}
+            <div className={activeTab === "interiors" ? "block space-y-6" : "hidden"}>
               {/* Download Button - Screen only */}
               <div className="print:hidden">
                 <Button 
@@ -758,10 +863,10 @@ export default function Print() {
                   </div>
                 </div>
               </div>
-            </TabsContent>
+            </div>
 
-            {/* False Ceiling Tab */}
-            <TabsContent value="false-ceiling" className="space-y-6">
+            {/* False Ceiling Tab - Always rendered, visibility controlled by CSS */}
+            <div className={activeTab === "false-ceiling" ? "block space-y-6" : "hidden"}>
               {/* Download Button - Screen only */}
               <div className="print:hidden">
                 <Button 
@@ -1176,7 +1281,7 @@ export default function Print() {
                   </div>
                 </div>
               </div>
-            </TabsContent>
+            </div>
           </Tabs>
         </div>
       </main>
