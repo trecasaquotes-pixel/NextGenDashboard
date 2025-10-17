@@ -42,6 +42,13 @@ No specific user preferences were provided in the original document.
     - **Global Rules**: Application-wide settings including pricing defaults, bedroom scaling, payment schedules, city factors, and footer branding.
 - **Audit Log**: Comprehensive audit trail for all admin changes with user tracking, smart summaries, filtering, and diff viewing.
 - **Version History**: Complete version tracking system for quotations that automatically creates snapshots on every change (create, update info, modify items, pricing changes, status changes). Shows chronological timeline with change summaries, change types (color-coded badges), timestamps, and version numbers. Accessible via History button in quotation header.
+- **Quotation Locking**: Comprehensive concurrent edit protection system preventing data conflicts when multiple users access the same quotation:
+    - **Auto-acquisition**: Lock automatically acquired when user opens quotation, released on page close
+    - **Heartbeat mechanism**: 10-second heartbeat interval maintains lock, 30-second timeout for auto-expiry
+    - **Strict enforcement**: Server-side lock verification on ALL mutation routes (quotations, interior/FC/other items)
+    - **Expiry handling**: Expired locks auto-cleared from database; stale clients blocked from mutations and heartbeats
+    - **UI indicators**: Lock status banner shows who holds lock; major action buttons disabled when locked by others
+    - **Security**: 423 Locked responses with lock holder name; forced reacquisition after expiry prevents concurrent edits
 - **Client Portal**: Secure, token-based system for sharing quotations with clients without authentication, allowing clients to view project details, financial summaries, terms, and accept quotations.
 - **Project Management & Expense Tracking**: Automatically creates projects when quotations are approved. Tracks project expenses with real-time profit/loss calculations, comprehensive expense categorization, vendor/payment tracking, and financial summaries. Includes projects list with P&L overview and detailed project view with expense CRUD operations.
 - **Business Expenses Management**: Comprehensive overhead expense tracking system for monthly operational costs (rent, salaries, utilities, office supplies, marketing, insurance, maintenance, subscriptions, professional fees). Features include:

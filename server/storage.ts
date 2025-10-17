@@ -303,8 +303,9 @@ export class DatabaseStorage implements IStorage {
       .from(quotations)
       .where(eq(quotations.id, quotationId));
 
+    // Quotation doesn't exist - deny operation
     if (!quotation) {
-      return { hasLock: false };
+      return { hasLock: false, lockedByName: 'Quotation not found' };
     }
 
     // No lock exists - allow operation
@@ -314,7 +315,18 @@ export class DatabaseStorage implements IStorage {
 
     // Check if lock is expired
     if (!quotation.lockHeartbeat || quotation.lockHeartbeat <= expireThreshold) {
-      return { hasLock: true };
+      // Clear expired lock from database
+      await db
+        .update(quotations)
+        .set({
+          lockedBy: null,
+          lockedAt: null,
+          lockHeartbeat: null,
+        })
+        .where(eq(quotations.id, quotationId));
+      
+      // Force client to reacquire lock after expiry
+      return { hasLock: false, lockedByName: 'Lock expired - please refresh the page' };
     }
 
     // Lock exists and is active
@@ -380,6 +392,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async releaseLock(quotationId: string, userId: string): Promise<{ success: boolean }> {
+    const now = Date.now();
+    const expireThreshold = now - this.LOCK_TIMEOUT_MS;
+    
     const [quotation] = await db
       .select()
       .from(quotations)
@@ -389,7 +404,25 @@ export class DatabaseStorage implements IStorage {
       return { success: false };
     }
 
-    // Only release if locked by this user
+    // No lock exists - nothing to release
+    if (!quotation.lockedBy) {
+      return { success: true };
+    }
+
+    // Check if lock is expired - allow anyone to release expired locks
+    if (!quotation.lockHeartbeat || quotation.lockHeartbeat <= expireThreshold) {
+      await db
+        .update(quotations)
+        .set({
+          lockedBy: null,
+          lockedAt: null,
+          lockHeartbeat: null,
+        })
+        .where(eq(quotations.id, quotationId));
+      return { success: true };
+    }
+
+    // Only release if locked by this user (and lock is still active)
     if (quotation.lockedBy === userId) {
       await db
         .update(quotations)
@@ -406,6 +439,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateLockHeartbeat(quotationId: string, userId: string): Promise<{ success: boolean }> {
+    const now = Date.now();
+    const expireThreshold = now - this.LOCK_TIMEOUT_MS;
+    
     const [quotation] = await db
       .select()
       .from(quotations)
@@ -415,9 +451,25 @@ export class DatabaseStorage implements IStorage {
       return { success: false };
     }
 
+    // Reject heartbeat if lock has expired - force reacquisition
+    if (!quotation.lockHeartbeat || quotation.lockHeartbeat <= expireThreshold) {
+      // Clear expired lock
+      await db
+        .update(quotations)
+        .set({
+          lockedBy: null,
+          lockedAt: null,
+          lockHeartbeat: null,
+        })
+        .where(eq(quotations.id, quotationId));
+      
+      return { success: false };
+    }
+
+    // Lock is still active, update heartbeat
     await db
       .update(quotations)
-      .set({ lockHeartbeat: Date.now() })
+      .set({ lockHeartbeat: now })
       .where(eq(quotations.id, quotationId));
 
     return { success: true };
