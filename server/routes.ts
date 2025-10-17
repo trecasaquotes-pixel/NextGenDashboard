@@ -139,6 +139,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         signoff: defaultSignoff
       });
       const quotation = await storage.createQuotation(validatedData);
+      
+      // Create initial version snapshot
+      const { createVersionSnapshot, generateChangeSummary } = await import('./lib/version-history');
+      const summary = generateChangeSummary('create', null, quotation);
+      await createVersionSnapshot(storage, quotation.id, userId, 'create', summary);
+      
       res.status(201).json(quotation);
     } catch (error) {
       console.error("Error creating quotation:", error);
@@ -161,6 +167,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
+      
+      // Determine change type based on what was updated
+      let changeType: 'update_info' | 'update_pricing' | 'status_change' = 'update_info';
+      if (req.body.status !== undefined && req.body.status !== quotation.status) {
+        changeType = 'status_change';
+      } else if (req.body.discountType !== undefined || req.body.discountValue !== undefined) {
+        changeType = 'update_pricing';
+      }
+      
       const updated = await storage.updateQuotation(req.params.id, req.body);
       
       // Recalculate totals if discount fields were updated
@@ -168,6 +183,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { recalculateQuotationTotals } = await import('./lib/totals');
         await recalculateQuotationTotals(req.params.id, storage);
       }
+      
+      // Create version snapshot
+      const { createVersionSnapshot, generateChangeSummary } = await import('./lib/version-history');
+      const summary = generateChangeSummary(changeType, quotation, { ...quotation, ...req.body });
+      await createVersionSnapshot(storage, req.params.id, req.user.claims.sub, changeType, summary);
       
       res.json(updated);
     } catch (error) {
@@ -190,6 +210,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting quotation:", error);
       res.status(500).json({ message: "Failed to delete quotation" });
+    }
+  });
+
+  // Get version history for a quotation
+  app.get('/api/quotations/:id/versions', isAuthenticated, async (req: any, res) => {
+    try {
+      const quotation = await storage.getQuotation(req.params.id);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      if (quotation.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const versions = await storage.getQuotationVersions(req.params.id);
+      res.json(versions);
+    } catch (error) {
+      console.error("Error fetching version history:", error);
+      res.status(500).json({ message: "Failed to fetch version history" });
     }
   });
 
@@ -478,6 +517,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { recalculateQuotationTotals } = await import('./lib/totals');
       await recalculateQuotationTotals(req.params.id, storage);
       
+      // Create version snapshot
+      const { createVersionSnapshot } = await import('./lib/version-history');
+      await createVersionSnapshot(
+        storage, 
+        req.params.id, 
+        req.user.claims.sub, 
+        'update_items', 
+        `Added interior item: ${item.description || 'unnamed'}`
+      );
+      
       res.status(201).json(item);
     } catch (error) {
       console.error("Error creating interior item:", error);
@@ -522,6 +571,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { recalculateQuotationTotals } = await import('./lib/totals');
       await recalculateQuotationTotals(req.params.id, storage);
       
+      // Create version snapshot
+      const { createVersionSnapshot } = await import('./lib/version-history');
+      await createVersionSnapshot(
+        storage, 
+        req.params.id, 
+        req.user.claims.sub, 
+        'update_items', 
+        `Modified interior item: ${item.description || 'unnamed'}`
+      );
+      
       res.json(item);
     } catch (error) {
       console.error("Error updating interior item:", error);
@@ -535,11 +594,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!quotation || quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
+      
+      // Get item description before deleting for version history
+      const items = await storage.getInteriorItems(req.params.id);
+      const deletedItem = items.find(item => item.id === req.params.itemId);
+      
       await storage.deleteInteriorItem(req.params.itemId);
       
       // Recalculate quotation totals
       const { recalculateQuotationTotals } = await import('./lib/totals');
       await recalculateQuotationTotals(req.params.id, storage);
+      
+      // Create version snapshot
+      const { createVersionSnapshot } = await import('./lib/version-history');
+      await createVersionSnapshot(
+        storage, 
+        req.params.id, 
+        req.user.claims.sub, 
+        'update_items', 
+        `Deleted interior item: ${deletedItem?.description || 'unnamed'}`
+      );
       
       res.status(204).send();
     } catch (error) {

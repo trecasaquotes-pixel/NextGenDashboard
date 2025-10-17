@@ -1077,3 +1077,48 @@ export const insertBusinessExpenseSchema = createInsertSchema(businessExpenses, 
 
 export type BusinessExpense = typeof businessExpenses.$inferSelect;
 export type NewBusinessExpense = z.infer<typeof insertBusinessExpenseSchema>;
+
+// Quotation Version History table
+export const quotationVersions = pgTable("quotation_versions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  // Version info
+  versionNumber: integer("version_number").notNull(), // Sequential version number per quotation
+  changeType: varchar("change_type").notNull(), // 'create', 'update_info', 'update_items', 'update_pricing', 'status_change'
+  changeSummary: text("change_summary"), // Human-readable summary of what changed
+  
+  // Snapshot of quotation data at this version
+  snapshot: jsonb("snapshot").$type<{
+    quotation: any; // Full quotation data
+    interiorItems?: any[]; // Interior items if changed
+    falseCeilingItems?: any[]; // False ceiling items if changed
+    totals?: any; // Financial totals
+  }>().notNull(),
+  
+  // Metadata
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_quotation_versions_quotation").on(table.quotationId),
+  index("idx_quotation_versions_created").on(table.createdAt),
+]);
+
+export const quotationVersionsRelations = relations(quotationVersions, ({ one }) => ({
+  quotation: one(quotations, {
+    fields: [quotationVersions.quotationId],
+    references: [quotations.id],
+  }),
+  user: one(users, {
+    fields: [quotationVersions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const insertQuotationVersionSchema = createInsertSchema(quotationVersions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type QuotationVersion = typeof quotationVersions.$inferSelect;
+export type NewQuotationVersion = z.infer<typeof insertQuotationVersionSchema>;

@@ -6,6 +6,7 @@ import {
   falseCeilingItems,
   otherItems,
   agreements,
+  quotationVersions,
   type User,
   type UpsertUser,
   type Quotation,
@@ -18,6 +19,8 @@ import {
   type InsertOtherItem,
   type Agreement,
   type InsertAgreement,
+  type QuotationVersion,
+  type NewQuotationVersion,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -58,6 +61,11 @@ export interface IStorage {
   getAgreementByQuotationId(quotationId: string): Promise<Agreement | undefined>;
   createAgreement(agreement: InsertAgreement): Promise<Agreement>;
   updateAgreement(id: string, data: Partial<InsertAgreement>): Promise<Agreement>;
+
+  // Version history operations
+  getQuotationVersions(quotationId: string): Promise<QuotationVersion[]>;
+  createQuotationVersion(version: NewQuotationVersion): Promise<QuotationVersion>;
+  getLatestVersionNumber(quotationId: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -246,6 +254,34 @@ export class DatabaseStorage implements IStorage {
       .where(eq(agreements.id, id))
       .returning();
     return updated;
+  }
+
+  // Version history operations
+  async getQuotationVersions(quotationId: string): Promise<QuotationVersion[]> {
+    return await db
+      .select()
+      .from(quotationVersions)
+      .where(eq(quotationVersions.quotationId, quotationId))
+      .orderBy(desc(quotationVersions.versionNumber));
+  }
+
+  async createQuotationVersion(version: NewQuotationVersion): Promise<QuotationVersion> {
+    const [newVersion] = await db
+      .insert(quotationVersions)
+      .values(version as any)
+      .returning();
+    return newVersion;
+  }
+
+  async getLatestVersionNumber(quotationId: string): Promise<number> {
+    const versions = await db
+      .select()
+      .from(quotationVersions)
+      .where(eq(quotationVersions.quotationId, quotationId))
+      .orderBy(desc(quotationVersions.versionNumber))
+      .limit(1);
+    
+    return versions.length > 0 ? versions[0].versionNumber : 0;
   }
 }
 
