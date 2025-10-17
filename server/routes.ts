@@ -1092,6 +1092,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Agreement Pack PDF merger - Combines Interiors + False Ceiling + Agreement into single PDF
+  app.get('/api/quotations/:id/pdf/agreement-pack', async (req: any, res) => {
+    try {
+      const quotation = await storage.getQuotation(req.params.id);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+
+      // Check authorization (same as individual PDF route)
+      if (req.user?.claims?.sub) {
+        if (quotation.userId !== req.user.claims.sub) {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+      } else {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const protocol = req.protocol;
+      const host = req.get('host');
+      const baseUrl = `${protocol}://${host}`;
+
+      console.log(`[PDF] Generating Agreement Pack for ${quotation.quoteId}`);
+      const { generateQuotationPDF } = await import('./lib/pdf-generator');
+      const { PDFDocument } = await import('pdf-lib');
+
+      // Generate all 3 PDFs
+      const [interiorsPdf, falseCeilingPdf, agreementPdf] = await Promise.all([
+        generateQuotationPDF(quotation, 'interiors', baseUrl),
+        generateQuotationPDF(quotation, 'false-ceiling', baseUrl),
+        generateQuotationPDF(quotation, 'agreement', baseUrl),
+      ]);
+
+      // Merge PDFs using pdf-lib
+      const mergedPdf = await PDFDocument.create();
+
+      // Add Interiors pages
+      const interiorsDoc = await PDFDocument.load(interiorsPdf);
+      const interiorPages = await mergedPdf.copyPages(interiorsDoc, interiorsDoc.getPageIndices());
+      interiorPages.forEach(page => mergedPdf.addPage(page));
+
+      // Add False Ceiling pages
+      const fcDoc = await PDFDocument.load(falseCeilingPdf);
+      const fcPages = await mergedPdf.copyPages(fcDoc, fcDoc.getPageIndices());
+      fcPages.forEach(page => mergedPdf.addPage(page));
+
+      // Add Agreement pages
+      const agreementDoc = await PDFDocument.load(agreementPdf);
+      const agreementPages = await mergedPdf.copyPages(agreementDoc, agreementDoc.getPageIndices());
+      agreementPages.forEach(page => mergedPdf.addPage(page));
+
+      const mergedPdfBytes = await mergedPdf.save();
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="TRECASA_${quotation.quoteId}_AgreementPack.pdf"`);
+      res.send(Buffer.from(mergedPdfBytes));
+    } catch (error) {
+      console.error("Error generating Agreement Pack PDF:", error);
+      res.status(500).json({ message: "Failed to generate Agreement Pack PDF" });
+    }
+  });
+
   // Render routes for PDF generation (token-authenticated, used by Puppeteer)
   // These routes return the HTML content without requiring user session authentication
   app.get('/render/quotation/:id/print', async (req: any, res) => {
