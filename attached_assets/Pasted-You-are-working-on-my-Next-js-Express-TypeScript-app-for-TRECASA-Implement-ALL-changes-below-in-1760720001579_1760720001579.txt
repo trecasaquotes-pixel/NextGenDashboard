@@ -1,0 +1,220 @@
+You are working on my Next.js + Express (TypeScript) app for TRECASA. Implement ALL changes below in one pass. Don’t ask questions—search the repo and apply where paths differ.
+
+==================================================
+BRAND / FONTS / COLORS (GLOBAL)
+==================================================
+• Fonts: Playfair Display (700) for big titles; Montserrat (400/500) for everything else (UI + PDFs).
+• Replace any maroon with brand green #18492d; accent red #b52626 only.
+• Header brand text everywhere in PDFs: “TRECASA DESIGN STUDIO” at ~15px.
+• Include logo in PDF header (SVG/PNG). Max height 22px.
+• Red brand dot 6×6px, right-aligned to brand baseline.
+
+==================================================
+PDF RENDERING — HEADER & FOOTER ON EVERY PAGE
+==================================================
+Make server-side Puppeteer the DEFAULT for all “Download PDF” buttons; keep a client fallback.
+
+A) Wire buttons
+• “Download Interiors PDF”  → GET /render/quotation/:id/print?section=interiors
+• “Download False Ceiling PDF” → GET /render/quotation/:id/print?section=false-ceiling
+• “Download Agreement Pack” → GET /render/quotation/:id/agreement
+Update client buttons to call these routes and stream the file. Only use client fallback on server error.
+
+B) Puppeteer header/footer templates
+Create/modify server/lib/pdf-generator.ts (or equivalent):
+
+```ts
+import type { Page } from 'puppeteer';
+
+export async function emitPdf(page: Page, titleText: string) {
+  return page.pdf({
+    format: 'A4',
+    printBackground: true,
+    displayHeaderFooter: true,
+    margin: { top: '80px', bottom: '60px', left: '18mm', right: '18mm' },
+    headerTemplate: `
+      <style>
+        *{font-family:Montserrat,Arial,sans-serif;font-size:10px}
+        .bar{height:70px;background:#18492d;width:100%}
+        .wrap{width:100%;padding:8px 18mm;display:flex;align-items:center;justify-content:space-between}
+        .title{color:#fff;font-weight:600;letter-spacing:.2px}
+        .muted{color:#cfd8d3}
+        .dot{width:6px;height:6px;border-radius:50%;background:#b52626;display:inline-block;margin-left:8px}
+        .logo{height:22px;vertical-align:middle;margin-right:10px}
+      </style>
+      <div class="bar"></div>
+      <div class="wrap">
+        <div class="title">
+          <img class="logo" src="data:image/svg+xml;base64,{{EMBED_LOGO_BASE64}}" />
+          TRECASA DESIGN STUDIO — ${titleText}
+        </div>
+        <div class="muted">Generated: <span class="date"></span><span class="dot"></span></div>
+      </div>
+    `,
+    footerTemplate: `
+      <style>
+        *{font-family:Montserrat,Arial,sans-serif;font-size:10px;color:#444}
+        .wrap{width:100%;padding:8px 18mm;display:flex;align-items:center;justify-content:space-between}
+        .sep{margin:0 8px;color:#999}
+      </style>
+      <div class="wrap">
+        <div>© 2025 Trecasa Design Studio<span class="sep">•</span>www.trecasadesignstudio.com<span class="sep">•</span>@trecasa.designstudio</div>
+        <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
+      </div>
+    `,
+  });
+}
+
+• Interiors: emitPdf(page, ‘Interiors Quotation’)
+• False Ceiling: emitPdf(page, ‘False Ceiling Quotation’)
+• Agreement Pack: emitPdf(page, ‘Service Agreement & Annexures’)
+
+C) Client fallback (only on server failure)
+• Build a paginator that renders explicit page sections, each with its own header/footer:
+
+<div id="print-root">
+  <section class="page">
+    <header class="print-header">…</header>
+    <main class="print-body">…</main>
+    <footer class="print-footer">…</footer>
+  </section>
+  <!-- repeat .page as needed -->
+</div>
+
+• Print CSS:
+
+@media print{
+  .page{page-break-after:always;width:210mm;min-height:297mm;margin:0}
+  .print-header{height:70px;background:#18492d}
+  .print-body{padding:18mm}
+  .print-footer{height:50px;display:flex;justify-content:space-between;align-items:center;padding:8px 18mm}
+}
+
+==================================================
+PDF CONTENT — FIRST PAGE / SUMMARY / TABLES
+
+• First page: brand header → title “INTERIORS QUOTATION” (Playfair 700) → “ROOM TOTALS — INTERIORS” table.
+• Remove any old duplicate “Room Summary” sections.
+• After Room Totals: “PROJECT SUMMARY” (Client, Project, Category, Address).
+• Start “DETAILED ROOM-WISE BREAKDOWN” on a NEW PAGE.
+• Each room ends with a “Room Subtotal” green bar; add 8–10px space above that bar.
+• Prevent orphans: room wrapper page-break-inside: avoid;.
+
+Room Totals order (exact):
+	1.	Kitchen
+	2.	Living/Dining
+	3.	Master Bedroom + Bathroom
+	4.	Bedroom 2 + Bathroom
+	5.	Bedroom 3 + Bathroom
+	6.	Others
+
+End-of-Interiors summary shows:
+• Interiors Subtotal
+• Discount (overall; flat or %)
+• GST (18% fixed)
+• Final Interiors Total (rounded per setting)
+
+==================================================
+SCOPE EDITOR — NO HORIZONTAL SCROLL + EDITABLE ₹/SFT
+
+• Remove horizontal scrolling in scope table.
+• Two-line responsive layout on narrow screens (brand dropdowns toggle “Show brand options”).
+• Column widths (desktop guideline):
+	•	Description 26–30%
+	•	L/H/W: 9–10% each
+	•	SQFT: 8–10%
+	•	Core: 12–14%
+	•	Finish: 12–14%
+	•	Hardware: 12–14%
+	•	Rate (₹/sft): 8–10% (editable)
+	•	Amount (₹): 10–12% (right-aligned)
+• Make “Rate (₹/sft)” editable for SFT items. When user edits, mark rate with an asterisk “*” and recalc Amount live.
+• If brand/build type changes later, auto-reset the rate to auto value.
+
+==================================================
+DISCOUNT / TAX / ROUNDING
+
+• Discount modes: Percent or Flat (both available; default 0).
+• GST fixed at 18%.
+• Rounding ON to nearest rupee.
+• Reflect in app and PDFs.
+
+==================================================
+TEMPLATES — PRELOAD ROOMS & ITEMS
+
+On any template load (1/2/3/4 BHK, Villa, Duplex, Commercial):
+• Kitchen: Base, Wall, Loft, Tall, Appliance; Wicker Basket; Tandem Drawer Set (SFT for modular; baskets/drawers as COUNT/LSUM as currently modeled).
+• Living/Dining: TV Unit – Base; Custom Wall Highlights (always Handmade).
+• Master Bedroom: Wardrobe Swing; Wardrobe Slide (if enabled); Wardrobe Loft; Dresser Base; (TV Unit optional).
+• Bedroom 2/3/4: Wardrobe Swing; Wardrobe Loft; Custom Wall Highlights.
+• Bathrooms: Vanity.
+• Others: Floor Matting; Transportation.
+• Bathrooms hidden in Scope UI; merged with their bedroom totals in PDFs.
+• Applying a template is idempotent: add missing rooms/items only (no duplicates).
+
+==================================================
+AGREEMENT PACK — ONE PDF (SUMMARY + A + B + TERMS)
+
+Clicking “Download Agreement Pack” generates ONE PDF in this order:
+	1.	Cover/Summary page:
+• Client/Project meta, Quote ID/Date
+• Interiors Total, False Ceiling Total, Subtotal, Discount (₹ or %), GST (18 %), Grand Total (rounded)
+• Payment Schedule (e.g., 50/40/10 with computed amounts from Grand Total)
+	2.	Annexure A — Interiors Quotation (reuse Interiors print)
+	3.	Annexure B — False Ceiling Quotation (reuse FC print)
+	4.	Annexure C — Agreement Terms & Conditions (full clauses)
+
+• Use approved snapshot if quote is Approved; else current draft.
+• Header/footer on every page; page numbers continue across the whole pack.
+
+==================================================
+TERMS — MATERIALS & BRANDS (DYNAMIC)
+
+• Keep existing T&C clauses, but render the “Materials & Brands” block dynamically from selections:
+	•	Core Materials: selected cores (fallback “BWP/BWR (710 Grade Plywood), HDHMR, HDF, MDF, Particle Board; Blockboard excluded.”)
+	•	Finishes: selected finishes with thickness hints if missing (“External laminates 1.0mm”, “Acrylic 1.5mm for kitchens”, “PU-Duco per design”, “Internal laminates 0.8mm”)
+	•	Hardware: selected brands; add “or equivalent” only if 2+ brands; include “soft-close where applicable”.
+	•	Glass & Metal: static note (“Only where specified; decorative/special finishes chargeable”)
+• Resolve placeholders like {City}, {Client}, etc., from project header.
+• For approved quotes, lock the T&C snapshot.
+
+==================================================
+HEADER META & PROJECT FIELDS
+
+• Right header meta (Client, Quote ID, Date) vertically aligned; show Project Name too.
+• Logo left; “TRECASA DESIGN STUDIO” 15px; alignment clean.
+• Project Summary repeats key meta on first page body.
+
+==================================================
+PAGE BREAK & CLIPPING GUARDS
+
+• A4 margins: top 80px, bottom 60px, left/right 18mm.
+• Avoid clipping: page-break-inside: avoid for room wrappers and table headers.
+• Long tables paginate cleanly; repeat table headers on new page sections if needed.
+
+==================================================
+PDF ENGINE SETTINGS (CLIENT FALLBACK)
+
+If client html2pdf is used as fallback:
+
+html2pdf().set({
+  margin: [16, 12, 16, 12],
+  pagebreak: { mode: ['css', 'legacy'] },
+  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+  html2canvas: { scale: 2, useCORS: true },
+});
+
+Add page numbers post-render (jsPDF) inside footer area.
+
+==================================================
+ACCEPTANCE CHECKLIST
+
+[ ] All PDFs (Interiors, FC, Agreement) show header & footer on EVERY page with page numbers
+[ ] First page: Room Totals + Project Summary; Breakdown starts on a new page
+[ ] Scope editor: no horizontal scroll; editable rates; asterisk for overridden rates; auto-reset on brand/build-type change
+[ ] Discount (₹/%) + GST + rounding reflected in app + PDFs
+[ ] Templates preload rooms/items as specified; idempotent apply
+[ ] Agreement Pack: one PDF with Cover/Summary, Annexure A, Annexure B, Annexure C (Terms)
+[ ] Dynamic Materials & Brands block reflects selections; placeholders resolved
+[ ] No clipping; margins honored; fonts embedded (Playfair + Montserrat)
+
