@@ -232,6 +232,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Recalculate totals for the duplicated quotation
+      const { recalculateQuotationTotals } = await import('./lib/totals');
+      await recalculateQuotationTotals(duplicateQuotation.id, storage);
+
       res.status(201).json(duplicateQuotation);
     } catch (error) {
       console.error("Error duplicating quotation:", error);
@@ -450,6 +454,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const validatedData = insertInteriorItemSchema.parse({ ...req.body, quotationId: req.params.id });
       const item = await storage.createInteriorItem(validatedData);
+      
+      // Recalculate quotation totals
+      const { recalculateQuotationTotals } = await import('./lib/totals');
+      await recalculateQuotationTotals(req.params.id, storage);
+      
       res.status(201).json(item);
     } catch (error) {
       console.error("Error creating interior item:", error);
@@ -464,6 +473,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden" });
       }
       const item = await storage.updateInteriorItem(req.params.itemId, req.body);
+      
+      // Recalculate quotation totals
+      const { recalculateQuotationTotals } = await import('./lib/totals');
+      await recalculateQuotationTotals(req.params.id, storage);
+      
       res.json(item);
     } catch (error) {
       console.error("Error updating interior item:", error);
@@ -478,6 +492,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden" });
       }
       await storage.deleteInteriorItem(req.params.itemId);
+      
+      // Recalculate quotation totals
+      const { recalculateQuotationTotals } = await import('./lib/totals');
+      await recalculateQuotationTotals(req.params.id, storage);
+      
       res.status(204).send();
     } catch (error) {
       console.error("Error deleting interior item:", error);

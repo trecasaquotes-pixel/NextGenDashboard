@@ -182,32 +182,8 @@ export default function QuotesList() {
     }
   };
 
-  const calculateFinalTotal = (quotation: Quotation): number => {
-    const grandSubtotal = safeN(quotation.totals?.grandSubtotal);
-    const discountValue = safeN(quotation.discountValue);
-    const discountType = quotation.discountType || "percent";
-
-    // Calculate discount amount
-    const discountAmount = discountType === "percent" 
-      ? (grandSubtotal * discountValue) / 100 
-      : discountValue;
-
-    // Calculate discounted amount (prevent negative)
-    const discounted = Math.max(0, grandSubtotal - discountAmount);
-
-    // Calculate GST (18%)
-    const gstAmount = discounted * 0.18;
-
-    // Calculate final total
-    return discounted + gstAmount;
-  };
-
   const getQuoteTotal = (quotation: Quotation): string => {
-    // If discount is applied, show final total with GST
-    if (quotation.discountValue && safeN(quotation.discountValue) > 0) {
-      return formatINR(calculateFinalTotal(quotation));
-    }
-    // Otherwise show grand subtotal
+    // Always show grand subtotal (without GST)
     return formatINR(safeN(quotation.totals?.grandSubtotal));
   };
 
