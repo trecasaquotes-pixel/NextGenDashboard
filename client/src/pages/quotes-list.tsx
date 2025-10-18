@@ -40,7 +40,8 @@ import {
 } from "@/components/ui/table";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { formatINR, safeN } from "@/lib/money";
+import { formatINR } from "@shared/formatters";
+import { safeN } from "@/lib/money";
 import { NewQuotationDialog } from "@/components/new-quotation-dialog";
 
 export default function QuotesList() {

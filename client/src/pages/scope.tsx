@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/table";
 import { calculateRate, calculateAmount, type BuildType, type CoreMaterial, type FinishMaterial, type HardwareBrand } from "@/lib/rates";
 import { calculateQuoteTotals } from "@/lib/calculateTotals";
-import { formatINR } from "@/lib/money";
+import { formatINR } from "@shared/formatters";
 import { getEffectiveBuildType } from "@/lib/pricing";
 
 // Brand options for dropdowns

@@ -14,7 +14,8 @@ import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { Plus, Trash2, FileText, ArrowLeft } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { formatINR, safeN } from "@/lib/money";
+import { formatINR } from "@shared/formatters";
+import { safeN } from "@/lib/money";
 import type { ChangeOrder, ChangeOrderItem, Quotation } from "@shared/schema";
 
 interface ChangeOrderItemRow extends Partial<ChangeOrderItem> {

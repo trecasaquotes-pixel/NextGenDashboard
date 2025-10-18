@@ -56,7 +56,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { formatINR, safeN } from "@/lib/money";
+import { formatINR } from "@shared/formatters";
+import { safeN } from "@/lib/money";
 
 export default function ChangeOrdersList() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();

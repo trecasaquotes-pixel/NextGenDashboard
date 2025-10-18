@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Download, FileSignature, CheckCircle2 } from "lucide-react";
-import { formatINR } from "@/lib/money";
+import { formatINR } from "@shared/formatters";
 import type { Agreement } from "@shared/schema";
 
 interface AgreementCardProps {

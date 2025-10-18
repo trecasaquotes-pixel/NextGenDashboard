@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, Download, AlertCircle, FileText } from "lucide-react";
-import { formatINR } from "@/lib/money";
+import { formatINR } from "@shared/formatters";
 
 export default function ClientQuotePortal() {
   const [match, params] = useRoute("/client/:quoteId");
