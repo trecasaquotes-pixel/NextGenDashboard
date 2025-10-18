@@ -1,0 +1,106 @@
+Developer Handoff (Repository-wide content & formatting)
+
+Objective: Standardize wording, labels, and formatting across PDFs, UI, and exports without changing any business logic or numeric values.
+
+1) Centralize constants
+
+Create a single source (e.g., content/constants.ts or env/localization store) for:
+
+Section titles (rename “Misc” → “Additional Works”)
+
+Signature labels (right side: “Trecasa Design Studio – Authorized Signatory”; left side auto-fills client name)
+
+T&C block text (replace “(City)” with Hyderabad)
+
+Payment schedule labels (Token 10%, Design Finalisation 60%, Mid Execution 25%, After Handover 5%)
+
+Greeting/salutation pattern (pull client name from record; ensure consistent spelling everywhere, e.g., Chowhan)
+
+All templates (PDF, preview screens, emails) must read these strings from the constants file so future edits are one-place changes.
+
+2) Global formatters
+
+Currency (INR, Indian numbering): Implement a single formatINR(value) and use everywhere (tables, subtotals, totals).
+
+Date display: Use “D Month YYYY” (e.g., 1 November 2025) in headers, issue/validity lines, etc. Update “Quote Validity” sentence accordingly.
+
+3) Terms & Conditions (single template)
+
+Replace per-file copies with one shared component:
+
+“Quote Validity: Valid until 1 November 2025.” (or dynamic date, same sentence structure)
+
+“Dispute Resolution: Any disputes will be resolved through amicable discussion. If unresolved, disputes shall be subject to arbitration under the Indian Arbitration and Conciliation Act, 1996, with jurisdiction limited to courts in Hyderabad.”
+
+4) Signature block
+
+Left: auto-fill Client Name (e.g., “Mr. Ramdas Chowhan”)
+
+Right: “Trecasa Design Studio – Authorized Signatory”
+
+Keep signature/date lines; show company seal if provided.
+
+5) Layout + totals integrity
+
+Preserve current layout/colors/typography.
+
+Do not recalc values; only reformat display. The sample quote must still show:
+
+Subtotal ₹32,74,019.00
+
+GST (18%) ₹5,89,323.42
+
+Final Quote ₹38,63,342.42
+
+6) Output
+
+Regenerate the sample file as …_UPDATED.pdf and confirm all above standards appear.
+
+QA Checklist (Go/No-Go)
+A. Smoke checks (one PDF, one UI screen, one email)
+
+ “Misc” is “Additional Works” everywhere
+
+ Greeting uses the record’s client name consistently (e.g., Chowhan, not Chohwan)
+
+ Signature labels exactly as specified; client name auto-filled
+
+ T&C shows clean validity sentence and Hyderabad jurisdiction (no placeholders)
+
+B. Currency & totals
+
+ All monetary figures use ₹ + Indian numbering (tables, subtotals, totals).
+
+ Sample quote totals unchanged from source (values above).
+
+ Payment schedule labels/percentages match the summary block.
+
+C. Dates
+
+ Issue/validity and any inline dates render “D Month YYYY.”
+
+ No time-of-day clutter (e.g., “8:23 AM”) in validity line.
+
+D. Regression across app
+
+Pick 3 different quotes covering: many items, few items, and long T&C.
+
+ Section renames and T&C appear identically.
+
+ Currency/date formatters applied in list views, detail views, PDFs, and any CSV/Excel export (if present).
+
+ No layout shifts or overflows after renames (especially page 5 T&C and long “Additional Works” tables).
+
+E. Edge cases
+
+ Very large amounts still format correctly (lakhs/crores).
+
+ Client names with initials or honorifics render cleanly in greeting and signature.
+
+ Quotes without “Additional Works” don’t show empty headings.
+
+Final Go/No-Go
+
+ All 5 sections above pass.
+
+ One stakeholder signs off on the regenerated sample PDF with exact totals.
