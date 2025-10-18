@@ -563,8 +563,8 @@ export default function Print() {
                   </div>
                 </div>
                 
-                {/* PDF Header - Fixed - Official Trecasa Style */}
-                <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
+                {/* PDF Header - Legacy (hidden in print, Puppeteer injects its own) */}
+                <div className="cover-header pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
                   <div className="grid grid-cols-[70%_30%] gap-4">
                     {/* Left Column */}
                     <div>
@@ -615,8 +615,8 @@ export default function Print() {
                   </div>
                 </div>
 
-                {/* PDF Footer - Universal Footer */}
-                <div className="pdf-footer bg-white border-t border-[#C7A948] flex items-center justify-center" style={{height: '40px', padding: '10px 0', fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                {/* PDF Footer - Legacy (hidden in print, Puppeteer injects its own) */}
+                <div className="cover-header pdf-footer bg-white border-t border-[#C7A948] flex items-center justify-center" style={{height: '40px', padding: '10px 0', fontFamily: "'Montserrat', Arial, sans-serif"}}>
                   <div className="text-center text-[8pt] text-[#666666]">
                     © 2025 TRECASA DESIGN STUDIO <span className="mx-2">|</span> www.trecasadesignstudio.com <span className="mx-2">|</span> @trecasa.designstudio <span className="inline-block w-[5px] h-[5px] rounded-full bg-red-600 ml-2" style={{verticalAlign: 'middle'}}></span>
                   </div>
@@ -916,8 +916,8 @@ export default function Print() {
                   </div>
                 </div>
                 
-                {/* PDF Header - Fixed - Official Trecasa Style */}
-                <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
+                {/* PDF Header - Legacy (hidden in print, Puppeteer injects its own) */}
+                <div className="cover-header pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
                   <div className="grid grid-cols-[70%_30%] gap-4">
                     {/* Left Column */}
                     <div>
@@ -968,8 +968,8 @@ export default function Print() {
                   </div>
                 </div>
 
-                {/* PDF Footer - Universal Footer */}
-                <div className="pdf-footer bg-white border-t border-[#C7A948] flex items-center justify-center" style={{height: '40px', padding: '10px 0', fontFamily: "'Montserrat', Arial, sans-serif"}}>
+                {/* PDF Footer - Legacy (hidden in print, Puppeteer injects its own) */}
+                <div className="cover-header pdf-footer bg-white border-t border-[#C7A948] flex items-center justify-center" style={{height: '40px', padding: '10px 0', fontFamily: "'Montserrat', Arial, sans-serif"}}>
                   <div className="text-center text-[8pt] text-[#666666]">
                     © 2025 TRECASA DESIGN STUDIO <span className="mx-2">|</span> www.trecasadesignstudio.com <span className="mx-2">|</span> @trecasa.designstudio <span className="inline-block w-[5px] h-[5px] rounded-full bg-red-600 ml-2" style={{verticalAlign: 'middle'}}></span>
                   </div>
