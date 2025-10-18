@@ -14,6 +14,7 @@ import { htmlToPdfBytes, mergePdfBytes, downloadBytesAs } from "@/lib/pdf";
 import { AnnexureTitle } from "@/components/annexure-title";
 import { createRoot } from "react-dom/client";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { formatDisplayDate } from "@shared/formatters";
 
 export default function Agreement() {
   const [match, params] = useRoute("/quotation/:id/agreement");
@@ -189,11 +190,7 @@ export default function Agreement() {
     );
   }
 
-  const currentDate = new Date().toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
+  const currentDate = formatDisplayDate(new Date());
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -423,11 +420,7 @@ export default function Agreement() {
                         <div>
                           <p className="text-xs text-gray-500">Date:</p>
                           <p className="text-sm">
-                            {quotation.signoff?.client?.signedAt ? new Date(quotation.signoff.client.signedAt).toLocaleDateString('en-IN', {
-                              day: '2-digit',
-                              month: 'short',
-                              year: 'numeric'
-                            }) : "_____________"}
+                            {quotation.signoff?.client?.signedAt ? formatDisplayDate(new Date(quotation.signoff.client.signedAt)) : "_____________"}
                           </p>
                         </div>
                       </div>
@@ -456,11 +449,7 @@ export default function Agreement() {
                         <div>
                           <p className="text-xs text-gray-500">Date:</p>
                           <p className="text-sm">
-                            {quotation.signoff?.trecasa?.signedAt ? new Date(quotation.signoff.trecasa.signedAt).toLocaleDateString('en-IN', {
-                              day: '2-digit',
-                              month: 'short',
-                              year: 'numeric'
-                            }) : "_____________"}
+                            {quotation.signoff?.trecasa?.signedAt ? formatDisplayDate(new Date(quotation.signoff.trecasa.signedAt)) : "_____________"}
                           </p>
                         </div>
                       </div>
