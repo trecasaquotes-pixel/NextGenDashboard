@@ -404,10 +404,9 @@
   display: none !important;
 }
 
-/* Show when parent has pdf-export-mode class (for html2pdf client-side generation) */
-.pdf-export-mode .cover-page {
-  display: flex !important;
-}
+/* NOTE: Cover page is NOT shown in client-side PDFs (html2pdf fallback)
+   Only the green header (.pdf-header) appears in client-side PDFs.
+   Server-side PDFs would use cover page if Puppeteer was available. */
 
 /* Print Styles for PDF Export */
 @media print {

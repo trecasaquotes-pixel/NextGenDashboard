@@ -2,18 +2,10 @@ import html2pdf from 'html2pdf.js';
 import { PDFDocument } from 'pdf-lib';
 
 export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
-  // Temporarily add class for PDF generation mode
+  // Add marker class for PDF generation mode
+  // Note: .cover-page elements stay hidden (CSS keeps them display: none)
+  // Only the green .pdf-header will appear in client-side PDFs
   rootEl.classList.add('pdf-export-mode');
-  
-  // Hide cover page for client-side PDFs (it creates duplicate header appearance)
-  // The green header (.pdf-header) will serve as the header instead
-  const coverPages = rootEl.querySelectorAll('.cover-page');
-  const originalDisplays: string[] = [];
-  coverPages.forEach((page) => {
-    const el = page as HTMLElement;
-    originalDisplays.push(el.style.display);
-    el.style.display = 'none';
-  });
   
   const opt = {
     margin: [10, 10, 10, 10] as [number, number, number, number],
@@ -35,13 +27,7 @@ export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
   const pdfBlob = await html2pdf().set(opt).from(rootEl).outputPdf('blob');
   const arrayBuffer = await pdfBlob.arrayBuffer();
   
-  // Restore original display values
-  coverPages.forEach((page, index) => {
-    const el = page as HTMLElement;
-    el.style.display = originalDisplays[index];
-  });
-  
-  // Remove the temporary class after generation
+  // Clean up
   rootEl.classList.remove('pdf-export-mode');
   
   return new Uint8Array(arrayBuffer);
