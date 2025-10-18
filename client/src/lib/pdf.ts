@@ -5,6 +5,15 @@ export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
   // Temporarily add class to show cover page during PDF generation
   rootEl.classList.add('pdf-export-mode');
   
+  // Hide legacy headers directly (more reliable than CSS for html2canvas)
+  const legacyHeaders = rootEl.querySelectorAll('.cover-header');
+  const originalDisplays: string[] = [];
+  legacyHeaders.forEach((header) => {
+    const el = header as HTMLElement;
+    originalDisplays.push(el.style.display);
+    el.style.display = 'none';
+  });
+  
   const opt = {
     margin: [10, 10, 10, 10] as [number, number, number, number],
     filename: 'temp.pdf',
@@ -24,6 +33,12 @@ export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
 
   const pdfBlob = await html2pdf().set(opt).from(rootEl).outputPdf('blob');
   const arrayBuffer = await pdfBlob.arrayBuffer();
+  
+  // Restore original display values
+  legacyHeaders.forEach((header, index) => {
+    const el = header as HTMLElement;
+    el.style.display = originalDisplays[index];
+  });
   
   // Remove the temporary class after generation
   rootEl.classList.remove('pdf-export-mode');
