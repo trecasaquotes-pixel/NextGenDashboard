@@ -563,8 +563,8 @@ export default function Print() {
                   </div>
                 </div>
                 
-                {/* PDF Header - Legacy (hidden in print, Puppeteer injects its own) */}
-                <div className="cover-header pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
+                {/* PDF Header - Green TRECASA header (shown on every page) */}
+                <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
                   <div className="grid grid-cols-[70%_30%] gap-4">
                     {/* Left Column */}
                     <div>
@@ -916,8 +916,8 @@ export default function Print() {
                   </div>
                 </div>
                 
-                {/* PDF Header - Legacy (hidden in print, Puppeteer injects its own) */}
-                <div className="cover-header pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
+                {/* PDF Header - Green TRECASA header (shown on every page) */}
+                <div className="pdf-header bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
                   <div className="grid grid-cols-[70%_30%] gap-4">
                     {/* Left Column */}
                     <div>

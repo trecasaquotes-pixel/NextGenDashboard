@@ -422,11 +422,6 @@
     display: none !important;
   }
 
-  /* Hide legacy headers in print mode (Puppeteer injects its own headerTemplate) */
-  .cover-header {
-    display: none !important;
-  }
-
   /* Show only the active tab content */
   body {
     background: white;
@@ -576,9 +571,4 @@
   .cover-page {
     display: flex !important;
   }
-}
-
-/* Hide legacy headers during client-side PDF generation (html2pdf.js) */
-.pdf-export-mode .cover-header {
-  display: none !important;
 }

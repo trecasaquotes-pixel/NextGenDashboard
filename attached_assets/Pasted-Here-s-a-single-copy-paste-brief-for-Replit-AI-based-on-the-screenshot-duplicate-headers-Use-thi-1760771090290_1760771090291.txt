@@ -1,0 +1,74 @@
+Here’s a single, copy-paste brief for Replit AI based on the screenshot (duplicate headers). Use this verbatim:
+
+⸻
+
+TASK: Fix duplicate header in printed PDFs (only the green TRECASA header should appear on every page, including page 1).
+
+What I’m seeing (from the attached screenshot):
+	•	A white “body header” block at the very top (text like “TRECASA Design Studio / Interior Design Quotation / For: … / Project: … / Quote ID / Date / address / email / phone”).
+	•	Immediately below it, the intended dark-green TRECASA header bar (the Puppeteer headerTemplate) with left/right columns (studio title, address, client name, project address, greeting; and on the right: email, phone, issue date, quote id).
+	•	Both render on page 1, so page 1 shows two headers stacked.
+
+Goal:
+	•	In PDFs, show only the green Puppeteer header on all pages (including page 1).
+	•	Hide/remove the white “body header” in render/print/PDF mode.
+	•	Keep the white header visible only in on-screen (web app) views if we still want it.
+
+Implementation plan (make all of these changes):
+	1.	Introduce a global “render mode” flag
+	•	Detect render mode anywhere we use server-side PDF (e.g. /render/quotation/:id/print or a ?render=1 query).
+	•	Create a utility isRenderMode() that checks pathname or query param.
+	•	Make this available to client components via a context or a small helper import.
+	2.	Conditionally render the body header
+	•	Locate the white header block in the interiors/agreement print pages. It’s the block that prints:
+“TRECASA Design Studio / Interior Design Quotation / For: … / Project: … / Quote ID / Date …”
+Often it sits above the green header section component.
+	•	Wrap it with a guard: if (!isRenderMode()) { …body header… }.
+	•	Alternatively, give it a class screen-only and never render it during render mode.
+	3.	Add print CSS to enforce this at stylesheet level
+	•	In the print stylesheet (or a global CSS module loaded for print), add:
+
+@media print {
+  .screen-only { display: none !important; }
+  .print-only { display: block !important; }
+}
+
+
+	•	If you need an inverse for on-screen previews:
+
+@media screen {
+  .print-only { display: none !important; }
+}
+
+
+	4.	Ensure Puppeteer header/footer are the only PDF headers/footers
+	•	In the Puppeteer code that calls page.pdf, confirm:
+	•	displayHeaderFooter: true
+	•	headerTemplate: <our green TRECASA header HTML>
+	•	footerTemplate: <our footer HTML>
+	•	margin.top matches header height (e.g. 100–120px), and margin.bottom matches footer height (e.g. 70–90px).
+	•	Do not render any body-level header at the top of page content in render mode. The page content should start below the header area.
+	5.	Prevent overlap and clipped content on page 1
+	•	In the print content wrapper, add top padding equal to the header height if the framework inserts content too high. Example:
+
+@media print {
+  .print-content {
+    padding-top: 120px;  /* match header height */
+    padding-bottom: 90px;/* match footer height */
+  }
+}
+
+
+	•	Verify that @page margins + Puppeteer margin.top/bottom are consistent. Avoid setting conflicting @page { margin } in CSS when Puppeteer margins are already set.
+
+	6.	Verify for all print entry points
+	•	Apply the same “hide body header in render mode” rule to Interiors PDF, False-Ceiling PDF, and Agreement Pack PDF render routes so they all use only the green header and the standard footer.
+	•	Page 1 must also use the Puppeteer header (sometimes libraries skip header on first page—ensure our headerTemplate renders on every page).
+
+Acceptance checks:
+	•	When clicking Download PDF, page 1 shows only the green header; no white header appears above it.
+	•	Every page shows the green header and the standard footer.
+	•	No content overlaps the header or footer; no clipping occurs.
+	•	On normal in-app (non-render) pages, the white header can remain visible if desired.
+
+Please implement exactly as above and confirm across Interiors, False Ceiling, and Agreement Pack PDFs.

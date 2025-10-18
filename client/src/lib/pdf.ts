@@ -2,14 +2,15 @@ import html2pdf from 'html2pdf.js';
 import { PDFDocument } from 'pdf-lib';
 
 export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
-  // Temporarily add class to show cover page during PDF generation
+  // Temporarily add class for PDF generation mode
   rootEl.classList.add('pdf-export-mode');
   
-  // Hide legacy headers directly (more reliable than CSS for html2canvas)
-  const legacyHeaders = rootEl.querySelectorAll('.cover-header');
+  // Hide cover page for client-side PDFs (it creates duplicate header appearance)
+  // The green header (.pdf-header) will serve as the header instead
+  const coverPages = rootEl.querySelectorAll('.cover-page');
   const originalDisplays: string[] = [];
-  legacyHeaders.forEach((header) => {
-    const el = header as HTMLElement;
+  coverPages.forEach((page) => {
+    const el = page as HTMLElement;
     originalDisplays.push(el.style.display);
     el.style.display = 'none';
   });
@@ -35,8 +36,8 @@ export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
   const arrayBuffer = await pdfBlob.arrayBuffer();
   
   // Restore original display values
-  legacyHeaders.forEach((header, index) => {
-    const el = header as HTMLElement;
+  coverPages.forEach((page, index) => {
+    const el = page as HTMLElement;
     el.style.display = originalDisplays[index];
   });
   
