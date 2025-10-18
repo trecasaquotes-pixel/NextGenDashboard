@@ -395,11 +395,7 @@ export default function Print() {
   const fcGst = fcDiscounted * 0.18;
   const fcFinalTotal = fcDiscounted + fcGst;
 
-  const currentDate = new Date().toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
+  const currentDate = formatDisplayDate(new Date());
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -776,7 +772,7 @@ export default function Print() {
                         const quoteDate = quotation.createdAt ? new Date(quotation.createdAt) : new Date();
                         const expiryDate = new Date(quoteDate);
                         expiryDate.setDate(expiryDate.getDate() + validDays);
-                        const validUntilDate = dateFormat(expiryDate.getTime());
+                        const validUntilDate = formatDisplayDate(expiryDate);
                         
                         const lines = terms?.useDefault
                           ? renderTerms(defaultTerms.default_interiors, {
@@ -1194,7 +1190,7 @@ export default function Print() {
                         const quoteDate = quotation.createdAt ? new Date(quotation.createdAt) : new Date();
                         const expiryDate = new Date(quoteDate);
                         expiryDate.setDate(expiryDate.getDate() + validDays);
-                        const validUntilDate = dateFormat(expiryDate.getTime());
+                        const validUntilDate = formatDisplayDate(expiryDate);
                         
                         const lines = terms?.useDefault
                           ? renderTerms(defaultTerms.default_false_ceiling, {
