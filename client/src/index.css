@@ -577,3 +577,8 @@
     display: flex !important;
   }
 }
+
+/* Hide legacy headers during client-side PDF generation (html2pdf.js) */
+.pdf-export-mode .cover-header {
+  display: none !important;
+}
