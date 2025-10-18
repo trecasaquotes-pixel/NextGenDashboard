@@ -134,6 +134,7 @@ export default function Scope() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/interior-items`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
     },
     onError: handleMutationError,
   });
@@ -144,6 +145,7 @@ export default function Scope() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/interior-items`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
     },
     onError: handleMutationError,
   });
@@ -154,6 +156,7 @@ export default function Scope() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/interior-items`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
     },
     onError: handleMutationError,
   });
@@ -199,6 +202,7 @@ export default function Scope() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/other-items`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
     },
     onError: handleMutationError,
   });
@@ -209,6 +213,7 @@ export default function Scope() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/other-items`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
     },
     onError: handleMutationError,
   });
@@ -219,6 +224,7 @@ export default function Scope() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/other-items`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
     },
     onError: handleMutationError,
   });
