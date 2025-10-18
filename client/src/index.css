@@ -422,6 +422,11 @@
     display: none !important;
   }
 
+  /* Hide legacy headers/footers in print mode (Puppeteer injects its own) */
+  .cover-header {
+    display: none !important;
+  }
+
   /* Show only the active tab content */
   body {
     background: white;
