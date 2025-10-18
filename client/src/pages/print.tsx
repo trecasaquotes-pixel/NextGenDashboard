@@ -84,7 +84,7 @@ export default function Print() {
       const now = Date.now();
       const currentSignoff = quotation?.signoff || {
         client: { name: "", signature: "", signedAt: undefined },
-        trecasa: { name: "Authorized Signatory", title: "For TRECASA DESIGN STUDIO", signature: "", signedAt: undefined },
+        trecasa: { name: "Trecasa Design Studio – Authorized Signatory", title: "Trecasa Design Studio – Authorized Signatory", signature: "", signedAt: undefined },
         accepted: false,
         acceptedAt: undefined
       };
@@ -836,12 +836,12 @@ export default function Print() {
                       {/* Trecasa Signature */}
                       <div className="space-y-3 break-inside-avoid">
                         <p className="text-[8px] uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>
-                          {quotation.signoff?.trecasa?.title || "For TRECASA DESIGN STUDIO"}
+                          {quotation.signoff?.trecasa?.title || "Trecasa Design Studio – Authorized Signatory"}
                         </p>
                         <div className="space-y-2">
                           <div>
                             <p className="text-[8px] text-gray-500">Name:</p>
-                            <p className="text-xs font-medium">{quotation.signoff?.trecasa?.name || "Authorized Signatory"}</p>
+                            <p className="text-xs font-medium">{quotation.signoff?.trecasa?.name || "Trecasa Design Studio – Authorized Signatory"}</p>
                           </div>
                           <div>
                             <p className="text-[8px] text-gray-500">Signature:</p>
@@ -1254,12 +1254,12 @@ export default function Print() {
                       {/* Trecasa Signature */}
                       <div className="space-y-3 break-inside-avoid">
                         <p className="text-[8px] uppercase text-gray-600 tracking-wide" style={{fontFamily: "'Montserrat', sans-serif", fontWeight: 500}}>
-                          {quotation.signoff?.trecasa?.title || "For TRECASA DESIGN STUDIO"}
+                          {quotation.signoff?.trecasa?.title || "Trecasa Design Studio – Authorized Signatory"}
                         </p>
                         <div className="space-y-2">
                           <div>
                             <p className="text-[8px] text-gray-500">Name:</p>
-                            <p className="text-xs font-medium">{quotation.signoff?.trecasa?.name || "Authorized Signatory"}</p>
+                            <p className="text-xs font-medium">{quotation.signoff?.trecasa?.name || "Trecasa Design Studio – Authorized Signatory"}</p>
                           </div>
                           <div>
                             <p className="text-[8px] text-gray-500">Signature:</p>

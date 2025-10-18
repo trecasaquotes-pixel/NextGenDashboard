@@ -435,15 +435,15 @@ export default function Agreement() {
 
                     {/* TRECASA Signature */}
                     <div>
-                      <p className="text-xs font-semibold uppercase text-gray-600 mb-4">For TRECASA DESIGN STUDIO</p>
+                      <p className="text-xs font-semibold uppercase text-gray-600 mb-4">Trecasa Design Studio – Authorized Signatory</p>
                       <div className="space-y-2">
                         <div>
                           <p className="text-xs text-gray-500">Title:</p>
-                          <p className="text-sm">{quotation.signoff?.trecasa?.title || "For TRECASA DESIGN STUDIO"}</p>
+                          <p className="text-sm">{quotation.signoff?.trecasa?.title || "Trecasa Design Studio – Authorized Signatory"}</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Name:</p>
-                          <p className="text-sm">{quotation.signoff?.trecasa?.name || "Authorized Signatory"}</p>
+                          <p className="text-sm">{quotation.signoff?.trecasa?.name || "Trecasa Design Studio – Authorized Signatory"}</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Signature:</p>
