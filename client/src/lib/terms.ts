@@ -30,7 +30,7 @@ export const defaultTerms: Record<TermsTemplateId, string[]> = {
     "CHANGE ORDERS: Any modifications or additions to the approved scope will be charged separately as per prevailing rates. Change orders may impact project timelines and require revised payment schedules.",
     "DEFECTS LIABILITY: TRECASA will rectify any defects in workmanship reported within the warranty period, subject to verification. Liability is limited to repair/replacement of defective components only.",
     "FORCE MAJEURE: TRECASA shall not be liable for delays or non-performance due to acts of God, natural disasters, pandemics, government restrictions, labor strikes, material shortages, or other events beyond reasonable control.",
-    "DISPUTE RESOLUTION: Any disputes arising from this quotation shall be resolved through amicable discussion. If unresolved, disputes shall be subject to arbitration under Indian Arbitration and Conciliation Act, 1996, with jurisdiction limited to courts in [City].",
+    "DISPUTE RESOLUTION: Any disputes arising from this quotation shall be resolved through amicable discussion. If unresolved, disputes shall be subject to arbitration under Indian Arbitration and Conciliation Act, 1996, with jurisdiction limited to courts in Hyderabad.",
     "GOVERNING LAW: This quotation and any resulting contract shall be governed by the laws of India. Acceptance of this quotation constitutes agreement to these terms and conditions."
   ],
   default_false_ceiling: [
@@ -50,7 +50,7 @@ export const defaultTerms: Record<TermsTemplateId, string[]> = {
     "CHANGE ORDERS: Modifications to approved design/scope will be charged as per prevailing rates and may impact project timelines. Written approval required for all change orders.",
     "LIABILITY LIMITATION: TRECASA's liability is limited to repair/replacement of defective work within warranty period. No liability for consequential damages, business losses, or damages beyond the contract value.",
     "FORCE MAJEURE: TRECASA shall not be liable for delays/non-performance due to acts of God, pandemics, government orders, strikes, material shortages, or events beyond reasonable control.",
-    "DISPUTE RESOLUTION: Disputes shall be resolved amicably through discussion. Unresolved disputes subject to arbitration under Indian Arbitration Act, 1996. Jurisdiction limited to courts in [City].",
+    "DISPUTE RESOLUTION: Disputes shall be resolved amicably through discussion. Unresolved disputes subject to arbitration under Indian Arbitration Act, 1996. Jurisdiction limited to courts in Hyderabad.",
     "GOVERNING LAW: This quotation is governed by laws of India. Acceptance constitutes agreement to these terms and conditions."
   ],
 };
