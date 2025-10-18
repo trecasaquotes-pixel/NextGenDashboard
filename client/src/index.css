@@ -422,7 +422,7 @@
     display: none !important;
   }
 
-  /* Hide legacy headers/footers in print mode (Puppeteer injects its own) */
+  /* Hide legacy headers in print mode (Puppeteer injects its own headerTemplate) */
   .cover-header {
     display: none !important;
   }
