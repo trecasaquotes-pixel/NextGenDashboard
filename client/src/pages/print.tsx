@@ -12,7 +12,8 @@ import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shar
 import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { formatINR, safeN } from "@/lib/money";
+import { formatINR, formatDisplayDate } from "@shared/formatters";
+import { safeN } from "@/lib/money";
 import { defaultTerms, renderTerms } from "@/lib/terms";
 import { dateFormat } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
