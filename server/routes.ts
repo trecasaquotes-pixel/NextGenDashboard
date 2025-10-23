@@ -51,6 +51,7 @@ import { registerAdminBrandsRoutes } from "./routes.admin.brands";
 import { registerAdminPaintingFcRoutes } from "./routes.admin.paintingFc";
 import { registerAdminGlobalRulesRoutes } from "./routes.admin.globalRules";
 import { registerAdminAuditRoutes } from "./routes.admin.audit";
+import { registerUserManagementRoutes } from "./routes.admin.users";
 import { registerClientQuoteRoutes } from "./routes/client-quote";
 import { registerAgreementRoutes } from "./routes.agreement";
 import { db } from "./db";
@@ -2808,6 +2809,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAdminPaintingFcRoutes(app, isAuthenticated);
   registerAdminGlobalRulesRoutes(app, isAuthenticated);
   registerAdminAuditRoutes(app, isAuthenticated);
+  registerUserManagementRoutes(app, storage);
 
   // Client portal routes (public + admin)
   registerClientQuoteRoutes(app, isAuthenticated);
