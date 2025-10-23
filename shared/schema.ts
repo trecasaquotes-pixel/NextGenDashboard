@@ -409,8 +409,12 @@ export const validatedQuotationSchema = insertQuotationSchema.extend({
 export const validatedInteriorItemSchema = insertInteriorItemSchema.extend({
   description: z
     .string()
-    .min(2, "Description must be at least 2 characters")
-    .max(200, "Description too long"),
+    .transform((v) => v?.trim() ?? "")
+    .refine(
+      (v) => v.length === 0 || v.length >= 2,
+      { message: "Description must be at least 2 characters" }
+    )
+    .refine((v) => v.length <= 200, { message: "Description too long" }),
   calc: z.enum(["SQFT", "COUNT", "LSUM"], {
     errorMap: () => ({ message: "Calculation type must be SQFT, COUNT, or LSUM" }),
   }),
@@ -459,8 +463,12 @@ export const validatedInteriorItemSchema = insertInteriorItemSchema.extend({
 export const validatedFalseCeilingItemSchema = insertFalseCeilingItemSchema.extend({
   description: z
     .string()
-    .min(2, "Description must be at least 2 characters")
-    .max(200, "Description too long"),
+    .transform((v) => v?.trim() ?? "")
+    .refine(
+      (v) => v.length === 0 || v.length >= 2,
+      { message: "Description must be at least 2 characters" }
+    )
+    .refine((v) => v.length <= 200, { message: "Description too long" }),
   area: z.string().refine(
     (val) => {
       const num = parseFloat(val);
