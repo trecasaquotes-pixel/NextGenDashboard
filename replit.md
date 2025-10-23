@@ -37,7 +37,14 @@ No specific user preferences were provided in the original document.
 - **PDF Generation**: Dual approach with client-side (html2pdf.js) and server-side (Puppeteer with Google Fonts, professional margins, header/footer templates) options. All PDFs feature universal header/footer design with consistent branding. Includes room summary tables and robust page break handling.
   - **Detailed Room-wise Breakdown**: Professional table design with Playfair Display Bold 11pt section title (#1A1A1A), room names in Playfair Display SemiBold 11pt (#154734). Tables feature light gray headers (#F2F2F2, 26px height), Montserrat SemiBold 8pt column labels, data rows with 24px min height and Montserrat Regular 7.5-8pt text. Includes comprehensive columns: Description, L×H×W (combined dimensions), SQFT, Core Material, Finish, Hardware, Rate (₹/sft), and Amount (₹). Room subtotal bars in dark green (#154734) with white text (26px height). Optimized column widths for complete material visibility without text clipping.
 - **Render Token System**: HMAC-signed, time-limited tokens for secure Puppeteer access to protected pages.
-- **Agreement Pack**: Functionality to merge multiple PDFs (service agreement, annexure, quotation) into a single document.
+- **Agreement Pack**: Functionality to merge multiple PDFs (service agreement, annexure, quotation) into a single document with dynamic customizations:
+  - **Agreement Customizations**: Per-quotation storage via `agreementCustomizations` field allowing custom materials (core, finishes, hardware), specs, and payment schedule
+  - **Agreement Editor UI**: Collapsible card interface for editing materials list (one per line), custom specifications, and payment schedule with add/remove items
+  - **Payment Schedule Validation**: Custom schedule percentages must sum to 100%; server-side validation ensures data integrity
+  - **Combined Totals**: Payment schedule calculations use finalTotal (Interiors + FC combined) with conditional note when FC is included
+  - **Conditional FC Exclusion**: FC Annexure B only included in Agreement Pack when BOTH `includeAnnexureFC` flag AND `hasItems` (FC items with non-zero totals) are true
+  - **Smart UI Controls**: FC checkbox auto-disabled with "(No FC items)" label when quotation has no False Ceiling scope
+  - **PDF Generation**: Agreement PDFs use custom headers/footers (no Puppeteer displayHeaderFooter) to prevent blank pages; Annexure PDFs maintain standard header/footer template
 - **Backup & Export**: ZIP file generation for individual quotation backups (PDFs + JSON) and global data export.
 - **Admin Interfaces**: Comprehensive CRUD interfaces for managing:
   - **Rates**: Interior item pricing, brand-based adders, unit guardrails.
