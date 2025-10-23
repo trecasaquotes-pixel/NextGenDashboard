@@ -1233,6 +1233,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
 
+      // Ensure quotation has required totals (recompute if missing for legacy quotations)
+      if (!quotation.totals || typeof quotation.totals.grandSubtotal === 'undefined') {
+        console.log(`[PDF] Recomputing totals for legacy quotation ${quotation.quoteId}`);
+        const { recalculateQuotationTotals } = await import("./lib/totals");
+        await recalculateQuotationTotals(req.params.id, storage);
+        // Refetch quotation with updated totals
+        const updatedQuotation = await storage.getQuotation(req.params.id);
+        if (!updatedQuotation) {
+          return res.status(404).json({ message: "Quotation not found after totals update" });
+        }
+        Object.assign(quotation, updatedQuotation);
+      }
+
       const protocol = req.protocol;
       const host = req.get("host");
       const baseUrl = `${protocol}://${host}`;

@@ -109,148 +109,42 @@ export default function Agreement() {
   };
 
   const handleDownloadPack = async () => {
-    if (!quotation || !agreementData) return;
-
-    // Check if required print roots exist
-    const interiorsRoot = document.getElementById("print-interiors-root");
-    const fcRoot = document.getElementById("print-fc-root");
-
-    // Only include FC if both flag is true AND FC items exist
-    const shouldIncludeFC = quotation.includeAnnexureFC && agreementData.falseCeiling?.hasItems;
-
-    const missingRoots = [];
-    if (quotation.includeAnnexureInteriors && !interiorsRoot) {
-      missingRoots.push("Interiors");
-    }
-    if (shouldIncludeFC && !fcRoot) {
-      missingRoots.push("False Ceiling");
-    }
-
-    if (missingRoots.length > 0) {
-      toast({
-        title: "Cannot Generate Agreement Pack",
-        description: `Please visit the Print page first to load ${missingRoots.join(" and ")} quotation content.`,
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!quotation) return;
 
     setIsGenerating(true);
-    toast({
-      title: "Generating Agreement Pack...",
-      description: "Please wait while we prepare your PDF.",
-    });
 
     try {
-      console.log("[Agreement Pack] Starting PDF generation...");
-      const pdfs: Uint8Array[] = [];
-
-      // 1. Capture Agreement
-      console.log("[Agreement Pack] Capturing Agreement PDF...");
-      const agreementRoot = document.getElementById("print-agreement-root");
-      if (!agreementRoot) {
-        throw new Error("Agreement content not found");
-      }
-
-      const agreementPdf = await htmlToPdfBytes(agreementRoot);
-      console.log("[Agreement Pack] Agreement PDF captured, size:", agreementPdf.length);
-      pdfs.push(agreementPdf);
-
-      // 2. Capture Annexure A (Interiors) if included
-      if (quotation.includeAnnexureInteriors) {
-        console.log("[Agreement Pack] Adding Annexure A (Interiors)...");
-        // Create Annexure A title page
-        const annexureADiv = document.createElement("div");
-        annexureADiv.id = "temp-annexure-a";
-        annexureADiv.style.cssText = "position: absolute; left: -10000px;";
-        document.body.appendChild(annexureADiv);
-
-        const rootA = createRoot(annexureADiv);
-        rootA.render(
-          <AnnexureTitle
-            letter="A"
-            title="Interiors Quotation"
-            quoteId={quotation.quoteId}
-            clientName={quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName}
-          />,
-        );
-
-        // Wait for render
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        const annexureAPdf = await htmlToPdfBytes(annexureADiv);
-        pdfs.push(annexureAPdf);
-
-        // Cleanup
-        rootA.unmount();
-        document.body.removeChild(annexureADiv);
-
-        // Capture Interiors PDF
-        console.log("[Agreement Pack] Capturing Interiors PDF...");
-        const interiorsRoot = document.getElementById("print-interiors-root")!;
-        const interiorsPdf = await htmlToPdfBytes(interiorsRoot);
-        console.log("[Agreement Pack] Interiors PDF captured, size:", interiorsPdf.length);
-        pdfs.push(interiorsPdf);
-      }
-
-      // 3. Capture Annexure B (False Ceiling) if included AND FC items exist
-      if (shouldIncludeFC) {
-        console.log("[Agreement Pack] Adding Annexure B (False Ceiling)...");
-        // Create Annexure B title page
-        const annexureBDiv = document.createElement("div");
-        annexureBDiv.id = "temp-annexure-b";
-        annexureBDiv.style.cssText = "position: absolute; left: -10000px;";
-        document.body.appendChild(annexureBDiv);
-
-        const rootB = createRoot(annexureBDiv);
-        rootB.render(
-          <AnnexureTitle
-            letter="B"
-            title="False Ceiling Quotation"
-            quoteId={quotation.quoteId}
-            clientName={quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName}
-          />,
-        );
-
-        // Wait for render
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        const annexureBPdf = await htmlToPdfBytes(annexureBDiv);
-        pdfs.push(annexureBPdf);
-
-        // Cleanup
-        rootB.unmount();
-        document.body.removeChild(annexureBDiv);
-
-        // Capture False Ceiling PDF
-        console.log("[Agreement Pack] Capturing False Ceiling PDF...");
-        const fcRoot = document.getElementById("print-fc-root")!;
-        const fcPdf = await htmlToPdfBytes(fcRoot);
-        console.log("[Agreement Pack] False Ceiling PDF captured, size:", fcPdf.length);
-        pdfs.push(fcPdf);
-      }
-
-      // 4. Merge all PDFs
-      console.log("[Agreement Pack] Merging", pdfs.length, "PDFs...");
-      const mergedPdf = await mergePdfBytes(pdfs);
-      console.log("[Agreement Pack] Merged PDF size:", mergedPdf.length);
-
-      // 5. Download
-      const filename = `TRECASA_AgreementPack_${quotation.quoteId}.pdf`;
-      console.log("[Agreement Pack] Downloading as:", filename);
-      await downloadBytesAs(filename, mergedPdf);
-      console.log("[Agreement Pack] Download triggered successfully");
-
       toast({
-        title: "Agreement Pack Downloaded",
-        description: "Your PDF has been successfully generated.",
+        title: "Generating Agreement Pack...",
+        description: "Creating Service Agreement with Annexures A & B",
       });
+
+      const response = await fetch(`/api/quotations/${quotationId}/pdf/agreement-pack`);
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `TRECASA_${quotation.quoteId}_AgreementPack.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast({
+          title: "Success",
+          description: "Agreement Pack downloaded successfully",
+        });
+      } else {
+        const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+        throw new Error(errorData.message || `Server returned ${response.status}`);
+      }
     } catch (error) {
-      console.error("[Agreement Pack] Error:", error);
+      console.error("Error generating Agreement Pack:", error);
       toast({
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to generate Agreement Pack. Please try again.",
+        title: "Failed to Generate Agreement Pack",
+        description: error instanceof Error ? error.message : "Please try again or contact support",
         variant: "destructive",
       });
     } finally {

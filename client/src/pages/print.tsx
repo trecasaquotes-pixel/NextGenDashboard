@@ -210,11 +210,10 @@ export default function Print() {
 
     setIsGeneratingPDF(true);
 
-    // Try server-side PDF generation first
     try {
       toast({
         title: "Generating Agreement Pack...",
-        description: "Creating merged PDF with all sections",
+        description: "Creating Service Agreement with Annexures A & B",
       });
 
       const response = await fetch(`/api/quotations/${quotationId}/pdf/agreement-pack`);
@@ -232,76 +231,17 @@ export default function Print() {
 
         toast({
           title: "Success",
-          description: "Server-generated Agreement Pack downloaded successfully",
+          description: "Agreement Pack downloaded successfully",
         });
-        setIsGeneratingPDF(false);
-        return;
+      } else {
+        const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+        throw new Error(errorData.message || `Server returned ${response.status}`);
       }
-
-      // Server failed, fall back to client-side merging
-      console.warn(
-        `Server Agreement Pack generation failed (${response.status}), falling back to client-side`,
-      );
-      toast({
-        title: "Switching to client-side...",
-        description: "Generating and merging PDFs in browser",
-      });
-    } catch (serverError) {
-      console.error("Server Agreement Pack error:", serverError);
-      toast({
-        title: "Switching to client-side...",
-        description: "Generating and merging PDFs in browser",
-      });
-    }
-
-    // Client-side fallback: Generate and merge PDFs
-    try {
-      const { PDFDocument } = await import("pdf-lib");
-
-      // Check if both elements exist (they might not due to tab visibility)
-      const interiorsEl = document.getElementById("print-interiors-root");
-      const fcEl = document.getElementById("print-fc-root");
-
-      if (!interiorsEl || !fcEl) {
-        throw new Error(
-          "Agreement Pack requires both Interiors and FC content. Please download individual PDFs instead or use server-side generation when available.",
-        );
-      }
-
-      // Generate Interiors PDF
-      const interiorsPdfBytes = await htmlToPdfBytes(interiorsEl);
-
-      // Generate False Ceiling PDF
-      const fcPdfBytes = await htmlToPdfBytes(fcEl);
-
-      // Merge PDFs
-      const mergedPdf = await PDFDocument.create();
-
-      const interiorsDoc = await PDFDocument.load(interiorsPdfBytes);
-      const interiorPages = await mergedPdf.copyPages(interiorsDoc, interiorsDoc.getPageIndices());
-      interiorPages.forEach((page) => mergedPdf.addPage(page));
-
-      const fcDoc = await PDFDocument.load(fcPdfBytes);
-      const fcPages = await mergedPdf.copyPages(fcDoc, fcDoc.getPageIndices());
-      fcPages.forEach((page) => mergedPdf.addPage(page));
-
-      const mergedPdfBytes = await mergedPdf.save();
-
-      await downloadBytesAs(
-        `TRECASA_${quotation.quoteId}_AgreementPack.pdf`,
-        new Uint8Array(mergedPdfBytes),
-      );
-
-      toast({
-        title: "Success",
-        description: "Client-generated Agreement Pack downloaded successfully",
-      });
     } catch (error) {
       console.error("Error generating Agreement Pack:", error);
       toast({
-        title: "Agreement Pack Unavailable",
-        description:
-          error instanceof Error ? error.message : "Please download individual PDFs instead.",
+        title: "Failed to Generate Agreement Pack",
+        description: error instanceof Error ? error.message : "Please try again or contact support",
         variant: "destructive",
       });
     } finally {
