@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interior Design Agreement</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Montserrat', Arial, sans-serif;
+      font-size: 11px;
+      line-height: 1.55;
+      color: #1A1A1A;
+    }
+    h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; }
+    .container { max-width: 178mm; margin: 0 auto; padding: 10mm 0; }
+    .cover { text-align: center; padding: 40mm 20mm; min-height: 200mm; }
+    .cover h1 { font-size: 22px; color: #18492d; margin-bottom: 20px; }
+    .section { margin-top: 20px; page-break-inside: avoid; }
+    .section-title { font-size: 14px; font-weight: 700; color: #18492d; margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #E6E6E6; }
+    th { background: #F2F2F2; font-weight: 600; font-size: 8pt; }
+    td { font-size: 7.5pt; }
+    .room-title { background: #18492d; color: white; padding: 8px 10px; font-size: 11pt; font-weight: 600; margin-top: 14px; }
+    .room-subtotal { background: #18492d; color: white; font-weight: 500; }
+    .price-summary { font-size: 12px; margin-top: 20px; }
+    .grand-total { font-size: 18px; font-weight: 700; color: #5A2E1A; margin-top: 10px; }
+    .materials-list { list-style: disc; padding-left: 20px; }
+    .materials-list li { margin-bottom: 5px; }
+    .signature-block { margin-top: 30px; padding: 15px; border: 1px solid #E6E6E6; }
+  </style>
+</head>
+<body data-pdf-ready>
+  <div id="print-agreement-root" class="container">
+    
+    <!-- Cover Page -->
+    <div class="cover">
+      <h1>INTERIOR DESIGN AGREEMENT</h1>
+      <div style="margin-top: 30px; line-height: 1.8;">
+        <p><strong>Client:</strong> {{clientName}}</p>
+        <p><strong>Project:</strong> {{projectName}}</p>
+        <p><strong>Quote ID:</strong> {{quoteId}}</p>
+        <p><strong>Date:</strong> {{issueDate}}</p>
+      </div>
+    </div>
+    
+    <!-- Room Totals - Interiors -->
+    <div class="section">
+      <h2 class="section-title">ANNEXURE A — INTERIORS SUMMARY</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Room</th>
+            <th style="text-align: right;">Subtotal (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each interiorsRooms}}
+          <tr>
+            <td>{{this.roomType}}</td>
+            <td style="text-align: right;">{{formatCurrency this.subtotal}}</td>
+          </tr>
+          {{/each}}
+          <tr style="font-weight: 600; background: #F5F7F6;">
+            <td>Interiors Subtotal</td>
+            <td style="text-align: right;">{{formatCurrency interiorsSubtotal}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Detailed Room-wise Breakdown - Interiors -->
+    <div class="section">
+      <h2 class="section-title">ANNEXURE A — DETAILED INTERIORS BREAKDOWN</h2>
+      {{#each interiorsRooms}}
+      <div class="room-title">{{this.roomType}}</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>L</th>
+            <th>H</th>
+            <th>W</th>
+            <th>SQFT</th>
+            <th>Rate (₹/sft)</th>
+            <th style="text-align: right;">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each this.items}}
+          <tr>
+            <td>{{this.description}}</td>
+            <td>{{this.length}}</td>
+            <td>{{this.height}}</td>
+            <td>{{this.width}}</td>
+            <td>{{this.sqft}}</td>
+            <td>{{this.unitPrice}}</td>
+            <td style="text-align: right;">{{formatCurrency this.totalPrice}}</td>
+          </tr>
+          {{/each}}
+          <tr class="room-subtotal">
+            <td colspan="6">Room Subtotal</td>
+            <td style="text-align: right;">{{formatCurrency this.subtotal}}</td>
+          </tr>
+        </tbody>
+      </table>
+      {{/each}}
+    </div>
+    
+    <!-- False Ceiling Breakdown -->
+    {{#if fcRooms.length}}
+    <div class="section">
+      <h2 class="section-title">ANNEXURE B — FALSE CEILING BREAKDOWN</h2>
+      {{#each fcRooms}}
+      <div class="room-title">{{this.roomType}}</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>L</th>
+            <th>W</th>
+            <th>Area (sqft)</th>
+            <th>Rate (₹/sft)</th>
+            <th style="text-align: right;">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each this.items}}
+          <tr>
+            <td>{{this.description}}</td>
+            <td>{{this.length}}</td>
+            <td>{{this.width}}</td>
+            <td>{{this.area}}</td>
+            <td>{{this.unitPrice}}</td>
+            <td style="text-align: right;">{{formatCurrency this.totalPrice}}</td>
+          </tr>
+          {{/each}}
+          <tr class="room-subtotal">
+            <td colspan="5">Room Subtotal</td>
+            <td style="text-align: right;">{{formatCurrency this.subtotal}}</td>
+          </tr>
+        </tbody>
+      </table>
+      {{/each}}
+    </div>
+    {{/if}}
+    
+    <!-- Price Summary -->
+    <div class="section price-summary">
+      <h2 class="section-title">FINANCIAL SUMMARY</h2>
+      <table>
+        <tr>
+          <td>Interiors Subtotal</td>
+          <td style="text-align: right;">{{formatCurrency interiorsSubtotal}}</td>
+        </tr>
+        {{#if fcSubtotal}}
+        <tr>
+          <td>False Ceiling Subtotal</td>
+          <td style="text-align: right;">{{formatCurrency fcSubtotal}}</td>
+        </tr>
+        {{/if}}
+        <tr style="font-weight: 600;">
+          <td>Grand Subtotal</td>
+          <td style="text-align: right;">{{formatCurrency grandSubtotal}}</td>
+        </tr>
+        {{#if discountAmount}}
+        <tr>
+          <td>Discount ({{discountType}} {{discountValue}})</td>
+          <td style="text-align: right; color: #16a34a;">-{{formatCurrency discountAmount}}</td>
+        </tr>
+        <tr>
+          <td>After Discount</td>
+          <td style="text-align: right;">{{formatCurrency afterDiscount}}</td>
+        </tr>
+        {{/if}}
+        <tr>
+          <td>GST ({{gstRate}}%)</td>
+          <td style="text-align: right;">{{formatCurrency gstAmount}}</td>
+        </tr>
+      </table>
+      <div class="grand-total">
+        Final Total: {{formatCurrency finalTotal}}
+      </div>
+    </div>
+    
+    <!-- Payment Schedule -->
+    <div class="section">
+      <h2 class="section-title">PAYMENT SCHEDULE</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Stage</th>
+            <th>Percentage</th>
+            <th style="text-align: right;">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each paymentSchedule}}
+          <tr>
+            <td>{{this.label}}</td>
+            <td>{{this.percent}}%</td>
+            <td style="text-align: right;">{{formatCurrency this.amount}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Materials & Brands -->
+    <div class="section">
+      <h2 class="section-title">MATERIALS & BRANDS USED</h2>
+      {{#if coreMaterials.length}}
+      <p><strong>Core Materials:</strong></p>
+      <ul class="materials-list">
+        {{#each coreMaterials}}
+        <li>{{this}}</li>
+        {{/each}}
+      </ul>
+      {{/if}}
+      {{#if finishes.length}}
+      <p><strong>Finishes:</strong></p>
+      <ul class="materials-list">
+        {{#each finishes}}
+        <li>{{this}}</li>
+        {{/each}}
+      </ul>
+      {{/if}}
+      {{#if hardware.length}}
+      <p><strong>Hardware:</strong></p>
+      <ul class="materials-list">
+        {{#each hardware}}
+        <li>{{this}}</li>
+        {{/each}}
+      </ul>
+      {{/if}}
+    </div>
+    
+    <!-- Agreement Terms -->
+    <div class="section">
+      <h2 class="section-title">TERMS & CONDITIONS</h2>
+      <p style="margin-bottom: 10px;">
+        This Interior Design Agreement is made on {{issueDate}} between:
+      </p>
+      <p><strong>Client:</strong> {{clientName}}, {{clientAddress}}, {{clientContact}}</p>
+      <p><strong>Designer:</strong> Trecasa Interiors, Miyapur, Hyderabad, +91 9059784422 | info@trecasa.in</p>
+      
+      <h3 style="margin-top: 16px; font-size: 11pt; color: #18492d;">PROJECT OVERVIEW</h3>
+      <p>Project: {{projectName}}, Address: {{projectAddress}}, Type: {{projectType}}</p>
+      <p>Scope: Interior Design, Planning, Visualization, Execution</p>
+      
+      <h3 style="margin-top: 16px; font-size: 11pt; color: #18492d;">PAYMENT TERMS</h3>
+      <p>Total Fee: ₹{{formatCurrency finalTotal}}</p>
+      <p>Late payments beyond 10 days attract 1.5% monthly interest.</p>
+      
+      <h3 style="margin-top: 16px; font-size: 11pt; color: #18492d;">LEGAL TERMS</h3>
+      <p>All design approvals via email, WhatsApp, or digital signature are legally binding.</p>
+      <p>Jurisdiction: Hyderabad, Telangana, India</p>
+    </div>
+    
+    <!-- Signatures -->
+    <div class="section">
+      <h2 class="section-title">SIGNATURES</h2>
+      <div class="signature-block">
+        <p><strong>Client:</strong></p>
+        <p>Name: {{clientSignature}}</p>
+        <p>Date: {{clientSignedDate}}</p>
+      </div>
+      <div class="signature-block">
+        <p><strong>Designer (Trecasa Interiors):</strong></p>
+        <p>Authorized Signatory</p>
+        <p>Date: {{trecasaSignedDate}}</p>
+      </div>
+    </div>
+    
+  </div>
+</body>
+</html>
