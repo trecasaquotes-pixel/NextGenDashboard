@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
+import logoPath from "@assets/trecasa-logo.png";
 
 export default function Landing() {
   return (
@@ -13,6 +14,9 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="container-trecasa py-20 md:py-32">
         <div className="max-w-4xl mx-auto text-center">
+          <div className="flex justify-center mb-8">
+            <img src={logoPath} alt="TRECASA Logo" className="h-24 md:h-32" />
+          </div>
           <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
             Professional Interior Design Quotations
           </h2>

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import logoPath from "@assets/trecasa-logo.png";
 
 export default function ClientQuotePortal() {
   const [match, params] = useRoute("/client/:quoteId");
@@ -131,11 +132,14 @@ export default function ClientQuotePortal() {
       <header className="border-b bg-card">
         <div className="container-trecasa py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">TRECASA DESIGN STUDIO</h1>
-              <p className="text-sm text-muted-foreground">
-                Luxury Interiors | Architecture | Build
-              </p>
+            <div className="flex items-center gap-3">
+              <img src={logoPath} alt="TRECASA Logo" className="h-12" />
+              <div>
+                <h1 className="text-2xl font-bold">TRECASA DESIGN STUDIO</h1>
+                <p className="text-sm text-muted-foreground">
+                  Luxury Interiors | Architecture | Build
+                </p>
+              </div>
             </div>
             {status === "approved" && (
               <div className="flex items-center gap-2 text-green-600">

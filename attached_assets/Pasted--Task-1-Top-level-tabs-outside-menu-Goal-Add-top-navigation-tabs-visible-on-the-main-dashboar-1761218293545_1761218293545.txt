@@ -1,0 +1,106 @@
+🧩 Task 1 — Top-level tabs (outside menu)
+
+Goal
+Add top navigation tabs visible on the main dashboard (not inside the profile/menu):
+
+Change Orders
+
+Projects & Expenses
+
+Business & Insights (combined)
+
+Files (likely)
+client/src/App.tsx, client/src/components/layout/Header.tsx (or equivalent), client/src/routes/*, client/src/components/ui/*tabs*
+
+Edits
+
+Insert a tabbed nav bar near the header.
+
+Wire tabs to routes: /change-orders, /projects, /business.
+
+Keep existing styling (Tailwind/shadcn). Default active: Projects & Expenses.
+
+Manual Test
+
+Load dashboard → see three tabs at top.
+
+Clicking each tab navigates to the correct page.
+
+Acceptance Criteria
+
+ Tabs render outside the menu.
+
+ Routes switch correctly without breaking existing pages.
+
+ Visual style matches current app.
+
+Guardrails
+
+Do not remove existing menu; just stop using it for these three pages.
+
+No refactors beyond nav/header and routes.
+
+🧩 Task 2 — Manual project creation (Projects & Expenses)
+
+Goal
+Allow users to manually create a new Project from Projects & Expenses.
+
+Files (likely)
+Client: client/src/pages/projects/*.tsx, client/src/components/projects/NewProjectDialog.tsx
+Server: server/routes/projects.ts, server/db/schema/projects.ts (Drizzle)
+
+Edits
+
+Add a “New Project” button opening a form: name, clientName, category, totalAmount.
+
+Add POST /api/projects to create a project record.
+
+Manual Test
+
+Click “New Project” → fill form → submit → new project shows in list.
+
+Acceptance Criteria
+
+ New project is persisted and visible in list.
+
+ Form validation for required fields.
+
+ No changes to existing quotation→project auto logic.
+
+Guardrails
+
+Do not affect auto-creation on approval.
+
+No schema renames.
+
+🧩 Task 3 — Auto-convert approved quotation → Project
+
+Goal
+When a quotation’s status becomes approved, create a Project if it doesn’t already exist (no duplicates).
+
+Files (likely)
+Server: server/routes/quotations.ts, server/services/quotationService.ts, server/db/schema/projects.ts
+
+Edits
+
+In PATCH/PUT for quotation status, when transitioning to approved, upsert a project from quotation fields.
+
+Add unique constraint on projects.quotationId if not present.
+
+Manual Test
+
+Approve a quotation → project appears once.
+
+Re-approve doesn’t create duplicates.
+
+Acceptance Criteria
+
+ Exactly one project per approved quotation.
+
+ Existing quotations list unchanged.
+
+Guardrails
+
+Do not delete quotations.
+
+No UI changes beyond resulting project visibility.
