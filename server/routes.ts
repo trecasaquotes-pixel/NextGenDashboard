@@ -34,6 +34,7 @@ import {
   businessExpenses,
 } from "@shared/schema";
 import { z } from "zod";
+import { nanoid } from "nanoid";
 import { generateQuoteId } from "./utils/generateQuoteId";
 import {
   createQuoteBackupZip,

@@ -72,10 +72,7 @@ export default function ProjectsList() {
 
   const createProjectMutation = useMutation({
     mutationFn: async (data: NewProjectData) => {
-      return await apiRequest("/api/projects", {
-        method: "POST",
-        body: data,
-      });
+      return await apiRequest("POST", "/api/projects", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
