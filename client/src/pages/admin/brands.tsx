@@ -244,7 +244,7 @@ export default function AdminBrandsPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <AppHeader />
       
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container-trecasa py-6 lg:py-8">
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"

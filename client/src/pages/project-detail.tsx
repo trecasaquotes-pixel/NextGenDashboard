@@ -209,7 +209,7 @@ export default function ProjectDetail() {
 
   if (!project) {
     return (
-      <div className="container mx-auto p-6 max-w-7xl">
+      <div className="container-trecasa py-6 lg:py-8">
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <h3 className="text-lg font-semibold mb-2">Project Not Found</h3>
@@ -226,7 +226,7 @@ export default function ProjectDetail() {
   const isProfitable = profitLoss >= 0;
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <div className="container-trecasa py-6 lg:py-8">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Link href="/projects">

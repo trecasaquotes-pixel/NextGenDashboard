@@ -287,7 +287,7 @@ export default function AdminRatesPage() {
     <div className="min-h-screen flex flex-col">
       <AppHeader />
       
-      <div className="flex-1 container mx-auto px-4 py-8">
+      <div className="flex-1 container-trecasa py-6 lg:py-8">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
