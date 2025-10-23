@@ -23,6 +23,15 @@ import { ApplyTemplateModal } from "@/components/apply-template-modal";
 import { useQuotationLock } from "@/hooks/use-quotation-lock";
 import { LockStatusBanner } from "@/components/lock-status-banner";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -90,6 +99,11 @@ export default function Scope() {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showApplyTemplateModal, setShowApplyTemplateModal] = useState(false);
   const [totalsUpdatedAt, setTotalsUpdatedAt] = useState<number | null>(null);
+  
+  // Add Custom Room dialogs
+  const [showAddInteriorRoomDialog, setShowAddInteriorRoomDialog] = useState(false);
+  const [showAddFCRoomDialog, setShowAddFCRoomDialog] = useState(false);
+  const [newRoomName, setNewRoomName] = useState("");
 
   // Quotation locking
   const { isLockedByOthers, lockedByName } = useQuotationLock(quotationId);
@@ -346,6 +360,81 @@ export default function Scope() {
       variant: "destructive",
     });
   }
+
+  // Handler to add custom interior room
+  const handleAddCustomInteriorRoom = () => {
+    if (!newRoomName.trim()) {
+      toast({
+        title: "Room name required",
+        description: "Please enter a name for the new room.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const roomName = newRoomName.trim();
+
+    // Create first item for the new room with success/error handling
+    addInteriorItem.mutate(
+      {
+        quotationId: quotationId!,
+        roomType: roomName,
+        buildType: (quotation?.buildType as BuildType) || "handmade",
+        material: "Generic Ply",
+        finish: "Generic Laminate",
+        hardware: "Nimmi",
+        description: "",
+      },
+      {
+        onSuccess: () => {
+          // Close dialog and reset only after successful mutation
+          setShowAddInteriorRoomDialog(false);
+          setNewRoomName("");
+          
+          toast({
+            title: "Room added",
+            description: `"${roomName}" room has been created. You can now add items to it.`,
+          });
+        },
+        // Error is already handled by handleMutationError in the mutation definition
+      }
+    );
+  };
+
+  // Handler to add custom FC room
+  const handleAddCustomFCRoom = () => {
+    if (!newRoomName.trim()) {
+      toast({
+        title: "Room name required",
+        description: "Please enter a name for the new room.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const roomName = newRoomName.trim();
+
+    // Create first item for the new FC room with success/error handling
+    addFalseCeilingItem.mutate(
+      {
+        quotationId: quotationId!,
+        roomType: roomName,
+      },
+      {
+        onSuccess: () => {
+          // Close dialog and reset only after successful mutation
+          setShowAddFCRoomDialog(false);
+          setNewRoomName("");
+          
+          toast({
+            title: "False Ceiling room added",
+            description: `"${roomName}" FC room has been created. You can now add items to it.`,
+          });
+        },
+        // Error is already handled by handleMutationError in the mutation definition
+      }
+    );
+  };
 
   const calculateSqft = (length?: string | null, height?: string | null, width?: string | null) => {
     const l = parseFloat(length || "0");
@@ -1256,6 +1345,23 @@ export default function Scope() {
                         );
                       })}
 
+                    {/* Add Custom Room Button for Interiors */}
+                    <div className="flex justify-center py-6">
+                      <Button
+                        variant="outline"
+                        size="default"
+                        onClick={() => {
+                          setNewRoomName("");
+                          setShowAddInteriorRoomDialog(true);
+                        }}
+                        disabled={isLockedByOthers}
+                        data-testid="button-add-custom-interior-room"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Custom Room
+                      </Button>
+                    </div>
+
                     {/* Sticky Footer for Interiors Tab */}
                     <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-10">
                       <div className="container-trecasa py-4">
@@ -1526,6 +1632,23 @@ export default function Scope() {
                           </div>
                         );
                       })}
+
+                    {/* Add Custom Room Button for False Ceiling */}
+                    <div className="flex justify-center py-6">
+                      <Button
+                        variant="outline"
+                        size="default"
+                        onClick={() => {
+                          setNewRoomName("");
+                          setShowAddFCRoomDialog(true);
+                        }}
+                        disabled={isLockedByOthers}
+                        data-testid="button-add-custom-fc-room"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Custom FC Room
+                      </Button>
+                    </div>
 
                     {/* OTHERS Section */}
                     <div className="pt-6 border-t border-border">
@@ -1807,6 +1930,102 @@ export default function Scope() {
           });
         }}
       />
+
+      {/* Add Custom Interior Room Dialog */}
+      <Dialog open={showAddInteriorRoomDialog} onOpenChange={setShowAddInteriorRoomDialog}>
+        <DialogContent data-testid="dialog-add-interior-room">
+          <DialogHeader>
+            <DialogTitle>Add Custom Interior Room</DialogTitle>
+            <DialogDescription>
+              Enter a name for the new room. You can then add items to this room.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-room-name">Room Name</Label>
+              <Input
+                id="new-room-name"
+                placeholder="e.g., Bedroom 4, Guest Room, Office"
+                value={newRoomName}
+                onChange={(e) => setNewRoomName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddCustomInteriorRoom();
+                  }
+                }}
+                data-testid="input-new-room-name"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAddInteriorRoomDialog(false);
+                setNewRoomName("");
+              }}
+              data-testid="button-cancel-add-room"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddCustomInteriorRoom}
+              disabled={!newRoomName.trim()}
+              data-testid="button-confirm-add-room"
+            >
+              Add Room
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Custom FC Room Dialog */}
+      <Dialog open={showAddFCRoomDialog} onOpenChange={setShowAddFCRoomDialog}>
+        <DialogContent data-testid="dialog-add-fc-room">
+          <DialogHeader>
+            <DialogTitle>Add Custom False Ceiling Room</DialogTitle>
+            <DialogDescription>
+              Enter a name for the new false ceiling room. You can then add items to this room.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-fc-room-name">Room Name</Label>
+              <Input
+                id="new-fc-room-name"
+                placeholder="e.g., Bedroom 4, Guest Room, Study"
+                value={newRoomName}
+                onChange={(e) => setNewRoomName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddCustomFCRoom();
+                  }
+                }}
+                data-testid="input-new-fc-room-name"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAddFCRoomDialog(false);
+                setNewRoomName("");
+              }}
+              data-testid="button-cancel-add-fc-room"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddCustomFCRoom}
+              disabled={!newRoomName.trim()}
+              data-testid="button-confirm-add-fc-room"
+            >
+              Add Room
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
