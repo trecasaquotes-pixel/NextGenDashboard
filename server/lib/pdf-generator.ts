@@ -28,6 +28,42 @@ function getLogoBase64(): string {
   return cachedLogoBase64;
 }
 
+// Cache footer text from global rules
+let cachedFooterLines: { line1: string; line2: string } | null = null;
+let footerCacheTime = 0;
+const FOOTER_CACHE_TTL = 60000; // 1 minute cache
+
+async function getFooterLines(): Promise<{ line1: string; line2: string }> {
+  const now = Date.now();
+  
+  if (cachedFooterLines && (now - footerCacheTime) < FOOTER_CACHE_TTL) {
+    return cachedFooterLines;
+  }
+
+  try {
+    const { db } = await import("../db");
+    const { globalRules } = await import("@shared/schema");
+    const { eq } = await import("drizzle-orm");
+    
+    const [rules] = await db.select().from(globalRules).where(eq(globalRules.id, "global"));
+    
+    cachedFooterLines = {
+      line1: rules?.footerLine1 || "TRECASA Design Studio | Luxury Interiors | Architecture | Build",
+      line2: rules?.footerLine2 || "www.trecasadesignstudio.com | +91-XXXXXXXXXX",
+    };
+    
+    footerCacheTime = now;
+    return cachedFooterLines;
+  } catch (error) {
+    console.error("Error fetching footer from global rules:", error);
+    // Return fallback values
+    return {
+      line1: "TRECASA Design Studio | Luxury Interiors | Architecture | Build",
+      line2: "www.trecasadesignstudio.com | +91-XXXXXXXXXX",
+    };
+  }
+}
+
 export async function emitPdf(
   page: Page,
   titleText: string,
@@ -36,6 +72,9 @@ export async function emitPdf(
 ): Promise<Buffer> {
   // Load and embed logo as base64
   const logoBase64 = getLogoBase64();
+  
+  // Fetch footer lines from global rules
+  const footerLines = await getFooterLines();
 
   const footerTemplate = includePageNumbers
     ? `
@@ -46,7 +85,7 @@ export async function emitPdf(
         .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#dc2626;margin-left:6px;vertical-align:middle;transform:translateY(-0.5px)}
       </style>
       <div class="footer-wrap">
-        <div>© 2025 TRECASA DESIGN STUDIO <span class="sep">|</span> www.trecasadesignstudio.com <span class="sep">|</span> @trecasa.designstudio <span class="dot"></span></div>
+        <div>${footerLines.line1} <span class="sep">|</span> ${footerLines.line2} <span class="dot"></span></div>
         <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
       </div>
     `
@@ -58,7 +97,7 @@ export async function emitPdf(
         .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#dc2626;margin-left:6px;vertical-align:middle;transform:translateY(-0.5px)}
       </style>
       <div class="footer-wrap">
-        <div>© 2025 TRECASA DESIGN STUDIO <span class="sep">|</span> www.trecasadesignstudio.com <span class="sep">|</span> @trecasa.designstudio <span class="dot"></span></div>
+        <div>${footerLines.line1} <span class="sep">|</span> ${footerLines.line2} <span class="dot"></span></div>
       </div>
     `;
 

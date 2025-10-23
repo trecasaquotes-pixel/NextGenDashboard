@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Loader2, LayoutTemplate, FileText, Sparkles } from "lucide-react";
 import type { TemplateSummary, Quotation } from "@shared/schema";
@@ -41,6 +41,19 @@ export function NewQuotationDialog({ open, onOpenChange, onSuccess }: NewQuotati
   const [projectName, setProjectName] = useState("New Project");
   const [clientName, setClientName] = useState("Client Name");
   const [buildType, setBuildType] = useState<"handmade" | "factory">("handmade");
+
+  // Fetch global rules to get default build type
+  const { data: globalRules } = useQuery<{ buildTypeDefault: string }>({
+    queryKey: ["/api/admin/global-rules"],
+    enabled: open,
+  });
+
+  // Set build type from global rules when dialog opens
+  useEffect(() => {
+    if (open && globalRules?.buildTypeDefault) {
+      setBuildType(globalRules.buildTypeDefault as "handmade" | "factory");
+    }
+  }, [open, globalRules]);
 
   // Fetch active templates
   const { data: templates = [], isLoading: isLoadingTemplates } = useQuery<TemplateSummary[]>({

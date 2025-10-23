@@ -123,16 +123,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const quoteId = generateQuoteId();
 
-      // Initialize default terms
+      // Fetch global rules for defaults
+      const [rules] = await db.select().from(globalRules).where(eq(globalRules.id, "global"));
+      const validDays = rules?.validityDays ?? 15;
+      
+      // Format payment schedule from global rules
+      let paymentSchedule = "50% booking, 40% mid, 10% handover";
+      if (rules?.paymentScheduleJson) {
+        try {
+          const schedule = JSON.parse(rules.paymentScheduleJson);
+          paymentSchedule = schedule
+            .map((item: any) => `${item.percent}% ${item.label}`)
+            .join(", ");
+        } catch (e) {
+          // Use default if parsing fails
+        }
+      }
+
+      // Initialize default terms with global rules values
       const defaultTerms = {
         interiors: {
           useDefault: true,
           templateId: "default_interiors",
           customText: "",
           vars: {
-            validDays: 15,
+            validDays,
             warrantyMonths: 12,
-            paymentSchedule: "50% booking, 40% mid, 10% handover",
+            paymentSchedule,
           },
         },
         falseCeiling: {
@@ -140,9 +157,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           templateId: "default_false_ceiling",
           customText: "",
           vars: {
-            validDays: 15,
+            validDays,
             warrantyMonths: 12,
-            paymentSchedule: "50% booking, 40% mid, 10% handover",
+            paymentSchedule,
           },
         },
       };

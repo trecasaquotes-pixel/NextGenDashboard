@@ -76,10 +76,23 @@ export function calculateDiscountAmount(
 }
 
 /**
- * Calculate GST at 18% on the discounted amount
+ * Calculate GST based on global rules percentage on the discounted amount
  */
-export function calculateGSTAmount(amountAfterDiscount: number): number {
-  return roundCurrency(amountAfterDiscount * 0.18);
+export async function calculateGSTAmount(amountAfterDiscount: number): Promise<number> {
+  try {
+    const { db } = await import("../db");
+    const { globalRules } = await import("@shared/schema");
+    const { eq } = await import("drizzle-orm");
+    
+    const [rules] = await db.select().from(globalRules).where(eq(globalRules.id, "global"));
+    const gstPercent = rules?.gstPercent ?? 18; // Fallback to 18%
+    
+    return roundCurrency(amountAfterDiscount * (gstPercent / 100));
+  } catch (error) {
+    console.error("Error fetching GST from global rules:", error);
+    // Fallback to 18% on error
+    return roundCurrency(amountAfterDiscount * 0.18);
+  }
 }
 
 /**
@@ -158,7 +171,7 @@ export async function recalculateQuotationTotals(quotationId: string, storage: I
   const discountValue = parseFloat(quotation.discountValue || "0");
   const discountAmount = calculateDiscountAmount(grandSubtotal, discountType, discountValue);
   const afterDiscount = Math.max(0, roundCurrency(grandSubtotal - discountAmount));
-  const gstAmount = calculateGSTAmount(afterDiscount);
+  const gstAmount = await calculateGSTAmount(afterDiscount);
   const finalTotal = roundCurrency(afterDiscount + gstAmount);
 
   // Update quotation with new totals
