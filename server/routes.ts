@@ -1637,6 +1637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate if false ceiling has items
       const hasFCItems = falseCeilingItems.length > 0;
+      console.log(`[Agreement Data] Quotation ${quotationId}: FC items count = ${falseCeilingItems.length}, hasFCItems = ${hasFCItems}`);
 
       // Get existing agreement if any
       const existingAgreement = await storage.getAgreementByQuotationId(quotationId);

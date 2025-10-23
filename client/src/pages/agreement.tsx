@@ -231,10 +231,14 @@ export default function Agreement() {
             }
 
             const pdfBytes = await htmlToPdfBytes(element);
-            document.body.removeChild(iframe);
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
             resolve(pdfBytes);
           } catch (error) {
-            document.body.removeChild(iframe);
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
             reject(error);
           }
         }
