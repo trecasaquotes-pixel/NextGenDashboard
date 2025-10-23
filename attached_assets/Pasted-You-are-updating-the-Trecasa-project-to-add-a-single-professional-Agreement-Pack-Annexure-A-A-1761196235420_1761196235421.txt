@@ -1,0 +1,239 @@
+You are updating the Trecasa project to add a **single, professional “Agreement Pack (Annexure A + Annexure B + Summary)” PDF** with persistent header/footer on every page, live data binding, signatures, and brand styling.
+
+# Goals
+1) Add a full **Agreement** generator that pulls data from the existing quotation (interiors + false ceiling), applies GST/discount/rounding, and renders a combined, paginated PDF with **header + footer on ALL pages**.
+2) Agreement must embed the **final Trecasa Interior Design Agreement** text (provided below) and fill dynamic fields (client, project, totals, payment schedule, brands).
+3) Include **Annexure A (Interiors)** + **Annexure B (False Ceiling)** room-wise tables; show Room Subtotals and section totals; then a **Grand Total** and **Payment Schedule**.
+4) Add a **Materials & Brands** block that is **dynamic** based on selected Core Material, Finish, Hardware (replacing the old static lines).
+5) Add **digital signature blocks** (client + Trecasa) and store the signature names/time.
+6) Use **Playfair Display** (headings) and **Montserrat (regular/medium)** everywhere else; enforce consistent paddings/margins so text never clips.
+
+# Tech constraints already in the app
+- Stack is React (client) + Node/Express (server). PDFs are rendered server-side using Puppeteer with special /render routes.
+- Keep using the existing render pattern (token-protected routes) and the existing “print header/footer” pattern, but fix it so header/footer render on **every page**, not just first.
+
+# File changes & new files
+
+## 1) Data model (server/shared)
+- Add a light “agreement meta” shape (no DB migration needed if you already derive from quote):
+  - discount: { type: 'flat' | 'percent', value: number }
+  - gstRate: number (default 18)
+  - rounding: 'nearest' | 'up' | 'down' (default 'nearest')
+  - signatures: { clientName?: string, clientSignedAt?: string, trecasaSignedAt?: string }
+  - materialsSelected (derive from line items): Set of { coreMaterial, finish, hardware } unique labels used anywhere in the quote.
+  - paymentSchedule (derive automatically unless overridden): 
+    - [{label:'Token Advance – 10%', pct:10}, {label:'Design Finalisation – 60%', pct:60}, {label:'Mid Execution – 25%', pct:25}, {label:'After Handover – 5%', pct:5}]
+- Ensure Annexure A pulls **Interiors** items; Annexure B pulls **False Ceiling** items.
+
+## 2) API: fetch & compose agreement
+Create: **server/routes.agreement.ts**
+- GET `/api/agreements/:quoteId`
+  - Loads the quote + items + FC items.
+  - Computes room subtotals, Interiors total, FC total, discount, GST, final grand total.
+  - Gathers unique materials/brands used (core/finish/hardware).
+  - Returns a normalized JSON the renderer can use.
+- POST `/api/agreements/:quoteId/sign`
+  - Accepts `{ clientName?: string, trecasa?: boolean }`
+  - Saves signatures (in your existing store or in-memory for now) and returns updated agreement meta.
+
+Wire into router index.
+
+## 3) Render route (server)
+Create: **server/render.agreement.ts**
+- GET `/render/agreement/:quoteId/print`
+  - Verifies the existing render token.
+  - Calls the API composer above to get the **AgreementViewModel**.
+  - Renders HTML using a **dedicated template** and prints with Puppeteer.
+  - IMPORTANT: use `displayHeaderFooter: true` and provide **headerTemplate** and **footerTemplate** that are independent mini HTMLs so they appear on **all pages**.
+  - Use A4 portrait, margins: `{ top: '20mm', right: '14mm', bottom: '20mm', left: '14mm' }`.
+  - Fonts: load **Montserrat** (400,500) and **Playfair Display** (700) from bundled woff/woff2 in `/client/assets/fonts/` and reference via @font-face (do not rely on Google CDNs in headless SSR).
+
+## 4) Templates & assets (client/public or a /templates folder served server-side)
+Add:
+- **/server/templates/agreement.html** (main body)
+- **/server/templates/agreement.header.html** (header)
+- **/server/templates/agreement.footer.html** (footer)
+- Add `/client/assets/fonts/Montserrat-Variable.woff2`, `/client/assets/fonts/PlayfairDisplay-Bold.woff2`
+- Add `/client/assets/brand/logo-trecasa.svg` (for top-left watermark if needed)
+
+### Header rules (agreement.header.html)
+- Full-width bar with brand:
+  - Left: **Trecasa Design Studio | Interiors | Architecture | Build**
+  - Right: contact@trecasainfra.com | +91 9059784422
+- Typography: Playfair 15px for the brand; Montserrat 11px for the right meta; line-height 1.3; padding: 10px 12px; background: #153E33 (Trecasa green); color: #fff.
+- This header must be a **self-contained minimal HTML** with inline CSS only (Puppeteer requirement).
+
+### Footer rules (agreement.footer.html)
+- Left: © 2025 TRECASA DESIGN STUDIO
+- Center: www.trecasadesignstudio.com | @trecasa.designstudio
+- Right: a small red dot ● and `Page {{pageNumber}} of {{totalPages}}`
+- Typography: Montserrat 10px; a 1px top border in #D9C37D (gold); padding: 8px 12px; color: #222.
+
+### Main body (agreement.html)
+Sections in order:
+1) **Cover block** (white card)
+   - Title: “INTERIOR DESIGN AGREEMENT” (Playfair 22px)
+   - Client: Name, Address
+   - Project: Name, Site Address
+   - Quote ID & Date (right)
+   - Add the green ribbon block (as in your latest PDFs) with the brand and client summary.
+2) **Room Totals — Interiors** (table)  
+   - Sorted: Kitchen, Living/Dining, Master Bedroom, Bedroom 2, Bedroom 3, Bedroom 4, Foyer, Others (as per Prem’s note)
+   - Columns: Room | Subtotal (₹)
+   - Show **Interiors Subtotal** row.
+3) **(REMOVE Room Summary grid)** as per Prem’s note.
+4) **Detailed Room-wise Breakdown — Interiors**  
+   - For each room: a title bar (green), then a table with columns:
+     Description | L | H | W | SQFT | Rate (₹/sft) | Amount (₹)
+   - “Room Subtotal” bar at the end of each room.
+   - Make Rate editable in-app; in PDF it’s the final computed rate.
+   - Sizing guidance (to prevent clipping): 
+     - Heading bars: 14px/600; row text 11px; cell padding 8px (x) 6px (y); row height min 28px.
+5) **Annexure B — False Ceiling Breakdown**
+   - Same pattern as Interiors, with “SQFT / Qty” column labeling appropriate to FC.
+6) **Price Summary**
+   - Subtotal (Interiors + FC)
+   - Discount (flat/percent, show both the type and computed value)
+   - GST (18% default, editable in app, show computed value)
+   - **Final Total (Grand Total)** in large Playfair 24px, brand brown (#5A2E1A).
+7) **Payment Breakdown** (auto from schedule or overridden)
+   - 10%, 60%, 25%, 5% lines with computed rupee amounts.
+8) **Materials & Brands (dynamic)**
+   - Print each unique **Core Material**, **Finish**, **Hardware** chosen anywhere in scope, e.g.:
+     - Core Materials used: BWP/BWR Plywood (Century), HDHMR (Greenpanel)…
+     - Finishes used: Laminate (Merino), Acrylic, PU…
+     - Hardware used: Hettich, Hafele, Nimmi…
+   - Replace the previous static bullet list. Keep the same bullet styling.
+9) **Agreement Terms (static content with dynamic fields)**
+   - Insert the EXACT agreement text below (under “AGREEMENT TEXT”), but bind {{clientName}}, {{projectAddress}}, {{gstRate}}, etc. Keep section numbering and headings. Use Montserrat 11px, 1.55 line-height, 10px paragraph spacing.
+10) **Signatures**
+   - Two cards: Client (Name, typed signature, date) and Trecasa (Authorized Signatory, date).
+   - If signatures exist in meta, print “Signed on DD MMM YYYY, HH:mm”.
+
+## 5) Fonts & Styles (shared CSS snippet for template body)
+- @font-face for Montserrat and Playfair using local .woff2 files.
+- Root sizes:
+  - Headings (Playfair): h1 22px, h2 16px, h3 14px.
+  - Body (Montserrat): 11px; 1.55 line-height.
+- Greens: #153E33 (header bar), #1B4A3F (room title), gold accent #D9C37D, brand brown #5A2E1A.
+- Table borders: #E6E6E6; header cells #F5F7F6.
+- No horizontal scroll in PDFs: keep total table width <= 178mm excluding margins.
+
+## 6) Header/Footer on EVERY page (critical)
+- In Puppeteer `page.pdf()`:
+  - `displayHeaderFooter: true`
+  - `headerTemplate: fs.readFileSync('server/templates/agreement.header.html', 'utf8')`
+  - `footerTemplate: fs.readFileSync('server/templates/agreement.footer.html', 'utf8')`
+  - `margin: { top: '20mm', right: '14mm', bottom: '20mm', left: '14mm' }`
+  - Ensure templates are **minimal HTML fragments** with inline CSS and **no external URLs**.
+- Do NOT put the large green ribbon in headerTemplate; keep it in the body so it doesn’t overlay.
+
+## 7) Client UI (optional, small)
+- On the “Agreement” tab:
+  - Toggle “Use default payment schedule” or “Custom”.
+  - Discount type selector: Flat / Percent, Discount value input.
+  - GST % input (default 18).
+  - Checkbox “Round totals (nearest)” + note “* Rounding shown with an asterisk next to numbers that were rounded.”
+  - Button: “Generate Agreement Pack PDF” → calls `/render/agreement/:id/print` (opens in new tab/download).
+
+## 8) Acceptance checklist
+- Header and footer appear on **every page** of the PDF (not only page 1).
+- Annexure A (Interiors) + Annexure B (False Ceiling) are included in the same PDF, with room subtotals and section totals.
+- Dynamic **Materials & Brands** accurately reflect selected Core/Finish/Hardware from scope.
+- Price Summary shows Subtotal, Discount, GST, and **Final Grand Total**.
+- Payment Breakdown shows 10/60/25/5 with computed rupee amounts (or custom if set).
+- Fonts are **Playfair + Montserrat**; no clipping; tables never overflow the page width.
+- Footer shows © 2025, site + handle, red dot, and “Page X of Y”.
+- Signatures print if present.
+- Removing “Room Summary” grid is respected; “Room Totals — Interiors” stays.
+
+# AGREEMENT TEXT (use this exact content in the Terms section of agreement.html; bind fields):
+
+This Interior Design Agreement (“Agreement”) is made on this {{issueDate}} between:
+Client Name: {{clientName}}, Address: {{clientAddress}}, Contact: {{clientContact}}
+and
+Designer: Trecasa Interiors, Address: Miyapur, Hyderabad, Contact: +91 9059784422 | info@trecasa.in
+Collectively the “Parties”.
+
+SECTION I: PROJECT OVERVIEW
+1. Project Details
+Project Name / Reference: {{projectName}}
+Project Address: {{projectAddress}}
+Project Type: {{projectType}}
+Area: {{area}} sq.ft.
+Scope: Interior Design, Planning, Visualization, Execution
+
+SECTION II: DESIGN & EXECUTION TERMS
+2. Scope of Work
+(… include the exact numbered bullets from the user’s final agreement …)
+
+3. Project Timeline
+(… same table as provided …)
+
+4. Professional Fees & Payment Schedule
+Total Fee: ₹ {{grandTotal}}
+Payment Stages: (list schedule with computed amounts)
+Late payments beyond 10 days attract 1.5% monthly interest.
+
+5. Client Responsibilities
+(… same bullets …)
+
+6. Revisions
+(… same bullets …)
+
+SECTION III: LEGAL & ADMINISTRATIVE TERMS
+7. Intellectual Property Rights
+(… unchanged …)
+
+8. Warranty & Maintenance
+(… unchanged …)
+
+9. Vendor and Material Responsibility
+(… unchanged …)
+
+10. Photography & Marketing Rights
+(… unchanged …)
+
+11. Design Execution by Others
+(… unchanged …)
+
+12. Digital Communication Validity
+All design approvals made via email, WhatsApp, or digital signature are legally binding.
+
+13. Termination
+(… unchanged …)
+
+14. Liability & Limitations
+(… unchanged …)
+
+15. Site Safety & Access
+(… unchanged …)
+
+16. Force Majeure
+(… unchanged …)
+
+17. Dispute Resolution & Jurisdiction
+(… unchanged …)
+Jurisdiction: Hyderabad, Telangana, India.
+
+18. Confidentiality
+(… unchanged …)
+
+SECTION IV: SIGNATURES
+Designer (Trecasa Interiors) — Name/Signature/Date
+Client — Name/Signature/Date
+
+ANNEXURES
+A – Detailed Project Scope (Interiors)
+B – False Ceiling Specifications
+C – Payment Schedule (if customized)
+
+# Notes to keep parity with existing PDFs
+- Maintain the green title bars, totals styling, and the brand brown for “Final Total”.
+- Keep the red dot in the footer; match the same position as your latest PDFs.
+- Ensure ordering of rooms: Kitchen, Living/Dining, Master Bedroom, Bedroom 2, Bedroom 3, Bedroom 4, Foyer, Others.
+
+# Done criteria for the task
+- A single button “Agreement Pack PDF” generates the combined PDF with header+footer on all pages.
+- Totals match the Estimate page (including discount, GST, rounding).
+- The Agreement text appears cleanly typeset with Montserrat, with no clipping or overflow.
