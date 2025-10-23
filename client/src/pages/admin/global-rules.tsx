@@ -44,6 +44,8 @@ export default function AdminGlobalRulesPage() {
 
   // Form state
   const [buildTypeDefault, setBuildTypeDefault] = useState<"handmade" | "factory">("handmade");
+  const [handmadeBaseRate, setHandmadeBaseRate] = useState(1300);
+  const [factoryBaseRate, setFactoryBaseRate] = useState(1500);
   const [gstPercent, setGstPercent] = useState(18);
   const [validityDays, setValidityDays] = useState(15);
   const [bedroomFactorBase, setBedroomFactorBase] = useState(3);
@@ -77,6 +79,8 @@ export default function AdminGlobalRulesPage() {
     if (globalRulesData) {
       const formData = parseGlobalRulesForForm(globalRulesData);
       setBuildTypeDefault(formData.buildTypeDefault as "handmade" | "factory");
+      setHandmadeBaseRate(formData.handmadeBaseRate ?? 1300);
+      setFactoryBaseRate(formData.factoryBaseRate ?? 1500);
       setGstPercent(formData.gstPercent);
       setValidityDays(formData.validityDays);
       setBedroomFactorBase(formData.bedroomFactorBase);
@@ -97,6 +101,10 @@ export default function AdminGlobalRulesPage() {
   const isValid = useMemo(() => {
     return (
       Math.abs(paymentTotal - 100) < 0.01 &&
+      handmadeBaseRate >= 500 &&
+      handmadeBaseRate <= 5000 &&
+      factoryBaseRate >= 500 &&
+      factoryBaseRate <= 5000 &&
       gstPercent >= 0 &&
       gstPercent <= 28 &&
       validityDays >= 1 &&
@@ -106,7 +114,7 @@ export default function AdminGlobalRulesPage() {
       perBedroomDelta >= 0 &&
       perBedroomDelta <= 0.25
     );
-  }, [paymentTotal, gstPercent, validityDays, bedroomFactorBase, perBedroomDelta]);
+  }, [paymentTotal, handmadeBaseRate, factoryBaseRate, gstPercent, validityDays, bedroomFactorBase, perBedroomDelta]);
 
   // Save mutation
   const saveMutation = useMutation({
@@ -142,6 +150,8 @@ export default function AdminGlobalRulesPage() {
 
     saveMutation.mutate({
       buildTypeDefault,
+      handmadeBaseRate,
+      factoryBaseRate,
       gstPercent,
       validityDays,
       bedroomFactorBase,
@@ -247,7 +257,7 @@ export default function AdminGlobalRulesPage() {
           <Card>
             <CardHeader>
               <CardTitle>Pricing Defaults</CardTitle>
-              <CardDescription>Default settings for new quotations</CardDescription>
+              <CardDescription>Default settings for new quotations and base pricing rates</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
@@ -291,6 +301,40 @@ export default function AdminGlobalRulesPage() {
                     onChange={(e) => setValidityDays(parseInt(e.target.value) || 1)}
                     data-testid="input-validity-days"
                   />
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-medium mb-3">Base Pricing Rates (₹/sqft)</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  These are the base rates before brand adjustments. Brand-specific adjustments are configured in the Admin Brands panel.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="handmadeRate">Handmade Base Rate (₹/sqft)</Label>
+                    <Input
+                      id="handmadeRate"
+                      type="number"
+                      min="500"
+                      max="5000"
+                      value={handmadeBaseRate}
+                      onChange={(e) => setHandmadeBaseRate(parseInt(e.target.value) || 1300)}
+                      data-testid="input-handmade-base-rate"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="factoryRate">Factory Base Rate (₹/sqft)</Label>
+                    <Input
+                      id="factoryRate"
+                      type="number"
+                      min="500"
+                      max="5000"
+                      value={factoryBaseRate}
+                      onChange={(e) => setFactoryBaseRate(parseInt(e.target.value) || 1500)}
+                      data-testid="input-factory-base-rate"
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>

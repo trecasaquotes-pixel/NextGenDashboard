@@ -15,6 +15,8 @@ export interface CityFactorItem {
 export interface GlobalRulesData {
   id: string;
   buildTypeDefault: string;
+  handmadeBaseRate?: number;
+  factoryBaseRate?: number;
   gstPercent: number;
   validityDays: number;
   bedroomFactorBase: number;
@@ -29,6 +31,8 @@ export interface GlobalRulesData {
 
 export interface GlobalRulesFormData {
   buildTypeDefault: string;
+  handmadeBaseRate: number;
+  factoryBaseRate: number;
   gstPercent: number;
   validityDays: number;
   bedroomFactorBase: number;
@@ -49,6 +53,8 @@ export async function saveGlobalRules(data: GlobalRulesFormData): Promise<Global
   // Transform form data to API format
   const apiData = {
     buildTypeDefault: data.buildTypeDefault,
+    handmadeBaseRate: data.handmadeBaseRate,
+    factoryBaseRate: data.factoryBaseRate,
     gstPercent: data.gstPercent,
     validityDays: data.validityDays,
     bedroomFactorBase: data.bedroomFactorBase,
@@ -82,6 +88,8 @@ export function parseGlobalRulesForForm(data: GlobalRulesData): GlobalRulesFormD
 
   return {
     buildTypeDefault: data.buildTypeDefault,
+    handmadeBaseRate: data.handmadeBaseRate ?? 1300,
+    factoryBaseRate: data.factoryBaseRate ?? 1500,
     gstPercent: data.gstPercent,
     validityDays: data.validityDays,
     bedroomFactorBase: data.bedroomFactorBase,
