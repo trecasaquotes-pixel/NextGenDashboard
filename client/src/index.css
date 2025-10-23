@@ -23,6 +23,13 @@
   --trecasa-offwhite: 60 33% 98%;     /* Off-white #FAFAF8 */
   --trecasa-gray: 0 0% 23%;           /* Warm Gray #3B3B3B */
 
+  /* Page Width Variables */
+  --page-max: 1440px;      /* Desktop max width */
+  --page-wide: 1536px;     /* Ultra-wide for XL+ screens */
+  --page-padding-sm: 16px; /* Mobile gutters */
+  --page-padding-md: 24px; /* Tablet gutters */
+  --page-padding-lg: 32px; /* Desktop gutters */
+
   --background: 60 33% 98%;            /* Off-white background */
 
   --foreground: 0 0% 23%;              /* Warm Gray text */
@@ -368,6 +375,32 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+
+  /* Container class for responsive page widths */
+  .container-trecasa {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--page-padding-sm);
+    padding-right: var(--page-padding-sm);
+    max-width: min(var(--page-max), 100%);
+  }
+
+  @media (min-width: 1024px) {
+    .container-trecasa { 
+      padding-left: var(--page-padding-md);
+      padding-right: var(--page-padding-md);
+      max-width: var(--page-max);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container-trecasa { 
+      padding-left: var(--page-padding-lg);
+      padding-right: var(--page-padding-lg);
+      max-width: var(--page-wide);
+    }
+  }
 }
 
 /* Dimension Input Styling */
@@ -410,10 +443,16 @@
 
 /* Print Styles for PDF Export */
 @media print {
-  /* Page setup with margins for header/footer */
+  /* Page setup with margins for header/footer - Optimized width */
   @page {
     size: A4;
-    margin: 100px 15px 80px 15px;
+    margin: 12mm 10mm 14mm 10mm;
+  }
+
+  /* Print page box with optimized padding */
+  .print-page {
+    padding: 6mm 4mm;
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
   }
 
   /* Hide screen-only elements */
@@ -503,14 +542,23 @@
     break-before: page;
   }
 
-  /* Tables */
+  /* Tables - Optimized for wider print canvas */
   table {
     page-break-inside: auto;
+    max-width: 100%;
+    table-layout: fixed;
   }
 
   tr {
     page-break-inside: avoid;
     break-inside: avoid;
+  }
+
+  /* Reduce table cell padding for wider content */
+  table td,
+  table th {
+    padding-left: 4px;
+    padding-right: 4px;
   }
 
   thead {

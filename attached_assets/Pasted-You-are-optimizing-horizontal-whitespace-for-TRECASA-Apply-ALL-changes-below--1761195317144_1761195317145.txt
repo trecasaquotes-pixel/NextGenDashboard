@@ -1,0 +1,187 @@
+You are optimizing horizontal whitespace for TRECASA. Apply ALL changes below.
+
+========================================
+GOAL
+========================================
+- Reduce large side gutters on desktop and large monitors.
+- Keep mobile/tablet comfortable.
+- Make Scope tables fit without horizontal scroll.
+- Ensure Print/PDF uses the wider canvas with proper header/footer margins.
+
+========================================
+1) GLOBAL CONTAINER WIDTH
+========================================
+Files to update (create if missing):
+- client/styles/globals.css (or app.css)
+- client/components/layout/AppShell.tsx (or the top-level layout used across pages)
+
+A) In globals.css, define page width variables and a reusable container class:
+
+:root {
+  --page-max: 1440px;      /* was ~1024–1200, widen it */
+  --page-wide: 1536px;     /* ultra-wide for XL+ screens */
+  --page-padding-sm: 16px; /* mobile gutters */
+  --page-padding-md: 24px; /* tablet gutters */
+  --page-padding-lg: 32px; /* desktop gutters */
+}
+
+.container-trecasa {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--page-padding-sm);
+  padding-right: var(--page-padding-sm);
+  max-width: min(var(--page-max), 100%);
+}
+
+@media (min-width: 1024px) {
+  .container-trecasa { 
+    padding-left: var(--page-padding-md);
+    padding-right: var(--page-padding-md);
+    max-width: var(--page-max);
+  }
+}
+@media (min-width: 1280px) {
+  .container-trecasa { 
+    padding-left: var(--page-padding-lg);
+    padding-right: var(--page-padding-lg);
+    max-width: var(--page-wide); /* unlocks 1536px */
+  }
+}
+
+B) In AppShell.tsx (or your root layout), wrap page content with container-trecasa:
+
+return (
+  <div className="min-h-screen bg-[#FAFAF8]">
+    <Header />
+    <main className="container-trecasa py-6 lg:py-8">
+      {children}
+    </main>
+    <Footer />
+  </div>
+);
+
+NOTE: Replace any legacy max-w-7xl/max-w-screen-lg with .container-trecasa to ensure consistent width on every page (Scope, Estimate, Print).
+
+========================================
+2) SCOPE PAGE LAYOUT (INTERIORS + FALSE CEILING)
+========================================
+Files:
+- client/pages/scope/index.tsx (or equivalent)
+- client/components/scope/RoomSection.tsx
+- client/components/fc/RoomSection.tsx
+
+A) Page grid to use the extra width and avoid horizontal scroll:
+Wrap the main content with a 12-col grid (desktop) and add a sticky summary.
+
+<div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+  {/* Left: items (wider) */}
+  <section className="xl:col-span-9 space-y-6">
+    {/* rooms list… */}
+  </section>
+
+  {/* Right: sticky summary */}
+  <aside className="xl:col-span-3">
+    <div className="sticky top-20">
+      <QuoteSummaryCard /> {/* totals, discount, gst, rounding */}
+    </div>
+  </aside>
+</div>
+
+B) Ensure each RoomSection table is a grid that fits the new width:
+- Use the grid template from previous spec but slightly wider:
+
+grid-template-columns:
+  90px         /* Type */
+  1.8fr        /* Description */
+  88px 88px 88px  /* L H W */
+  120px        /* SQFT/Qty */
+  160px        /* Core */
+  160px        /* Finish */
+  150px        /* Hardware */
+  120px        /* Rate */
+  140px        /* Amount */
+  40px;        /* actions */
+
+Add a CSS class .li-grid-1440 with the above template and apply it to LineItemRow on desktop (xl:li-grid-1440). On widths <1280px, stack into 2 lines (existing responsive rules).
+
+========================================
+3) ESTIMATE PAGE WIDTH
+========================================
+- Wrap Estimate content with .container-trecasa.
+- If the two columns (Interiors summary + False Ceiling summary) exist, give them a wider gap and column basis:
+
+<div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+  <section className="xl:col-span-6">…</section>
+  <section className="xl:col-span-6">…</section>
+</div>
+
+- Item rows should use text-sm and compact spacing to keep dense but readable in the wider layout.
+
+========================================
+4) PRINT/PDF CANVAS (HEADER + FOOTER + MARGINS)
+========================================
+Files:
+- client/print/styles/print.css
+- client/print/components/Header.tsx and Footer.tsx
+- server/pdf-generator.ts (or the SSR route that feeds Puppeteer)
+
+A) CSS for print page box (A4 portrait assumed). Increase printable width and manage inner padding:
+
+@page {
+  size: A4;
+  margin: 12mm 10mm 14mm 10mm; /* top right bottom left */
+}
+
+.print-page {
+  /* A4 width ~210mm; minus margins leaves ~190mm.
+     Keep inner padding small to maximize real estate. */
+  padding: 6mm 4mm;
+  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+}
+
+.print-header,
+.print-footer {
+  position: running(headerFooter);
+}
+
+@page {
+  @top-center { content: element(pageHeader); }
+  @bottom-center { content: element(pageFooter); }
+}
+
+.print-header[data-element="pageHeader"] { /* explicit hook */ }
+.print-footer[data-element="pageFooter"] { /* explicit hook */ }
+
+B) Ensure every printed page gets header + footer:
+- In the PDF SSR, render <PrintHeader data-element="pageHeader" class="print-header" /> and <PrintFooter data-element="pageFooter" class="print-footer" /> once per page context.
+- If you use Puppeteer evaluate/print, pass displayHeaderFooter: false (we are using CSS running elements instead) OR keep it true only if you are injecting raw header/footer HTML—do not mix both.
+
+C) Widen tables in print:
+- For the “Room Totals” and “Room-wise Breakdown” tables, set max-width: 100%; table-layout: fixed; and reduce left/right padding in table cells to 4–6px.
+- Column widths: use percentage distribution so the table fills ~100% width of .print-page without clipping.
+
+========================================
+5) FALSE CEILING PARITY
+========================================
+- Apply the same .container-trecasa wrapper and the same page grid (items + sticky summary).
+- Use the same print.css rules so FC Annexure pages fill the width and still show header/footer on every page.
+
+========================================
+6) VISUAL POLISH & SAFETY
+========================================
+- Increase room card inner padding slightly (p-4 → p-5) now that width is larger.
+- Keep text sizes the same (already balanced for A4 print); rely on width gain rather than font bumps.
+- Confirm no horizontal scrollbar appears at ≥1280px.
+- Confirm mobile (<768px) still uses full-width with safe gutters from --page-padding-sm.
+
+========================================
+7) ACCEPTANCE CHECKLIST
+========================================
+- Scope page shows significantly less empty space on left/right at desktop and XL.
+- No horizontal scrollbars on Scope tables at ≥1280px.
+- Estimate page fills width symmetrically; two columns feel balanced.
+- Print/PDF: header + footer visible on ALL pages, tables stretch naturally, no clipping, margins respected.
+- False Ceiling pages mirror the same improvements.
+
+Do not change business logic or calculations; this is a layout/print canvas update.
