@@ -1614,7 +1614,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get agreement data for quotation (for agreement page display)
-  app.get("/api/agreements/:quotationId", isAuthenticated, async (req: any, res) => {
+  app.get("/api/quotations/:quotationId/agreement-data", isAuthenticated, async (req: any, res) => {
     try {
       const quotationId = req.params.quotationId;
       

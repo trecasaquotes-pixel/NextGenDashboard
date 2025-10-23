@@ -37,7 +37,7 @@ export default function Agreement() {
   });
 
   const { data: agreementData } = useQuery<any>({
-    queryKey: [`/api/agreements/${quotationId}`],
+    queryKey: [`/api/quotations/${quotationId}/agreement-data`],
     enabled: !!quotationId && isAuthenticated,
   });
 
