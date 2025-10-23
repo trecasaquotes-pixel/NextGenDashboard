@@ -24,9 +24,9 @@ Key features include:
 - **Template System**: Database-driven template system (manual creation via admin panel, no seeding). Templates define room items with itemKey, displayName, unit, and wall highlight flags.
 - **Painting Pack Integration**: Admin-configured painting packages are integrated into the quotation workflow with BHK-based dynamic pricing (basePriceLsum × (1 + (actualBHK - bhkFactorBase) × perBedroomDelta)). Painting cost is calculated server-side, included in quotation totals, and displayed in the estimate page with package selection UI.
 - **PDF Generation**: Dual client-side (html2pdf.js) and server-side (Puppeteer) PDF generation, ensuring consistent branding, detailed room-wise breakdowns, and proper page handling.
-- **Agreement Pack**: Functionality to merge multiple PDFs, customize agreement details (materials, specs, payment schedules), and dynamically include annexures.
+- **Agreement Pack**: Consolidated document package with Service Agreement (including all T&C) followed by clean Annexures A (Interiors) and B (False Ceiling) containing only scope and pricing. T&C consolidation uses `excludeTerms=true` query parameter in PDF generation to conditionally hide duplicate T&C from annexures while preserving them in standalone PDF downloads.
 - **Quotation Management**: CRUD operations for quotations, including dynamic custom room addition, estimate generation, and print functionalities.
-- **Dynamic Terms & Conditions**: Template-based T&C with per-quote overrides and dynamic population of materials and brands.
+- **Dynamic Terms & Conditions**: Template-based T&C with per-quote overrides and dynamic population of materials and brands. Both Interiors and False Ceiling T&C sections are rendered in the Service Agreement page after the main agreement clauses. Standalone quotation PDFs include their respective T&C sections.
 - **Quotation Locking**: Concurrent edit protection system with auto-acquisition, heartbeat mechanism, and UI indicators.
 - **Client Portal**: Secure, token-based system for client access and quotation acceptance.
 - **Project Management & Expense Tracking**: Workflow for creating and tracking projects, managing expenses, and monitoring profit/loss.
