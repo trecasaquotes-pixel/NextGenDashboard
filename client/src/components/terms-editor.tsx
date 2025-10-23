@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import type { Quotation } from "@shared/schema";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
@@ -9,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { defaultTerms, renderTerms, type TermsTemplateId } from "@/lib/terms";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { Quotation } from "@shared/schema";
 
 interface TermsEditorProps {
   quotation: Quotation;

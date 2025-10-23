@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
+import { CheckCircle2, Download, AlertCircle, FileText } from "lucide-react";
+import { formatINR } from "@shared/formatters";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, Download, AlertCircle, FileText } from "lucide-react";
-import { formatINR } from "@shared/formatters";
 
 export default function ClientQuotePortal() {
   const [match, params] = useRoute("/client/:quoteId");

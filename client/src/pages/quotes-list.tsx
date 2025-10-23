@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Plus,
   MoreVertical,
@@ -33,6 +27,14 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Quotation } from "@shared/schema";
+import { formatINR } from "@shared/formatters";
+
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { isUnauthorizedError } from "@/lib/authUtils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   DropdownMenu,
@@ -64,7 +66,6 @@ import {
 } from "@/components/ui/table";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { formatINR } from "@shared/formatters";
 import { safeN } from "@/lib/money";
 import { NewQuotationDialog } from "@/components/new-quotation-dialog";
 

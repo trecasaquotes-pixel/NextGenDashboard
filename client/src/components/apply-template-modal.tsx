@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type { TemplateSummary, ApplyTemplateResponse } from "@shared/schema";
+
 import {
   Dialog,
   DialogContent,
@@ -20,7 +22,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import type { TemplateSummary, ApplyTemplateResponse } from "@shared/schema";
 import {
   AlertDialog,
   AlertDialogAction,

@@ -1,8 +1,20 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import {
+  ArrowLeft,
+  Plus,
+  MoreVertical,
+  Download,
+  Upload,
+  Copy,
+  Trash2,
+  FileJson,
+} from "lucide-react";
+import type { TemplateRow, TemplateCategory } from "@shared/schema";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -40,17 +52,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  ArrowLeft,
-  Plus,
-  MoreVertical,
-  Download,
-  Upload,
-  Copy,
-  Trash2,
-  FileJson,
-} from "lucide-react";
-import type { TemplateRow, TemplateCategory } from "@shared/schema";
 import {
   getTemplates,
   createTemplate,

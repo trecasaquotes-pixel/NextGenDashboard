@@ -1,5 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Plus, ArrowLeft, Trash2, Copy } from "lucide-react";
+import { useLocation } from "wouter";
+import type {
+  PaintingPackRow,
+  NewPaintingPackRow,
+  FCCatalogRow,
+  NewFCCatalogRow,
+} from "@shared/schema";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -35,14 +44,6 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { Plus, ArrowLeft, Trash2, Copy } from "lucide-react";
-import { useLocation } from "wouter";
-import type {
-  PaintingPackRow,
-  NewPaintingPackRow,
-  FCCatalogRow,
-  NewFCCatalogRow,
-} from "@shared/schema";
 import {
   getPaintingPacks,
   createPaintingPack,

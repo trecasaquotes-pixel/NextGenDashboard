@@ -1,5 +1,6 @@
-import { apiRequest } from "@/lib/queryClient";
 import type { RateRow, NewRateRow } from "@shared/schema";
+
+import { apiRequest } from "@/lib/queryClient";
 
 export interface RatesFilters {
   q?: string;

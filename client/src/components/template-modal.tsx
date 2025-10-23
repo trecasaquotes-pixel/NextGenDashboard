@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -23,10 +26,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { getTemplateForCategory, type TemplateId } from "@/lib/templates";
-import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+
 
 type TemplateModalProps = {
   open: boolean;

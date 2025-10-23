@@ -1,5 +1,6 @@
-import { apiRequest } from "@/lib/queryClient";
 import type { BrandRow, NewBrandRow } from "@shared/schema";
+
+import { apiRequest } from "@/lib/queryClient";
 
 export interface BrandsFilters {
   q?: string;

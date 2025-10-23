@@ -1,5 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Plus, MoreVertical, Copy, Trash2, ArrowLeft } from "lucide-react";
+import { useLocation } from "wouter";
+import type { RateRow, NewRateRow, Category, Unit } from "@shared/schema";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -39,9 +43,6 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { Plus, MoreVertical, Copy, Trash2, ArrowLeft } from "lucide-react";
-import { useLocation } from "wouter";
-import type { RateRow, NewRateRow, Category, Unit } from "@shared/schema";
 import {
   getRates,
   createRate,

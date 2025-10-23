@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { ChevronRight, Clock } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { VersionHistoryDialog } from "@/components/version-history-dialog";
 

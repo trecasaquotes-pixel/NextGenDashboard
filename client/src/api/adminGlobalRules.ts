@@ -1,5 +1,6 @@
-import { apiRequest } from "@/lib/queryClient";
 import type { GlobalRulesRow, NewGlobalRulesRow } from "@shared/schema";
+
+import { apiRequest } from "@/lib/queryClient";
 
 export interface PaymentScheduleItem {
   label: string;

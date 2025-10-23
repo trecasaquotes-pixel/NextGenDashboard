@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Loader2, LayoutTemplate, FileText, Sparkles } from "lucide-react";
+import type { TemplateSummary, Quotation } from "@shared/schema";
+
 import {
   Dialog,
   DialogContent,
@@ -24,8 +27,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2, LayoutTemplate, FileText, Sparkles } from "lucide-react";
-import type { TemplateSummary, Quotation } from "@shared/schema";
 
 interface NewQuotationDialogProps {
   open: boolean;

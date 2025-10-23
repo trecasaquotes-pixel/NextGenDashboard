@@ -1,4 +1,3 @@
-import { apiRequest } from "@/lib/queryClient";
 import type {
   TemplateRow,
   NewTemplateRow,
@@ -7,6 +6,8 @@ import type {
   TemplateItemRow,
   NewTemplateItemRow,
 } from "@shared/schema";
+
+import { apiRequest } from "@/lib/queryClient";
 
 export interface TemplatesFilters {
   q?: string;

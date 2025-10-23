@@ -1,10 +1,11 @@
-import { apiRequest } from "@/lib/queryClient";
 import type {
   PaintingPackRow,
   NewPaintingPackRow,
   FCCatalogRow,
   NewFCCatalogRow,
 } from "@shared/schema";
+
+import { apiRequest } from "@/lib/queryClient";
 
 // ============================================================
 // PAINTING PACKS

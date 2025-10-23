@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { ChevronLeft, ChevronRight, Search, FileText, Copy, CheckCircle } from "lucide-react";
+import { format } from "date-fns";
+
 import {
   listAuditLogs,
   getAuditLog,
@@ -29,8 +32,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, ChevronRight, Search, FileText, Copy, CheckCircle } from "lucide-react";
-import { format } from "date-fns";
 
 export default function AuditLogPage() {
   const [, navigate] = useLocation();

@@ -1,5 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Plus, MoreVertical, Trash2, ArrowLeft, Check } from "lucide-react";
+import { useLocation } from "wouter";
+import type { BrandRow, NewBrandRow, BrandType } from "@shared/schema";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -33,9 +37,6 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { Plus, MoreVertical, Trash2, ArrowLeft, Check } from "lucide-react";
-import { useLocation } from "wouter";
-import type { BrandRow, NewBrandRow, BrandType } from "@shared/schema";
 import {
   getBrands,
   createBrand,

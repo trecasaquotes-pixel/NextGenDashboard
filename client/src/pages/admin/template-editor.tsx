@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation, useParams } from "wouter";
+import { ArrowLeft, Plus, Trash2, GripVertical } from "lucide-react";
+import type { TemplateCategory, TemplateRoomRow, TemplateItemRow } from "@shared/schema";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation, useParams } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,8 +33,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ArrowLeft, Plus, Trash2, GripVertical } from "lucide-react";
-import type { TemplateCategory, TemplateRoomRow, TemplateItemRow } from "@shared/schema";
 import {
   getTemplate,
   updateTemplate,

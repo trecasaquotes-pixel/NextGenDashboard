@@ -1,18 +1,5 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   ArrowLeft,
   ArrowRight,
@@ -29,6 +16,21 @@ import {
 } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
+import { formatINR } from "@shared/formatters";
+
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
@@ -37,7 +39,6 @@ import { SignoffEditor } from "@/components/signoff-editor";
 import { ApproveQuoteDialog } from "@/components/approve-quote-dialog";
 import { ShareLinkDialog } from "@/components/share-link-dialog";
 import { AgreementCard } from "@/components/agreement-card";
-import { formatINR } from "@shared/formatters";
 import { safeN } from "@/lib/money";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";

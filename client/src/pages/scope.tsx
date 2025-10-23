@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { ArrowLeft, ArrowRight, Plus, Trash2, FileText, Sparkles } from "lucide-react";
+import { useLocation, useRoute } from "wouter";
+import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
+import { ROOM_TYPES, OTHER_ITEM_TYPES } from "@shared/schema";
+import { formatINR } from "@shared/formatters";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -8,10 +14,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Plus, Trash2, FileText, Sparkles } from "lucide-react";
-import { useLocation, useRoute } from "wouter";
-import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
-import { ROOM_TYPES, OTHER_ITEM_TYPES } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
@@ -44,7 +46,6 @@ import {
   type HardwareBrand,
 } from "@/lib/rates";
 import { calculateQuoteTotals } from "@/lib/calculateTotals";
-import { formatINR } from "@shared/formatters";
 import { getEffectiveBuildType } from "@/lib/pricing";
 
 // Brand options for dropdowns

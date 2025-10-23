@@ -1,20 +1,22 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { ArrowLeft, Download } from "lucide-react";
+import { useLocation, useRoute } from "wouter";
+import type { Quotation } from "@shared/schema";
+import { createRoot } from "react-dom/client";
+import { formatDisplayDate } from "@shared/formatters";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Download } from "lucide-react";
-import { useLocation, useRoute } from "wouter";
-import type { Quotation } from "@shared/schema";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { htmlToPdfBytes, mergePdfBytes, downloadBytesAs } from "@/lib/pdf";
 import { AnnexureTitle } from "@/components/annexure-title";
-import { createRoot } from "react-dom/client";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { formatDisplayDate } from "@shared/formatters";
+
 
 export default function Agreement() {
   const [match, params] = useRoute("/quotation/:id/agreement");

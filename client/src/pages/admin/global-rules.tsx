@@ -1,5 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { ArrowLeft, Plus, Trash2, RotateCcw } from "lucide-react";
+import { useLocation } from "wouter";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -24,8 +27,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { ArrowLeft, Plus, Trash2, RotateCcw } from "lucide-react";
-import { useLocation } from "wouter";
 import {
   getGlobalRules,
   saveGlobalRules,

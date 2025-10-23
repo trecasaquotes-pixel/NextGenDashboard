@@ -1,5 +1,9 @@
-import { useEffect } from "react";
+import { useEffect , useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Plus, FileText, Trash2, LogOut } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import type { Quotation } from "@shared/schema";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -13,9 +17,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, FileText, Trash2, LogOut } from "lucide-react";
-import { Link, useLocation } from "wouter";
-import type { Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   DropdownMenu,
@@ -35,7 +36,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";

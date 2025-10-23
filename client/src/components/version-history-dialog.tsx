@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Clock, FileText, ChevronDown, ChevronRight } from "lucide-react";
+import { formatINR } from "@shared/formatters";
+
 import {
   Dialog,
   DialogContent,
@@ -13,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { formatINR } from "@shared/formatters";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface QuotationVersion {
