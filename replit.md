@@ -34,7 +34,10 @@ No specific user preferences were provided in the original document.
   - **Discounts**: Percentage limits (0-100%), proper error messaging for validation failures
 - **Pricing System**: Smart Rate Calculator incorporating brand-based pricing (Core Material, Finish, Hardware) and project-level "Build Type" (Handmade/Factory Finish) for real-time calculation updates. Special handling for wall-related items to always use handmade pricing.
 - **Totals Calculation**: Real-time computation of subtotals, discounts, and GST.
-- **Template System**: Auto-creation of room items based on project categories using predefined templates. Template changes propagate instantly across all pages (Scope, Estimate, Print, PDFs) through comprehensive cache invalidation and refetching.
+- **Template System**: Auto-creation of room items based on project categories using predefined templates (Modern 1BHK, Modern 2BHK, Modern 3BHK). Template changes propagate instantly across all pages (Scope, Estimate, Print, PDFs) through comprehensive cache invalidation and refetching.
+  - **Modern 1BHK Template**: Comprehensive template with interior items and false ceiling rooms
+  - **Modern 2BHK Template**: Extended template with 2 bedrooms and additional spaces
+  - **Modern 3BHK Template**: Full-featured template with 15 interior rooms (71 items total: Kitchen, Living Room, Dining, Master Bedroom, Bedroom 2, Bedroom 3, 3 Bathrooms, Puja Room, Utility, Foyer, 2 Balconies, Storage) and 9 false ceiling rooms
 - **PDF Generation**: Dual approach with client-side (html2pdf.js) and server-side (Puppeteer with Google Fonts, professional margins, header/footer templates) options. All PDFs feature universal header/footer design with consistent branding. Includes room summary tables and robust page break handling.
   - **Detailed Room-wise Breakdown**: Professional table design with Playfair Display Bold 11pt section title (#1A1A1A), room names in Playfair Display SemiBold 11pt (#154734). Tables feature light gray headers (#F2F2F2, 26px height), Montserrat SemiBold 8pt column labels, data rows with 24px min height and Montserrat Regular 7.5-8pt text. Includes comprehensive columns: Description, L×H×W (combined dimensions), SQFT, Core Material, Finish, Hardware, Rate (₹/sft), and Amount (₹). Room subtotal bars in dark green (#154734) with white text (26px height). Optimized column widths for complete material visibility without text clipping.
 - **Render Token System**: HMAC-signed, time-limited tokens for secure Puppeteer access to protected pages.
@@ -84,6 +87,12 @@ No specific user preferences were provided in the original document.
 - **Quotation Management**: Create, view, edit, and manage quotations with auto-generated unique IDs.
 - **Project Information**: Capture client details, project category, address, and Build Type.
 - **Scope Definition**: Room-based line items for Interiors (dimensions, materials, pricing) and False Ceiling (area calculations). Rooms are displayed in standard order (Kitchen, Living, Bedrooms, Bathrooms, Utility, Puja) followed by custom room names alphabetically.
+- **Dynamic Custom Room Addition**: Flexible room customization allowing users to add custom rooms beyond template defaults. Features include:
+  - **Add Custom Interior Room**: Dialog-based UI to create new interior rooms with user-defined names (e.g., "Bedroom 4", "Guest Room", "Office")
+  - **Add Custom FC Room**: Dedicated interface for adding custom false ceiling rooms
+  - **Template Extension**: Load a template (e.g., Modern 3BHK) and dynamically add rooms to create customized quotes (e.g., 4BHK with additional bedroom)
+  - **Smart Mutation Handling**: Success toasts only fire after mutations complete successfully; dialogs remain open on errors for retry
+  - **First Item Creation**: Custom rooms are created by adding their first item with the custom room name specified
 - **Estimate Generation**: Detailed summaries, overall summary with discount and GST.
 - **Print Functionality**: Print-friendly views and PDF export.
 - **Quotes List**: Tabular display of quotations with project details and financial totals.
