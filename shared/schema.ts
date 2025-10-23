@@ -26,6 +26,10 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// User roles enum
+export const userRoleEnum = ["admin", "sales", "designer"] as const;
+export type UserRole = typeof userRoleEnum[number];
+
 // User storage table for Replit Auth
 export const users = pgTable("users", {
   id: varchar("id")
@@ -35,6 +39,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  role: varchar("role").notNull().default("sales"), // admin, sales, designer
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
