@@ -56,7 +56,7 @@ export const quotations = pgTable("quotations", {
 
   // Project Info
   projectName: varchar("project_name").notNull(),
-  projectType: varchar("project_type"), // 1 BHK, 2 BHK, 3 BHK, 4 BHK, Duplex, Triplex, Villa, Commercial, Other
+  projectType: varchar("project_type"), // Residential 1BHK, Residential 2BHK, Residential 3BHK, Commercial, or Custom
   clientName: varchar("client_name").notNull(),
   clientEmail: varchar("client_email"),
   clientPhone: varchar("client_phone"),
@@ -571,7 +571,6 @@ export const templateCategoryEnum = z.enum([
   "Residential 1BHK",
   "Residential 2BHK",
   "Residential 3BHK",
-  "Villa",
   "Commercial",
 ]);
 

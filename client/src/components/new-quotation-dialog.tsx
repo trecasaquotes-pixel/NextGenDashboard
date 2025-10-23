@@ -51,10 +51,14 @@ export function NewQuotationDialog({ open, onOpenChange, onSuccess }: NewQuotati
   // Create quotation mutation
   const createMutation = useMutation({
     mutationFn: async () => {
+      // Determine project type based on selected template
+      const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
+      const projectType = selectedTemplate?.category || "Custom";
+      
       // Create quotation
       const response = await apiRequest("POST", "/api/quotations", {
         projectName,
-        projectType: "Villa",
+        projectType,
         clientName,
         clientPhone: "",
         projectAddress: "",

@@ -68,7 +68,6 @@ const categories: TemplateCategory[] = [
   "Residential 1BHK",
   "Residential 2BHK",
   "Residential 3BHK",
-  "Villa",
   "Commercial",
 ];
 
@@ -87,7 +86,7 @@ export default function TemplatesPage() {
   const [editingTemplate, setEditingTemplate] = useState<TemplateRow | null>(null);
   const [newTemplate, setNewTemplate] = useState<Partial<TemplateRow>>({
     name: "",
-    category: "Residential 3BHK",
+    category: "Residential 1BHK",
     isActive: true,
   });
 
@@ -118,7 +117,7 @@ export default function TemplatesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/templates"] });
       setIsAddDialogOpen(false);
-      setNewTemplate({ name: "", category: "Residential 3BHK", isActive: true });
+      setNewTemplate({ name: "", category: "Residential 1BHK", isActive: true });
       toast({ title: "Template created successfully" });
     },
     onError: (error: any) => {

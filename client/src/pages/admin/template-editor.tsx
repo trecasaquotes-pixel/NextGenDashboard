@@ -50,7 +50,6 @@ const categories: TemplateCategory[] = [
   "Residential 1BHK",
   "Residential 2BHK",
   "Residential 3BHK",
-  "Villa",
   "Commercial",
 ];
 
