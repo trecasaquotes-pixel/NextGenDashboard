@@ -19,23 +19,25 @@ export async function emitPdf(
   const footerTemplate = includePageNumbers
     ? `
       <style>
-        *{font-family:Montserrat,Arial,sans-serif;font-size:10px;color:#444;margin:0;padding:0}
-        .wrap{width:100%;padding:8px 18mm;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box}
+        *{font-family:Montserrat,Arial,sans-serif;font-size:8pt;color:#666666;margin:0;padding:0}
+        .footer-wrap{width:100%;height:40px;line-height:40px;padding:0 18mm;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;border-top:1px solid #C7A948}
         .sep{margin:0 8px;color:#999}
+        .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#dc2626;margin-left:6px;vertical-align:middle;transform:translateY(-0.5px)}
       </style>
-      <div class="wrap">
-        <div>© 2025 Trecasa Design Studio<span class="sep">•</span>www.trecasadesignstudio.com<span class="sep">•</span>@trecasa.designstudio</div>
+      <div class="footer-wrap">
+        <div>© 2025 TRECASA DESIGN STUDIO <span class="sep">|</span> www.trecasadesignstudio.com <span class="sep">|</span> @trecasa.designstudio <span class="dot"></span></div>
         <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
       </div>
     `
     : `
       <style>
-        *{font-family:Montserrat,Arial,sans-serif;font-size:10px;color:#444;margin:0;padding:0}
-        .wrap{width:100%;padding:8px 18mm;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+        *{font-family:Montserrat,Arial,sans-serif;font-size:8pt;color:#666666;margin:0;padding:0}
+        .footer-wrap{width:100%;height:40px;line-height:40px;padding:0 18mm;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border-top:1px solid #C7A948}
         .sep{margin:0 8px;color:#999}
+        .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#dc2626;margin-left:6px;vertical-align:middle;transform:translateY(-0.5px)}
       </style>
-      <div class="wrap">
-        <div>© 2025 Trecasa Design Studio<span class="sep">•</span>www.trecasadesignstudio.com<span class="sep">•</span>@trecasa.designstudio</div>
+      <div class="footer-wrap">
+        <div>© 2025 TRECASA DESIGN STUDIO <span class="sep">|</span> www.trecasadesignstudio.com <span class="sep">|</span> @trecasa.designstudio <span class="dot"></span></div>
       </div>
     `;
 
