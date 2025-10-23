@@ -41,6 +41,7 @@ const projectInfoSchema = z
     projectType: z.string().min(1, "Required"),
     projectTypeOther: z.string().optional(),
     buildType: z.enum(["handmade", "factory"]),
+    clientSuffix: z.string().optional(),
     clientName: z.string().min(1, "Required"),
     clientEmail: z.string().email("Invalid email").optional().or(z.literal("")),
     clientPhone: z.string().min(1, "Required"),
@@ -96,6 +97,7 @@ export default function ProjectInfo() {
       projectType: "",
       projectTypeOther: "",
       buildType: "handmade",
+      clientSuffix: "",
       clientName: "",
       clientEmail: "",
       clientPhone: "",
@@ -120,6 +122,7 @@ export default function ProjectInfo() {
         projectType: isStandardCategory ? projectType : projectType ? "Custom" : "",
         projectTypeOther: isStandardCategory ? "" : projectType,
         buildType: (quotation.buildType as "handmade" | "factory") || "handmade",
+        clientSuffix: quotation.clientSuffix || "",
         clientName: quotation.clientName,
         clientEmail: quotation.clientEmail || "",
         clientPhone: quotation.clientPhone || "",
@@ -334,6 +337,32 @@ export default function ProjectInfo() {
                         )}
                       />
                     )}
+
+                    <FormField
+                      control={form.control}
+                      name="clientSuffix"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Suffix</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-client-suffix">
+                                <SelectValue placeholder="Select suffix (optional)" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Mr">Mr</SelectItem>
+                              <SelectItem value="Mrs">Mrs</SelectItem>
+                              <SelectItem value="Miss">Miss</SelectItem>
+                              <SelectItem value="Ms">Ms</SelectItem>
+                              <SelectItem value="Dr">Dr</SelectItem>
+                              <SelectItem value="Prof">Prof</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     <FormField
                       control={form.control}
