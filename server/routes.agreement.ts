@@ -25,6 +25,22 @@ const signAgreementSchema = z.object({
   trecasa: z.boolean().optional(),
 });
 
+// Agreement customizations schema
+const agreementCustomizationsSchema = z.object({
+  materials: z.object({
+    coreMaterials: z.array(z.string()).optional(),
+    finishes: z.array(z.string()).optional(),
+    hardware: z.array(z.string()).optional(),
+  }).optional(),
+  specs: z.string().optional(),
+  paymentSchedule: z.array(
+    z.object({
+      label: z.string(),
+      percent: z.number().min(0).max(100),
+    })
+  ).optional(),
+});
+
 export function registerAgreementRoutes(app: Express) {
   /**
    * GET /api/agreements/:quoteId
@@ -161,17 +177,28 @@ export function registerAgreementRoutes(app: Express) {
         }
       });
 
-      const materials = Array.from(materialsSet).sort();
-      const finishes = Array.from(finishesSet).sort();
-      const hardware = Array.from(hardwareSet).sort();
+      // Use custom materials if available, otherwise use extracted materials
+      const customizations = quotation.agreementCustomizations;
+      const materials = customizations?.materials?.coreMaterials || Array.from(materialsSet).sort();
+      const finishes = customizations?.materials?.finishes || Array.from(finishesSet).sort();
+      const hardware = customizations?.materials?.hardware || Array.from(hardwareSet).sort();
 
-      // Default payment schedule (10%, 60%, 25%, 5%)
-      const paymentSchedule = [
-        { label: "Token Advance – 10%", percent: 10, amount: Math.round(finalTotal * 0.1) },
-        { label: "Design Finalisation – 60%", percent: 60, amount: Math.round(finalTotal * 0.6) },
-        { label: "Mid Execution – 25%", percent: 25, amount: Math.round(finalTotal * 0.25) },
-        { label: "After Handover – 5%", percent: 5, amount: Math.round(finalTotal * 0.05) },
+      // Use custom payment schedule if available, otherwise use default (10%, 60%, 25%, 5%)
+      const defaultPaymentSchedule = [
+        { label: "Token Advance – 10%", percent: 10 },
+        { label: "Design Finalisation – 60%", percent: 60 },
+        { label: "Mid Execution – 25%", percent: 25 },
+        { label: "After Handover – 5%", percent: 5 },
       ];
+      
+      const scheduleTemplate = customizations?.paymentSchedule || defaultPaymentSchedule;
+      const paymentSchedule = scheduleTemplate.map(item => ({
+        ...item,
+        amount: Math.round(finalTotal * (item.percent / 100)),
+      }));
+
+      // Check if FC scope exists (has any items with non-zero totals)
+      const hasFCScope = fcItems.some(item => parseFloat(item.totalPrice || "0") > 0);
 
       // Prepare response
       const agreementData = {
@@ -186,6 +213,8 @@ export function registerAgreementRoutes(app: Express) {
           projectAddress: quotation.projectAddress,
           buildType: quotation.buildType,
           createdAt: quotation.createdAt,
+          includeAnnexureInteriors: quotation.includeAnnexureInteriors,
+          includeAnnexureFC: quotation.includeAnnexureFC,
         },
         interiors: {
           rooms: roomTotals,
@@ -194,6 +223,7 @@ export function registerAgreementRoutes(app: Express) {
         falseCeiling: {
           rooms: fcRoomTotals,
           subtotal: fcSubtotal,
+          hasItems: hasFCScope, // Conditional flag for UI/PDF
         },
         financials: {
           interiorsSubtotal,
@@ -213,18 +243,63 @@ export function registerAgreementRoutes(app: Express) {
           finishes,
           hardware,
         },
+        specs: customizations?.specs || "", // Custom specifications text
         paymentSchedule,
         signatures: quotation.signoff || {
           client: { name: "", signedAt: undefined },
           trecasa: { name: "", signedAt: undefined },
           accepted: false,
         },
+        customizations: customizations || null, // Include current customizations for editor
       };
 
       res.json(agreementData);
     } catch (error) {
       console.error("Error fetching agreement:", error);
       res.status(500).json({ message: "Failed to fetch agreement" });
+    }
+  });
+
+  /**
+   * PATCH /api/agreements/:quoteId/customizations
+   * Save/update agreement customizations
+   */
+  app.patch("/api/agreements/:quoteId/customizations", isAuthenticated, async (req: any, res) => {
+    try {
+      const body = agreementCustomizationsSchema.parse(req.body);
+
+      const quotation = await storage.getQuotation(req.params.quoteId);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+
+      // Ensure user owns this quotation
+      if (quotation.userId !== req.user?.claims?.sub) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      // Validate payment schedule percentages sum to 100 if provided
+      if (body.paymentSchedule) {
+        const total = body.paymentSchedule.reduce((sum, item) => sum + item.percent, 0);
+        if (Math.abs(total - 100) > 0.01) {
+          return res.status(400).json({ 
+            message: `Payment schedule percentages must sum to 100% (currently ${total}%)` 
+          });
+        }
+      }
+
+      // Update quotation with customizations
+      await storage.updateQuotation(req.params.quoteId, {
+        agreementCustomizations: body,
+      });
+
+      res.json({ success: true, customizations: body });
+    } catch (error) {
+      console.error("Error saving agreement customizations:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid request", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to save agreement customizations" });
     }
   });
 

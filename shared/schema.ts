@@ -138,6 +138,20 @@ export const quotations = pgTable("quotations", {
   includeAnnexureInteriors: boolean("include_annexure_interiors").default(true),
   includeAnnexureFC: boolean("include_annexure_fc").default(true),
 
+  // Agreement Customizations (optional user edits before generating agreement)
+  agreementCustomizations: jsonb("agreement_customizations").$type<{
+    materials?: {
+      coreMaterials?: string[];
+      finishes?: string[];
+      hardware?: string[];
+    };
+    specs?: string; // Custom specifications text
+    paymentSchedule?: Array<{
+      label: string;
+      percent: number;
+    }>;
+  }>(),
+
   // Client Portal (share link)
   clientToken: text("client_token"), // Random token for share URL
   clientTokenExpiresAt: bigint("client_token_expires_at", { mode: "number" }), // Unix timestamp in ms

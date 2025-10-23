@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, Plus, Trash2, Save, ChevronDown, ChevronUp } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { createRoot } from "react-dom/client";
@@ -11,6 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { htmlToPdfBytes, mergePdfBytes, downloadBytesAs } from "@/lib/pdf";
@@ -48,18 +51,76 @@ export default function Agreement() {
     },
   });
 
+  // Agreement Editor state
+  const [editorExpanded, setEditorExpanded] = useState(false);
+  const [customMaterials, setCustomMaterials] = useState<{ coreMaterials: string[], finishes: string[], hardware: string[] }>({
+    coreMaterials: [],
+    finishes: [],
+    hardware: [],
+  });
+  const [customSpecs, setCustomSpecs] = useState("");
+  const [customPaymentSchedule, setCustomPaymentSchedule] = useState<Array<{ label: string, percent: number }>>([]);
+
+  // Initialize editor with existing customizations
+  useEffect(() => {
+    if (agreementData?.customizations) {
+      setCustomMaterials(agreementData.customizations.materials || { coreMaterials: [], finishes: [], hardware: [] });
+      setCustomSpecs(agreementData.customizations.specs || "");
+      setCustomPaymentSchedule(agreementData.customizations.paymentSchedule || []);
+    } else if (agreementData) {
+      // Use defaults from agreementData
+      setCustomMaterials({
+        coreMaterials: agreementData.materials?.coreMaterials || [],
+        finishes: agreementData.materials?.finishes || [],
+        hardware: agreementData.materials?.hardware || [],
+      });
+      setCustomPaymentSchedule(agreementData.paymentSchedule?.map((p: any) => ({ label: p.label, percent: p.percent })) || []);
+    }
+  }, [agreementData]);
+
+  const saveCustomizationsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      await apiRequest("PATCH", `/api/agreements/${quotationId}/customizations`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/agreements/${quotationId}`] });
+      toast({
+        title: "Success",
+        description: "Agreement customizations saved successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save customizations",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSaveCustomizations = () => {
+    saveCustomizationsMutation.mutate({
+      materials: customMaterials,
+      specs: customSpecs,
+      paymentSchedule: customPaymentSchedule.length > 0 ? customPaymentSchedule : undefined,
+    });
+  };
+
   const handleDownloadPack = async () => {
-    if (!quotation) return;
+    if (!quotation || !agreementData) return;
 
     // Check if required print roots exist
     const interiorsRoot = document.getElementById("print-interiors-root");
     const fcRoot = document.getElementById("print-fc-root");
 
+    // Only include FC if both flag is true AND FC items exist
+    const shouldIncludeFC = quotation.includeAnnexureFC && agreementData.falseCeiling?.hasItems;
+
     const missingRoots = [];
     if (quotation.includeAnnexureInteriors && !interiorsRoot) {
       missingRoots.push("Interiors");
     }
-    if (quotation.includeAnnexureFC && !fcRoot) {
+    if (shouldIncludeFC && !fcRoot) {
       missingRoots.push("False Ceiling");
     }
 
@@ -129,8 +190,8 @@ export default function Agreement() {
         pdfs.push(interiorsPdf);
       }
 
-      // 3. Capture Annexure B (False Ceiling) if included
-      if (quotation.includeAnnexureFC) {
+      // 3. Capture Annexure B (False Ceiling) if included AND FC items exist
+      if (shouldIncludeFC) {
         console.log("[Agreement Pack] Adding Annexure B (False Ceiling)...");
         // Create Annexure B title page
         const annexureBDiv = document.createElement("div");
@@ -256,6 +317,7 @@ export default function Agreement() {
                 <Checkbox
                   id="include-fc"
                   checked={quotation.includeAnnexureFC ?? true}
+                  disabled={!agreementData?.falseCeiling?.hasItems}
                   onCheckedChange={(checked) =>
                     updateAnnexureMutation.mutate({ includeAnnexureFC: checked as boolean })
                   }
@@ -263,9 +325,176 @@ export default function Agreement() {
                 />
                 <label htmlFor="include-fc" className="text-sm font-medium cursor-pointer">
                   Include Annexure B — False Ceiling Quotation
+                  {!agreementData?.falseCeiling?.hasItems && (
+                    <span className="text-xs text-muted-foreground ml-2">(No FC items)</span>
+                  )}
                 </label>
               </div>
             </CardContent>
+          </Card>
+
+          {/* Agreement Editor */}
+          <Card className="print:hidden" data-testid="card-agreement-editor">
+            <CardHeader className="cursor-pointer hover-elevate" onClick={() => setEditorExpanded(!editorExpanded)}>
+              <div className="flex items-center justify-between">
+                <CardTitle>Agreement Customizations (Optional)</CardTitle>
+                {editorExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </div>
+            </CardHeader>
+            {editorExpanded && (
+              <CardContent className="space-y-6">
+                {/* Materials Section */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Materials & Brands</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Customize materials list (leave blank to use defaults from quotation items)
+                  </p>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="core-materials">Core Materials (one per line)</Label>
+                      <Textarea
+                        id="core-materials"
+                        value={customMaterials.coreMaterials.join('\n')}
+                        onChange={(e) => setCustomMaterials({
+                          ...customMaterials,
+                          coreMaterials: e.target.value.split('\n').filter(s => s.trim())
+                        })}
+                        placeholder="e.g., High-Density MDF&#10;Marine Ply&#10;Particle Board"
+                        rows={4}
+                        data-testid="textarea-custom-core-materials"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="finishes">Finishes (one per line)</Label>
+                      <Textarea
+                        id="finishes"
+                        value={customMaterials.finishes.join('\n')}
+                        onChange={(e) => setCustomMaterials({
+                          ...customMaterials,
+                          finishes: e.target.value.split('\n').filter(s => s.trim())
+                        })}
+                        placeholder="e.g., Acrylic&#10;PU&#10;Laminate"
+                        rows={4}
+                        data-testid="textarea-custom-finishes"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hardware">Hardware (one per line)</Label>
+                      <Textarea
+                        id="hardware"
+                        value={customMaterials.hardware.join('\n')}
+                        onChange={(e) => setCustomMaterials({
+                          ...customMaterials,
+                          hardware: e.target.value.split('\n').filter(s => s.trim())
+                        })}
+                        placeholder="e.g., Hettich&#10;Ebco&#10;Hafele"
+                        rows={4}
+                        data-testid="textarea-custom-hardware"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Custom Specs Section */}
+                <div className="space-y-2">
+                  <Label htmlFor="custom-specs">Custom Specifications (Optional)</Label>
+                  <Textarea
+                    id="custom-specs"
+                    value={customSpecs}
+                    onChange={(e) => setCustomSpecs(e.target.value)}
+                    placeholder="Add any additional specifications or notes for this agreement..."
+                    rows={3}
+                    data-testid="textarea-custom-specs"
+                  />
+                </div>
+
+                {/* Payment Schedule Section */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Payment Schedule</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Customize payment schedule (percentages must sum to 100%). Leave empty to use default schedule.
+                  </p>
+                  {customPaymentSchedule.map((item, idx) => (
+                    <div key={idx} className="flex gap-2 items-end">
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor={`schedule-label-${idx}`}>Label</Label>
+                        <Input
+                          id={`schedule-label-${idx}`}
+                          value={item.label}
+                          onChange={(e) => {
+                            const newSchedule = [...customPaymentSchedule];
+                            newSchedule[idx].label = e.target.value;
+                            setCustomPaymentSchedule(newSchedule);
+                          }}
+                          placeholder="e.g., Token Advance"
+                          data-testid={`input-schedule-label-${idx}`}
+                        />
+                      </div>
+                      <div className="w-24 space-y-1">
+                        <Label htmlFor={`schedule-percent-${idx}`}>%</Label>
+                        <Input
+                          id={`schedule-percent-${idx}`}
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={item.percent}
+                          onChange={(e) => {
+                            const newSchedule = [...customPaymentSchedule];
+                            newSchedule[idx].percent = parseFloat(e.target.value) || 0;
+                            setCustomPaymentSchedule(newSchedule);
+                          }}
+                          data-testid={`input-schedule-percent-${idx}`}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          const newSchedule = customPaymentSchedule.filter((_, i) => i !== idx);
+                          setCustomPaymentSchedule(newSchedule);
+                        }}
+                        data-testid={`button-remove-schedule-${idx}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCustomPaymentSchedule([...customPaymentSchedule, { label: "", percent: 0 }]);
+                    }}
+                    data-testid="button-add-schedule-item"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Schedule Item
+                  </Button>
+                  {customPaymentSchedule.length > 0 && (
+                    <p className="text-sm font-medium">
+                      Total: {customPaymentSchedule.reduce((sum, item) => sum + item.percent, 0)}%
+                      {Math.abs(customPaymentSchedule.reduce((sum, item) => sum + item.percent, 0) - 100) > 0.01 && (
+                        <span className="text-destructive ml-2">(Must equal 100%)</span>
+                      )}
+                    </p>
+                  )}
+                </div>
+
+                {/* Save Button */}
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button
+                    onClick={handleSaveCustomizations}
+                    disabled={saveCustomizationsMutation.isPending}
+                    data-testid="button-save-customizations"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {saveCustomizationsMutation.isPending ? "Saving..." : "Save Customizations"}
+                  </Button>
+                </div>
+              </CardContent>
+            )}
           </Card>
 
           {/* Agreement Document */}
@@ -393,7 +622,8 @@ export default function Agreement() {
                     {quotation.includeAnnexureInteriors && (
                       <li>Annexure A — Interiors Quotation (see attached)</li>
                     )}
-                    {quotation.includeAnnexureFC && (
+                    {/* Show FC annexure only if FC items exist with non-zero totals */}
+                    {quotation.includeAnnexureFC && agreementData?.falseCeiling?.hasItems && (
                       <li>Annexure B — False Ceiling Quotation (see attached)</li>
                     )}
                   </ul>
@@ -410,7 +640,8 @@ export default function Agreement() {
                 <div className="space-y-4">
                   <h3 className="font-semibold text-[#0E2F1B] text-base">3. PAYMENT TERMS</h3>
                   <p className="ml-4">
-                    The Client agrees to make payments as per the following schedule:
+                    The Client agrees to make payments as per the following schedule
+                    {agreementData?.falseCeiling?.hasItems ? " (combined total for Interiors and False Ceiling)" : ""}:
                   </p>
                   {agreementData?.paymentSchedule && (
                     <ul className="ml-8 list-disc space-y-1">
