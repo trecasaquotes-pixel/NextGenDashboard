@@ -16,6 +16,8 @@ export function registerAdminGlobalRulesRoutes(app: Express, isAuthenticated: an
         return res.json({
           id: "global",
           buildTypeDefault: "handmade",
+          handmadeBaseRate: 1300,
+          factoryBaseRate: 1500,
           gstPercent: 18,
           validityDays: 15,
           bedroomFactorBase: 3,

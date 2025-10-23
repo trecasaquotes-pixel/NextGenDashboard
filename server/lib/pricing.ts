@@ -20,48 +20,70 @@ export interface BrandLookup {
   [brandName: string]: number; // brandName -> adderPerSft
 }
 
-// Cache for brand pricing data
-let cachedBrandLookup: BrandLookup | null = null;
+export interface BaseRates {
+  handmade: number;
+  factory: number;
+}
+
+export interface PricingCache {
+  brandLookup: BrandLookup;
+  baseRates: BaseRates;
+}
+
+// Cache for pricing data
+let cachedPricing: PricingCache | null = null;
 let lastFetchTime = 0;
 const CACHE_TTL = 60000; // 1 minute cache
 
 /**
- * Fetch and cache brand pricing data from database
+ * Fetch and cache pricing data from database (brands and global rules)
  */
-export async function getBrandPricingLookup(): Promise<BrandLookup> {
+export async function getPricingData(): Promise<PricingCache> {
   const now = Date.now();
   
   // Return cached data if still fresh
-  if (cachedBrandLookup && (now - lastFetchTime) < CACHE_TTL) {
-    return cachedBrandLookup;
+  if (cachedPricing && (now - lastFetchTime) < CACHE_TTL) {
+    return cachedPricing;
   }
 
   try {
     const { db } = await import("../db");
-    const { brands } = await import("@shared/schema");
+    const { brands, globalRules } = await import("@shared/schema");
     const { eq } = await import("drizzle-orm");
     
+    // Fetch active brands
     const activeBrands = await db.select().from(brands).where(eq(brands.isActive, true));
     
-    const lookup: BrandLookup = {};
+    const brandLookup: BrandLookup = {};
     activeBrands.forEach(brand => {
-      lookup[brand.name] = brand.adderPerSft;
+      brandLookup[brand.name] = brand.adderPerSft;
     });
     
-    cachedBrandLookup = lookup;
+    // Fetch global rules for base rates
+    const [rules] = await db.select().from(globalRules).where(eq(globalRules.id, "global"));
+    
+    const baseRates: BaseRates = {
+      handmade: rules?.handmadeBaseRate ?? 1300,
+      factory: rules?.factoryBaseRate ?? 1500,
+    };
+    
+    cachedPricing = { brandLookup, baseRates };
     lastFetchTime = now;
     
-    return lookup;
+    return cachedPricing;
   } catch (error) {
-    console.error("Error fetching brand pricing:", error);
-    // Return empty lookup on error (will fall back to hardcoded values)
-    return {};
+    console.error("Error fetching pricing data:", error);
+    // Return default values on error
+    return {
+      brandLookup: {},
+      baseRates: { handmade: 1300, factory: 1500 },
+    };
   }
 }
 
 /**
  * Calculate rate per square foot based on build type and material selections
- * Uses database brand pricing if available, falls back to hardcoded values
+ * Uses database pricing (base rates + brand adjustments) if available, falls back to hardcoded values
  */
 export async function calculateRatePerSqft(
   buildType: BuildType,
@@ -69,11 +91,11 @@ export async function calculateRatePerSqft(
   finish: string,
   hardware: string,
 ): Promise<number> {
-  // Base rate
-  const baseRate = buildType === "handmade" ? 1300 : 1500;
+  // Get pricing data from database (cached)
+  const { brandLookup, baseRates } = await getPricingData();
 
-  // Get brand pricing from database
-  const brandLookup = await getBrandPricingLookup();
+  // Base rate from global rules
+  const baseRate = buildType === "handmade" ? baseRates.handmade : baseRates.factory;
 
   // Core material adjustment
   const coreAdj = brandLookup[core] !== undefined ? brandLookup[core] : (core === "Generic Ply" ? 0 : 100);
