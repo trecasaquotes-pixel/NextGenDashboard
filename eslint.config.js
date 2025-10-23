@@ -1,5 +1,5 @@
 import js from "@eslint/js";
-import tsPlugin from "@typescript-eslint/eslint-plugin";
+import tseslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
@@ -8,16 +8,17 @@ import jsxA11yPlugin from "eslint-plugin-jsx-a11y";
 import prettierConfig from "eslint-config-prettier";
 
 export default [
+  // Base recommended config
   js.configs.recommended,
+
+  // Global ignores
+  {
+    ignores: ["dist", "build", "node_modules", "coverage", "*.config.cjs"],
+  },
+
+  // TypeScript + React configuration
   {
     files: ["**/*.{ts,tsx,js,jsx}"],
-    plugins: {
-      "@typescript-eslint": tsPlugin,
-      react: reactPlugin,
-      "react-hooks": reactHooksPlugin,
-      import: importPlugin,
-      "jsx-a11y": jsxA11yPlugin,
-    },
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -33,6 +34,11 @@ export default [
         document: "readonly",
         navigator: "readonly",
         console: "readonly",
+        setTimeout: "readonly",
+        setInterval: "readonly",
+        clearTimeout: "readonly",
+        clearInterval: "readonly",
+        fetch: "readonly",
         // Node globals
         process: "readonly",
         __dirname: "readonly",
@@ -40,9 +46,21 @@ export default [
         module: "readonly",
         require: "readonly",
         Buffer: "readonly",
+        global: "readonly",
         // ES2022
         Promise: "readonly",
+        Map: "readonly",
+        Set: "readonly",
+        WeakMap: "readonly",
+        WeakSet: "readonly",
       },
+    },
+    plugins: {
+      "@typescript-eslint": tseslint,
+      react: reactPlugin,
+      "react-hooks": reactHooksPlugin,
+      import: importPlugin,
+      "jsx-a11y": jsxA11yPlugin,
     },
     settings: {
       react: {
@@ -55,21 +73,27 @@ export default [
       },
     },
     rules: {
-      // TypeScript recommended rules
-      ...tsPlugin.configs.recommended.rules,
-      // React recommended rules
+      // TypeScript recommended
+      ...tseslint.configs.recommended.rules,
+      
+      // React recommended
       ...reactPlugin.configs.recommended.rules,
-      // React Hooks recommended rules
+      ...reactPlugin.configs["jsx-runtime"].rules,
+      
+      // React Hooks
       ...reactHooksPlugin.configs.recommended.rules,
-      // Import recommended rules
+      
+      // Import plugin
       ...importPlugin.configs.recommended.rules,
-      // JSX A11y recommended rules
+      
+      // JSX A11y
       ...jsxA11yPlugin.configs.recommended.rules,
-      // Prettier compatibility
+      
+      // Prettier (disable conflicting rules)
       ...prettierConfig.rules,
 
       // Custom overrides
-      "react/react-in-jsx-scope": "off", // Not needed in React 17+
+      "react/react-in-jsx-scope": "off", // Not needed with new JSX transform
       "no-undef": "off", // TypeScript handles this
       "@typescript-eslint/no-unused-vars": [
         "warn",
@@ -78,14 +102,17 @@ export default [
           varsIgnorePattern: "^_",
         },
       ],
+      "@typescript-eslint/no-explicit-any": "warn",
       "import/order": [
         "warn",
         {
           "newlines-between": "always",
         },
       ],
-      "@typescript-eslint/no-explicit-any": "warn",
-      "import/no-unresolved": "off", // TypeScript handles this better
+      "import/no-unresolved": "off", // TypeScript handles module resolution
+      "import/named": "off", // TypeScript handles this
+      "import/default": "off", // TypeScript handles this
+      "import/no-named-as-default-member": "off", // Can conflict with TS
     },
   },
 ];

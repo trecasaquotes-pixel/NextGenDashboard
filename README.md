@@ -62,70 +62,56 @@ See `.env.example` for a complete list of required environment variables:
 - `CLIENT_URL`: Frontend URL for CORS configuration
 - `RENDER_SECRET`: Secret for server-side PDF rendering
 
-## Code Quality
+## Formatting & Linting
 
-This project uses ESLint and Prettier to enforce consistent code style and catch common errors.
+This project uses **Prettier** for code formatting and **ESLint** for linting to maintain consistent code style and catch common TypeScript/React issues.
 
-### Configuration Files
-
-- **`eslint.config.js`**: ESLint configuration using the flat config format (ESLint 9.x)
-  - Enforces TypeScript and React best practices
-  - Integrates with Prettier for consistent formatting
-  - Rules for React hooks and JSX
-
-- **`.prettierrc`**: Prettier configuration
-  - Single quotes, semicolons, 100 character line width
-  - Trailing commas in ES5-compatible locations
-
-- **`.lintstagedrc.json`**: Lint-staged configuration for pre-commit hooks
-  - Auto-fixes ESLint issues and formats code before commits
-
-### Usage
+### Quick Commands
 
 Since package.json script modifications are restricted in this environment, use these commands directly:
 
 ```bash
-# Check for linting errors (all TypeScript files)
-npx eslint . --ext .ts,.tsx --quiet
+# Auto-format all files
+npx prettier --write .
+
+# Check linting (all TypeScript files)
+npx eslint . --ext .ts,.tsx --max-warnings=0
 
 # Auto-fix linting errors
 npx eslint . --ext .ts,.tsx --fix
-
-# Check formatting
-npx prettier --check .
-
-# Auto-format all files
-npx prettier --write .
 ```
 
-### Recommended: Manual package.json Scripts
+### Recommended: Add to package.json
 
-For easier access, you can manually add these scripts to `package.json`:
+For convenience, manually add these scripts to your `package.json`:
 
 ```json
 "scripts": {
-  "lint": "eslint . --ext .ts,.tsx --quiet",
-  "format": "prettier --write ."
+  "format": "prettier --write .",
+  "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
+  "lint:fix": "eslint . --ext .ts,.tsx --fix"
 }
 ```
 
-Then you can use:
+Then use:
 ```bash
-npm run lint
 npm run format
+npm run lint
+npm run lint:fix
 ```
 
-### Git Hooks (Optional)
+### IDE Setup (VS Code)
 
-Pre-commit hooks with Husky are not compatible with the Replit environment due to git configuration restrictions. However, lint-staged configuration is available in `.lintstagedrc.json` for manual use or alternative hook systems.
+A `.vscode/settings.json` file is included for automatic formatting on save. Install these extensions:
+- **ESLint** (`dbaeumer.vscode-eslint`)
+- **Prettier - Code formatter** (`esbenp.prettier-vscode`)
 
-### IDE Integration
+### Configuration Files
 
-For the best experience, install ESLint and Prettier extensions in your code editor:
-- **VS Code**: Install "ESLint" and "Prettier - Code formatter" extensions
-- **WebStorm/IntelliJ**: Enable ESLint and Prettier in Settings > Languages & Frameworks
-
-Enable "Format on Save" in your editor to automatically format code as you work.
+- `.prettierrc.json` - Prettier formatting rules
+- `eslint.config.js` - ESLint rules for TypeScript + React
+- `.lintstagedrc.json` - Pre-commit hook configuration (requires manual setup in Replit)
+- `.vscode/settings.json` - VS Code format-on-save settings
 
 ## Security & Stability Notes
 
