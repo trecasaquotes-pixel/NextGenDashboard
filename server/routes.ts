@@ -1245,9 +1245,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { PDFDocument } = await import("pdf-lib");
 
       // Generate all 3 PDFs WITHOUT page numbers (we'll add them after merging)
+      // Exclude T&C from quotation annexures since they're in the agreement
       const [interiorsPdf, falseCeilingPdf, agreementPdf] = await Promise.all([
-        generateQuotationPDF(quotation, "interiors", baseUrl, false),
-        generateQuotationPDF(quotation, "false-ceiling", baseUrl, false),
+        generateQuotationPDF(quotation, "interiors", baseUrl, false, true), // excludeTerms=true
+        generateQuotationPDF(quotation, "false-ceiling", baseUrl, false, true), // excludeTerms=true
         generateQuotationPDF(quotation, "agreement", baseUrl, false),
       ]);
 

@@ -20,6 +20,7 @@ import { AppFooter } from "@/components/app-footer";
 import { htmlToPdfBytes, mergePdfBytes, downloadBytesAs } from "@/lib/pdf";
 import { AnnexureTitle } from "@/components/annexure-title";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { renderTerms, defaultTerms } from "@/lib/terms";
 
 
 export default function Agreement() {
@@ -707,6 +708,82 @@ export default function Agreement() {
                     India. Any disputes arising shall be subject to the jurisdiction of courts in
                     [City].
                   </p>
+                </div>
+
+                {/* Terms & Conditions Section */}
+                <div className="space-y-6 mt-8 pt-6 border-t-2">
+                  <h3 className="font-semibold text-[#0E2F1B] text-lg">TERMS & CONDITIONS</h3>
+                  
+                  {/* Interiors T&C */}
+                  {quotation.includeAnnexureInteriors && (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-[#0E2F1B] text-base">
+                        A. Interior Works Terms & Conditions
+                      </h4>
+                      <div className="ml-4 space-y-3">
+                        {(() => {
+                          const terms = quotation.terms?.interiors;
+                          const renderedTerms = terms?.useDefault
+                            ? renderTerms(
+                                defaultTerms.default_interiors,
+                                {
+                                  clientName: quotation.clientName,
+                                  projectName: quotation.projectName,
+                                  quoteId: quotation.quoteId,
+                                  validDays: terms.vars?.validDays ?? 15,
+                                  warrantyMonths: terms.vars?.warrantyMonths ?? 12,
+                                  paymentSchedule: terms.vars?.paymentSchedule ?? "50% booking, 40% mid, 10% handover",
+                                },
+                                agreementData?.materials ? [
+                                  ...agreementData.materials.coreMaterials.map((m: string) => ({ category: "Core Materials", brand: m })),
+                                  ...agreementData.materials.finishes.map((m: string) => ({ category: "Finishes", brand: m })),
+                                  ...agreementData.materials.hardware.map((m: string) => ({ category: "Hardware", brand: m })),
+                                ] : undefined
+                              )
+                            : terms?.customText?.split("\n").filter((line: string) => line.trim()) ?? [];
+                          
+                          return renderedTerms.map((term: string, idx: number) => (
+                            <p key={idx} className="text-sm text-gray-700 leading-relaxed">
+                              {term}
+                            </p>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* False Ceiling T&C */}
+                  {quotation.includeAnnexureFC && agreementData?.falseCeiling?.hasItems && (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-[#0E2F1B] text-base">
+                        B. False Ceiling Works Terms & Conditions
+                      </h4>
+                      <div className="ml-4 space-y-3">
+                        {(() => {
+                          const terms = quotation.terms?.falseCeiling;
+                          const renderedTerms = terms?.useDefault
+                            ? renderTerms(
+                                defaultTerms.default_false_ceiling,
+                                {
+                                  clientName: quotation.clientName,
+                                  projectName: quotation.projectName,
+                                  quoteId: quotation.quoteId,
+                                  validDays: terms.vars?.validDays ?? 15,
+                                  warrantyMonths: terms.vars?.warrantyMonths ?? 12,
+                                  paymentSchedule: terms.vars?.paymentSchedule ?? "50% booking, 40% mid, 10% handover",
+                                }
+                              )
+                            : terms?.customText?.split("\n").filter((line: string) => line.trim()) ?? [];
+                          
+                          return renderedTerms.map((term: string, idx: number) => (
+                            <p key={idx} className="text-sm text-gray-700 leading-relaxed">
+                              {term}
+                            </p>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Materials & Brands */}

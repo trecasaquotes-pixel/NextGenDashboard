@@ -30,6 +30,10 @@ export default function Print() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"interiors" | "false-ceiling">("interiors");
 
+  // Check if we should exclude T&C (for Agreement Pack annexures)
+  const urlParams = new URLSearchParams(window.location.search);
+  const excludeTerms = urlParams.get('excludeTerms') === 'true';
+
   // Scroll to top when page loads
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -1110,6 +1114,7 @@ export default function Print() {
                   )}
 
                   {/* Section D: Notes/Terms */}
+                  {!excludeTerms && (
                   <div
                     className="space-y-1 break-inside-avoid page-break-before"
                     style={{ marginTop: "14px" }}
@@ -1172,6 +1177,7 @@ export default function Print() {
                       })()}
                     </ul>
                   </div>
+                  )}
 
                   {/* Signatures */}
                   <div
@@ -1857,6 +1863,7 @@ export default function Print() {
                   </div>
 
                   {/* Notes/Terms */}
+                  {!excludeTerms && (
                   <div
                     className="space-y-1 break-inside-avoid page-break-before"
                     style={{ marginTop: "14px" }}
@@ -1919,6 +1926,7 @@ export default function Print() {
                       })()}
                     </ul>
                   </div>
+                  )}
 
                   {/* Signatures */}
                   <div

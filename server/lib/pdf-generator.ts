@@ -140,6 +140,7 @@ export async function emitPdf(
  * @param type - Type of PDF to generate ('interiors' | 'false-ceiling' | 'agreement')
  * @param baseUrl - Base URL of the application (e.g. 'http://localhost:5000')
  * @param includePageNumbers - Whether to include page numbers in footer (default: true)
+ * @param excludeTerms - Whether to exclude T&C sections (for Agreement Pack annexures, default: false)
  * @returns PDF buffer
  */
 export async function generateQuotationPDF(
@@ -147,6 +148,7 @@ export async function generateQuotationPDF(
   type: "interiors" | "false-ceiling" | "agreement",
   baseUrl: string,
   includePageNumbers: boolean = true,
+  excludeTerms: boolean = false,
 ): Promise<Buffer> {
   let browser;
 
@@ -181,7 +183,8 @@ export async function generateQuotationPDF(
     } else {
       // Pass section parameter for interiors or false-ceiling
       const section = type === "interiors" ? "interiors" : "false-ceiling";
-      url = `${baseUrl}/render/quotation/${quotation.id}/print?section=${section}&token=${encodeURIComponent(token)}`;
+      const excludeTermsParam = excludeTerms ? "&excludeTerms=true" : "";
+      url = `${baseUrl}/render/quotation/${quotation.id}/print?section=${section}&token=${encodeURIComponent(token)}${excludeTermsParam}`;
     }
 
     console.log(`[PDF Generator] Navigating to ${url}`);
