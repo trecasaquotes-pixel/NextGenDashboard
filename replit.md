@@ -6,7 +6,7 @@ TRECASA is a web application for interior designers to create, manage, and expor
 
 ## User Preferences
 
-No specific user preferences were provided in the original document.
+- **Role-Based Access Control**: The application supports multiple user roles (admin, sales, designer) with admin-only access to configuration and user management features.
 
 ## System Architecture
 
@@ -33,6 +33,7 @@ Key features include:
 - **Business Expenses Management**: Comprehensive system for tracking overhead expenses with categorization, recurring expense support, and statistical dashboards.
 - **Admin Interfaces**: CRUD interfaces for managing templates, brands, painting/FC items, and global rules.
 - **Audit Log & Version History**: Comprehensive tracking of all changes, including user, timestamp, and diff viewing for admin actions and detailed versioning for quotations.
+- **Role-Based Access Control**: Multi-role user system with admin, sales, and designer roles. Admins have exclusive access to user management, templates, brands, global rules, and all configuration features. Role-checking is enforced server-side on API routes and reflected in UI navigation.
 
 ## External Dependencies
 
