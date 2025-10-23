@@ -10,7 +10,7 @@ export default function Landing() {
       <AppHeader />
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 md:py-32">
+      <section className="container-trecasa py-20 md:py-32">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
             Professional Interior Design Quotations
@@ -30,7 +30,7 @@ export default function Landing() {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-16 md:py-24">
+      <section className="container-trecasa py-16 md:py-24">
         <div className="max-w-6xl mx-auto">
           <h3 className="text-3xl font-bold text-center mb-12 text-foreground">
             Everything You Need

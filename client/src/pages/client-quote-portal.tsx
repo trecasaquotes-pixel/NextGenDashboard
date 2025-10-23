@@ -126,7 +126,7 @@ export default function ClientQuotePortal() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container-trecasa py-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">TRECASA DESIGN STUDIO</h1>
@@ -143,7 +143,7 @@ export default function ClientQuotePortal() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container-trecasa py-6 lg:py-8 max-w-4xl mx-auto">
         {/* Project Info */}
         <Card className="mb-6" data-testid="card-project-info">
           <CardHeader>
@@ -316,7 +316,7 @@ export default function ClientQuotePortal() {
 
       {/* Footer */}
       <footer className="border-t mt-12 py-6 bg-card">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+        <div className="container-trecasa text-center text-sm text-muted-foreground">
           <p>© 2024 TRECASA Design Studio. All rights reserved.</p>
           <p className="mt-1">Contact: info@trecasa.com | +91 98765 43210</p>
         </div>

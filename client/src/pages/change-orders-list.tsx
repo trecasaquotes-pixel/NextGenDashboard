@@ -238,8 +238,7 @@ export default function ChangeOrdersList() {
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
       
-      <main className="flex-1 p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <main className="flex-1 container-trecasa py-6 lg:py-8 space-y-6">
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-foreground" data-testid="heading-change-orders">Change Orders</h1>
@@ -351,7 +350,6 @@ export default function ChangeOrdersList() {
               )}
             </CardContent>
           </Card>
-        </div>
       </main>
 
       <AppFooter />

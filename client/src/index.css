@@ -376,29 +376,22 @@
     inset: -1px;
   }
 
-  /* Container class for responsive page widths */
+  /* Container class for responsive page widths with viewport-based scaling */
   .container-trecasa {
-    width: 100%;
+    width: min(90vw, 1800px);
     margin-left: auto;
     margin-right: auto;
-    padding-left: var(--page-padding-sm);
-    padding-right: var(--page-padding-sm);
-    max-width: min(var(--page-max), 100%);
+  }
+
+  @media (min-width: 768px) {
+    .container-trecasa { 
+      width: min(94vw, 1800px);
+    }
   }
 
   @media (min-width: 1024px) {
     .container-trecasa { 
-      padding-left: var(--page-padding-md);
-      padding-right: var(--page-padding-md);
-      max-width: var(--page-max);
-    }
-  }
-
-  @media (min-width: 1280px) {
-    .container-trecasa { 
-      padding-left: var(--page-padding-lg);
-      padding-right: var(--page-padding-lg);
-      max-width: var(--page-wide);
+      width: min(96vw, 1800px);
     }
   }
 }

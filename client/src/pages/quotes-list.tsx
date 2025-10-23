@@ -202,7 +202,7 @@ export default function QuotesList() {
 
       {/* Navigation Bar with User Menu */}
       <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-end">
+        <div className="container-trecasa py-3 flex items-center justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="button-user-menu">

@@ -159,7 +159,7 @@ export default function Dashboard() {
 
       {/* Navigation Bar with User Menu */}
       <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-end">
+        <div className="container-trecasa py-3 flex items-center justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="button-user-menu">
@@ -189,8 +189,7 @@ export default function Dashboard() {
       </nav>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 flex-1">
-        <div className="max-w-7xl mx-auto">
+      <main className="container-trecasa py-6 lg:py-8 flex-1">
           {/* Page Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -295,7 +294,6 @@ export default function Dashboard() {
               </div>
             </Card>
           )}
-        </div>
       </main>
 
       <AppFooter />
