@@ -152,6 +152,35 @@ export async function seedModern1BHK() {
           { itemKey: "main_door_panel", displayName: "Main Door Panel", unit: "SFT", sortOrder: 7 },
         ],
       },
+      // FALSE CEILING ROOMS (isFcRoom: true)
+      // 11. Kitchen (FC)
+      {
+        name: "Kitchen",
+        sortOrder: 11,
+        isFcRoom: true,
+        items: [], // FC rooms don't have items - they have area-based calculations
+      },
+      // 12. Living Room (FC)
+      {
+        name: "Living Room",
+        sortOrder: 12,
+        isFcRoom: true,
+        items: [],
+      },
+      // 13. Master Bedroom (FC)
+      {
+        name: "Master Bedroom",
+        sortOrder: 13,
+        isFcRoom: true,
+        items: [],
+      },
+      // 14. Bathroom (FC)
+      {
+        name: "Bathroom",
+        sortOrder: 14,
+        isFcRoom: true,
+        items: [],
+      },
     ];
 
     // Insert rooms and items
@@ -162,10 +191,11 @@ export async function seedModern1BHK() {
           templateId: template.id,
           roomName: roomData.name,
           sortOrder: roomData.sortOrder,
+          isFcRoom: roomData.isFcRoom || false,
         })
         .returning();
 
-      if (roomData.items.length > 0) {
+      if (roomData.items && roomData.items.length > 0) {
         await db.insert(templateItems).values(
           roomData.items.map((item) => ({
             templateRoomId: room.id,
