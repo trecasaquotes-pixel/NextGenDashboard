@@ -58,7 +58,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { DashboardTabs } from "@/components/dashboard-tabs";
 import { safeN } from "@/lib/money";
 
 export default function ChangeOrdersList() {
@@ -243,7 +242,6 @@ export default function ChangeOrdersList() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
-      <DashboardTabs />
 
       <main className="flex-1 container-trecasa py-6 lg:py-8 space-y-6">
         <div className="flex items-center justify-between gap-4">

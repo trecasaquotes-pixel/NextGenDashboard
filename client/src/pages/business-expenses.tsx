@@ -38,8 +38,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { DashboardTabs } from "@/components/dashboard-tabs";
-
 
 const expenseCategories = [
   "Rent",
@@ -236,7 +234,6 @@ export default function BusinessExpenses() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <AppHeader />
-        <DashboardTabs />
         <main className="flex-1 container-trecasa py-6 lg:py-8">
           <div className="text-center py-12">Loading business expenses...</div>
         </main>
@@ -248,7 +245,6 @@ export default function BusinessExpenses() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
-      <DashboardTabs />
 
       <main className="flex-1 container-trecasa py-6 lg:py-8 space-y-6">
         {/* Header */}

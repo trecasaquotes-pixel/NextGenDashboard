@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { DashboardTabs } from "@/components/dashboard-tabs";
 import {
   Dialog,
   DialogContent,
@@ -142,7 +141,6 @@ export default function ProjectsList() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
-      <DashboardTabs />
 
       <main className="flex-1 container-trecasa py-6 lg:py-8">
         <div className="flex items-center justify-between mb-6">
