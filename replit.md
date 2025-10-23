@@ -12,9 +12,10 @@ No specific user preferences were provided in the original document.
 
 ### UI/UX Decisions
 
-- **Branding**: TRECASA DESIGN STUDIO with a luxury aesthetic, deep green (#154734) header, gold (#C7A948) accents, red dot branding, and deep teal primary color.
+- **Branding**: TRECASA DESIGN STUDIO with a luxury aesthetic, deep green (#154734) header, gold (#C7A948) accents, red dot branding, deep teal primary color, and gold "TT" logo.
 - **Typography**: Montserrat for UI elements and Playfair Display (serif) for PDF headings and body text.
 - **Components**: Shadcn UI with custom theming and Tailwind CSS for responsive design.
+- **Dashboard Navigation**: Top-level tabs for main sections (Change Orders, Projects & Expenses, Business & Insights) with Lucide icons and active state highlighting using TRECASA brand colors.
 - **Universal PDF Header/Footer**: Standardized across all PDF exports (Interiors, False Ceiling, Agreement):
   - **Header**: 110px height, #154734 dark green background, two-column 70/30 grid layout. Left column: Company name (Montserrat SemiBold 15pt uppercase), full address (8.5pt), client/project details (9pt), greeting "Hi [Client] & Family" (Playfair Display Italic 9.5pt). Right column: Contact details (email/phone 8.5pt), Issue Date and Quote ID (9pt). Rounded top corners (8px).
   - **Footer**: 40px height, #C7A948 gold border-top (1px), centered text "© 2025 TRECASA DESIGN STUDIO | www.trecasadesignstudio.com | @trecasa.designstudio" with red dot indicator. Montserrat Regular 8pt, #666666 color.
@@ -54,7 +55,14 @@ No specific user preferences were provided in the original document.
   - **UI indicators**: Lock status banner shows who holds lock; major action buttons disabled when locked by others
   - **Security**: 423 Locked responses with lock holder name; forced reacquisition after expiry prevents concurrent edits
 - **Client Portal**: Secure, token-based system for sharing quotations with clients without authentication, allowing clients to view project details, financial summaries, terms, and accept quotations.
-- **Project Management & Expense Tracking**: Automatically creates projects when quotations are approved. Tracks project expenses with real-time profit/loss calculations, comprehensive expense categorization, vendor/payment tracking, and financial summaries. Includes projects list with P&L overview and detailed project view with expense CRUD operations.
+- **Project Management & Expense Tracking**: Dual workflow for project creation:
+  - **Auto-creation**: Automatically creates projects when quotations are approved (quotationId populated, linked to original quote)
+  - **Manual creation**: Users can create projects directly via "New Project" button with form validation (quotationId null, independent projects)
+  - **Duplicate prevention**: Unique constraint on quotationId ensures approved quotations create projects only once
+  - **Project tracking**: Comprehensive expense tracking with real-time profit/loss calculations, expense categorization, vendor/payment tracking, and financial summaries
+  - **Project ID generation**: Auto-generated unique IDs in format TRE_PRJ_YYMMDD_XXXX using date + nanoid
+  - **Projects list**: P&L overview with filterable views and detailed project cards showing contract amount, expenses, and profit/loss
+  - **Expense management**: Full CRUD operations for project expenses with category-based tracking and payment documentation
 - **Business Expenses Management**: Comprehensive overhead expense tracking system for monthly operational costs (rent, salaries, utilities, office supplies, marketing, insurance, maintenance, subscriptions, professional fees). Features include:
   - **Category-based tracking**: 11 predefined expense categories for business overhead
   - **Recurring expense support**: Mark expenses as recurring (Monthly, Quarterly, Yearly) for regular costs
