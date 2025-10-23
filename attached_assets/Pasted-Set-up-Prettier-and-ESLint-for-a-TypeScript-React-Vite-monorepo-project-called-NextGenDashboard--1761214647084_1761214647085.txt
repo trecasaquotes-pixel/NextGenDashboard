@@ -1,0 +1,98 @@
+Set up Prettier and ESLint for a TypeScript + React (Vite) monorepo/project called NextGenDashboard with minimal, safe defaults. Do not change app logic.
+
+Goals
+- Auto-format on save/commit
+- Catch common TS/React issues
+- Keep config small and standard
+- No breaking changes
+
+Tasks
+1) Add dependencies (use npm or the project’s package manager):
+   - devDependencies:
+     - prettier
+     - eslint
+     - eslint-config-prettier
+     - eslint-plugin-react
+     - eslint-plugin-react-hooks
+     - @typescript-eslint/parser
+     - @typescript-eslint/eslint-plugin
+     - eslint-plugin-import
+     - eslint-plugin-jsx-a11y
+
+2) Create Prettier config at repo root:
+   - File: `.prettierrc.json`
+   - Content:
+     {
+       "semi": true,
+       "singleQuote": false,
+       "printWidth": 100,
+       "trailingComma": "all"
+     }
+
+3) Create ESLint config at repo root (TypeScript + React):
+   - File: `eslint.config.js` (or `.eslintrc.cjs` if not supported)
+   - Content should:
+     - Use @typescript-eslint/parser
+     - Extend:
+       - "plugin:react/recommended"
+       - "plugin:react-hooks/recommended"
+       - "plugin:@typescript-eslint/recommended"
+       - "plugin:import/recommended"
+       - "plugin:jsx-a11y/recommended"
+       - "prettier"
+     - Set env: browser, node, es2022
+     - ParserOptions: ecmaVersion 2022, sourceType module, ecmaFeatures.jsx true
+     - Settings: react version "detect"
+     - Rules:
+       - Turn off rules that conflict with TS (e.g., no-undef)
+       - "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
+       - "import/order": ["warn", { "newlines-between": "always" }]
+
+4) Add ignore files:
+   - `.eslintignore`: 
+     dist
+     build
+     node_modules
+     coverage
+     *.config.cjs
+   - `.prettierignore`:
+     dist
+     build
+     node_modules
+     coverage
+
+5) Package scripts (in root `package.json`):
+   - "format": "prettier --write ."
+   - "lint": "eslint . --ext .ts,.tsx --max-warnings=0"
+   - "lint:fix": "eslint . --ext .ts,.tsx --fix"
+
+6) (Optional but recommended) Add Husky pre-commit hook:
+   - Install `husky` and `lint-staged`
+   - Init: `npx husky init`
+   - In `package.json` add:
+     "lint-staged": {
+       "*.{ts,tsx,js,jsx,css,md,json}": ["prettier --write"]
+     }
+   - Edit `.husky/pre-commit` to run:
+     npx lint-staged
+     npm run lint
+
+7) VSCode workspace settings (create `.vscode/settings.json` if not present):
+   {
+     "editor.formatOnSave": true,
+     "editor.defaultFormatter": "esbenp.prettier-vscode"
+   }
+
+8) Apply to both client and server code:
+   - Ensure ESLint parses `.ts` and `.tsx` in `client/src` and server code under `server/`.
+   - Do not change any existing source files beyond automatic formatting.
+
+9) Run:
+   - `npm run format`
+   - `npm run lint`
+   Ensure the project still builds and runs exactly as before.
+
+Deliverables
+- Added config files: `.prettierrc.json`, `eslint.config.js` (or `.eslintrc.cjs`), `.eslintignore`, `.prettierignore`, `.vscode/settings.json`
+- Updated `package.json` scripts (and Husky hook if step 6 enabled)
+- Brief README note: “Formatting & Linting” with how to run `npm run format` and `npm run lint`.
