@@ -417,31 +417,45 @@ export default function Print() {
   const grandSubtotal = serverGrandSubtotal > 0 ? serverGrandSubtotal : calculatedGrandSubtotal;
   const discountValue = safeN(quotation.discountValue);
 
+  // Allocate painting cost proportionally between Interiors and FC
+  const baseSubtotal = interiorsSubtotal + fcSubtotal;
+  let interiorsPaintingShare = 0;
+  let fcPaintingShare = 0;
+  
+  if (baseSubtotal > 0 && paintingCost > 0) {
+    interiorsPaintingShare = (interiorsSubtotal / baseSubtotal) * paintingCost;
+    fcPaintingShare = (fcSubtotal / baseSubtotal) * paintingCost;
+  }
+
+  // Add painting share to each subtotal
+  const interiorsWithPainting = interiorsSubtotal + interiorsPaintingShare;
+  const fcWithPainting = fcSubtotal + fcPaintingShare;
+
   // Calculate discount allocation for each tab
   let interiorsDiscountAmount = 0;
   let fcDiscountAmount = 0;
 
   if (quotation.discountType === "percent") {
-    // Percentage discount: apply same percentage to each tab
-    interiorsDiscountAmount = (interiorsSubtotal * discountValue) / 100;
-    fcDiscountAmount = (fcSubtotal * discountValue) / 100;
+    // Percentage discount: apply same percentage to each tab (including painting)
+    interiorsDiscountAmount = (interiorsWithPainting * discountValue) / 100;
+    fcDiscountAmount = (fcWithPainting * discountValue) / 100;
   } else {
     // Fixed discount: allocate proportionally based on each tab's share of grand total
     if (grandSubtotal > 0) {
-      const interiorsShare = interiorsSubtotal / grandSubtotal;
-      const fcShare = fcSubtotal / grandSubtotal;
+      const interiorsShare = interiorsWithPainting / grandSubtotal;
+      const fcShare = fcWithPainting / grandSubtotal;
       interiorsDiscountAmount = discountValue * interiorsShare;
       fcDiscountAmount = discountValue * fcShare;
     }
   }
 
   // Interiors PDF calculations
-  const interiorsDiscounted = Math.max(0, interiorsSubtotal - interiorsDiscountAmount);
+  const interiorsDiscounted = Math.max(0, interiorsWithPainting - interiorsDiscountAmount);
   const interiorsGst = interiorsDiscounted * 0.18;
   const interiorsFinalTotal = interiorsDiscounted + interiorsGst;
 
   // False Ceiling PDF calculations
-  const fcDiscounted = Math.max(0, fcSubtotal - fcDiscountAmount);
+  const fcDiscounted = Math.max(0, fcWithPainting - fcDiscountAmount);
   const fcGst = fcDiscounted * 0.18;
   const fcFinalTotal = fcDiscounted + fcGst;
 
