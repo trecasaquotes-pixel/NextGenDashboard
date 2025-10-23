@@ -1,0 +1,99 @@
+Perfect, Prem 👌 — here’s the follow-up Replit AI prompt you can copy-paste right after the security one.
+This will set up Prettier + ESLint for consistent, auto-formatted, clean code — with zero impact on how your app runs.
+
+⸻
+
+🧠 Paste this in Replit AI:
+
+Add code-quality tooling (ESLint + Prettier) to the NextGenDashboard project.
+
+Goals:
+- Enforce clean, consistent TypeScript + React code style.
+- Auto-format on save and before commit.
+- Do NOT change existing business logic.
+
+Tasks:
+1. **Install dependencies**
+   - devDependencies:
+     eslint
+     eslint-config-prettier
+     eslint-plugin-prettier
+     eslint-plugin-react
+     eslint-plugin-react-hooks
+     @typescript-eslint/eslint-plugin
+     @typescript-eslint/parser
+     prettier
+     husky
+     lint-staged
+
+2. **Create `.eslintrc.cjs` at the root**
+
+module.exports = {
+root: true,
+parser: ‘@typescript-eslint/parser’,
+plugins: [’@typescript-eslint’, ‘react’, ‘react-hooks’, ‘prettier’],
+extends: [
+‘eslint:recommended’,
+‘plugin:react/recommended’,
+‘plugin:@typescript-eslint/recommended’,
+‘plugin:react-hooks/recommended’,
+‘plugin:prettier/recommended’
+],
+settings: { react: { version: ‘detect’ } },
+rules: {
+‘prettier/prettier’: ‘error’,
+‘react/react-in-jsx-scope’: ‘off’
+}
+};
+
+3. **Create `.prettierrc`**
+
+{
+“singleQuote”: true,
+“semi”: true,
+“printWidth”: 100,
+“trailingComma”: “es5”
+}
+
+4. **Add scripts in `package.json`**
+
+“scripts”: {
+“lint”: “eslint "{client,server}/**/*.{ts,tsx}" –quiet”,
+“format”: “prettier –write .”
+}
+
+5. **Enable Husky pre-commit hook**
+- Initialize Husky:
+  ```
+  npx husky install
+  ```
+- Add hook:
+  ```
+  npx husky add .husky/pre-commit "npx lint-staged"
+  ```
+- Create `lint-staged` section in `package.json`:
+  ```
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,css,md}": ["eslint --fix", "prettier --write"]
+  }
+  ```
+
+6. **Verify**
+- Run `npm run lint` to check for issues.
+- Run `npm run format` to auto-format the codebase.
+- Ensure the app still builds and runs normally.
+
+Rules:
+- Keep all configurations minimal.
+- Do not modify any existing source logic.
+- Commit as “chore: add eslint + prettier setup”.
+
+
+⸻
+
+After Replit AI completes this:
+✅ your code will auto-format cleanly,
+✅ you’ll prevent style bugs before commits,
+✅ and your GitHub PRs will stay tidy.
+
+Would you like me to prepare a third (final) Replit AI prompt to add an automatic GitHub Actions workflow — so every PR runs lint + build automatically before merging?
