@@ -83,6 +83,42 @@ export function calculateGSTAmount(amountAfterDiscount: number): number {
 }
 
 /**
+ * Extract BHK count from project type string
+ */
+function extractBHKCount(projectType: string | null): number {
+  if (!projectType) return 3;
+  const match = projectType.match(/(\d+)\s*BHK/i);
+  return match ? parseInt(match[1], 10) : 3;
+}
+
+/**
+ * Calculate painting pack cost based on BHK and pack parameters
+ */
+async function calculatePaintingCost(
+  quotation: any,
+  storage: IStorage,
+): Promise<number> {
+  if (!quotation.selectedPaintingPackId) return 0;
+
+  // Fetch the painting pack from DB
+  const packs = await storage.getActivePaintingPacks();
+  const pack = packs.find((p) => p.id === quotation.selectedPaintingPackId);
+
+  if (!pack) return 0;
+
+  // Extract BHK count from project type
+  const bhkCount = extractBHKCount(quotation.projectType);
+
+  // Calculate painting cost using pack formula
+  const bhkDiff = bhkCount - pack.bhkFactorBase;
+  const deltaFactor = parseFloat(pack.perBedroomDelta) || 0.1;
+  const multiplier = 1 + bhkDiff * deltaFactor;
+  const paintingCost = pack.basePriceLsum * multiplier;
+
+  return roundCurrency(paintingCost);
+}
+
+/**
  * Recalculate quotation totals from interior and false ceiling items
  * FC totals are recomputed from canonical dimensions to ensure accuracy
  */
@@ -111,8 +147,11 @@ export async function recalculateQuotationTotals(quotationId: string, storage: I
     }, 0),
   );
 
-  // Calculate grand subtotal
-  const grandSubtotal = roundCurrency(interiorsSubtotal + fcSubtotal);
+  // Calculate painting cost (if painting pack is selected)
+  const paintingCost = await calculatePaintingCost(quotation, storage);
+
+  // Calculate grand subtotal (interiors + FC + painting)
+  const grandSubtotal = roundCurrency(interiorsSubtotal + fcSubtotal + paintingCost);
 
   // Calculate discount and GST for validation purposes
   const discountType = quotation.discountType || "percent";
@@ -128,6 +167,7 @@ export async function recalculateQuotationTotals(quotationId: string, storage: I
       updatedAt: Date.now(),
       interiorsSubtotal,
       fcSubtotal,
+      paintingCost,
       grandSubtotal,
       discountAmount,
       afterDiscount,
@@ -139,6 +179,7 @@ export async function recalculateQuotationTotals(quotationId: string, storage: I
   return {
     interiorsSubtotal,
     fcSubtotal,
+    paintingCost,
     grandSubtotal,
     discountAmount,
     afterDiscount,

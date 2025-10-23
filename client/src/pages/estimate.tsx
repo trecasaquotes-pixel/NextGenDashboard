@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -13,10 +13,12 @@ import {
   Briefcase,
   TrendingUp,
   FileText,
+  Paintbrush,
 } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
-import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
+import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem, PaintingPackRow } from "@shared/schema";
 import { formatINR } from "@shared/formatters";
+import { getActivePaintingPacks } from "@/api/adminPaintingFc";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -102,6 +104,13 @@ export default function Estimate() {
     retry: false,
   });
 
+  // Fetch active painting packs
+  const { data: paintingPacks = [] } = useQuery<PaintingPackRow[]>({
+    queryKey: ["/api/painting-packs/active"],
+    queryFn: () => getActivePaintingPacks(),
+    enabled: isAuthenticated,
+  });
+
   // Local state for discount
   const [discountType, setDiscountType] = useState<string>(quotation?.discountType || "percent");
   const [discountValue, setDiscountValue] = useState<string>(quotation?.discountValue || "0");
@@ -156,6 +165,63 @@ export default function Estimate() {
   const handleDiscountBlur = () => {
     updateDiscount.mutate({ discountType, discountValue });
   };
+
+  // Extract BHK from project type
+  const bhkCount = useMemo(() => {
+    if (!quotation?.projectType) return 3;
+    const match = quotation.projectType.match(/(\d+)\s*BHK/i);
+    return match ? parseInt(match[1], 10) : 3;
+  }, [quotation?.projectType]);
+
+  // Calculate painting cost based on selected pack and BHK
+  const calculatePaintingCost = (pack: PaintingPackRow | undefined) => {
+    if (!pack) return 0;
+    const bhkDiff = bhkCount - pack.bhkFactorBase;
+    const deltaFactor = parseFloat(pack.perBedroomDelta) || 0.1;
+    const multiplier = 1 + bhkDiff * deltaFactor;
+    return pack.basePriceLsum * multiplier;
+  };
+
+  // Get selected painting pack
+  const selectedPack = useMemo(() => {
+    if (!quotation?.selectedPaintingPackId) return undefined;
+    return paintingPacks.find((p) => p.id === quotation.selectedPaintingPackId);
+  }, [quotation?.selectedPaintingPackId, paintingPacks]);
+
+  const paintingCost = useMemo(() => {
+    return calculatePaintingCost(selectedPack);
+  }, [selectedPack, bhkCount]);
+
+  // Update painting pack mutation
+  const updatePaintingPack = useMutation({
+    mutationFn: async (packId: string | null) => {
+      await apiRequest("PATCH", `/api/quotations/${quotationId}`, {
+        selectedPaintingPackId: packId,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] });
+      toast({ title: "Success", description: "Painting pack updated" });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update painting pack",
+          variant: "destructive",
+        });
+      }
+    },
+  });
 
   // Export ZIP mutation
   const exportZip = useMutation({
@@ -447,6 +513,50 @@ export default function Estimate() {
                   >
                     {formatINR(grandSubtotal)}
                   </span>
+                </div>
+
+                {/* Painting Pack Selection */}
+                <div className="flex items-start justify-between gap-4 border-t border-border pt-4">
+                  <div className="flex-1">
+                    <Label htmlFor="painting-pack" className="text-foreground mb-2 block flex items-center gap-2">
+                      <Paintbrush className="h-4 w-4" />
+                      Painting Package
+                    </Label>
+                    <Select
+                      value={quotation?.selectedPaintingPackId || "none"}
+                      onValueChange={(value) =>
+                        updatePaintingPack.mutate(value === "none" ? null : value)
+                      }
+                      disabled={updatePaintingPack.isPending}
+                    >
+                      <SelectTrigger data-testid="select-painting-pack">
+                        <SelectValue placeholder="Select painting package" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No Painting Package</SelectItem>
+                        {paintingPacks.map((pack) => {
+                          const cost = calculatePaintingCost(pack);
+                          return (
+                            <SelectItem key={pack.id} value={pack.id}>
+                              {pack.name} - {formatINR(cost)} ({bhkCount} BHK)
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    {selectedPack && (
+                      <div className="mt-2 text-xs text-muted-foreground space-y-1">
+                        {JSON.parse(selectedPack.bulletsJson).map((bullet: string, idx: number) => (
+                          <div key={idx}>• {bullet}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right pt-8">
+                    <span className="font-mono text-foreground" data-testid="text-painting-cost">
+                      {paintingCost > 0 ? `+${formatINR(paintingCost)}` : formatINR(0)}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Discount */}

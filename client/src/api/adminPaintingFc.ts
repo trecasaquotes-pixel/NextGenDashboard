@@ -64,6 +64,13 @@ export async function deletePaintingPack(id: string): Promise<void> {
   await apiRequest("DELETE", `/api/admin/painting-packs/${id}`);
 }
 
+// Get active painting packs for quotation selection (non-admin)
+export async function getActivePaintingPacks(): Promise<PaintingPackRow[]> {
+  const res = await fetch("/api/painting-packs/active", { credentials: "include" });
+  if (!res.ok) throw new Error(`Failed to fetch active painting packs: ${res.statusText}`);
+  return res.json();
+}
+
 // ============================================================
 // FC CATALOG
 // ============================================================
