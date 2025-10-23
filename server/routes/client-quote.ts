@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { storage } from "../storage";
 import { db } from "../db";
-import { quotations, agreements, auditLog, rates, brands, globalRules } from "@shared/schema";
+import { quotations, agreements, auditLog, brands, globalRules } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { createClientToken, verifyClientToken } from "../lib/client-token";
 import { generateAllQuotationPDFs } from "../lib/pdf-generator";

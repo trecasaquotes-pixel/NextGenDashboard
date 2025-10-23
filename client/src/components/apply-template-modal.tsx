@@ -101,7 +101,7 @@ export function ApplyTemplateModal({
       let message = `Template applied — ${data.applied.itemsAdded} ${itemsText} added`;
 
       if (data.skipped && data.skipped.length > 0) {
-        message += `. ${data.skipped.length} items skipped (inactive rates)`;
+        message += `. ${data.skipped.length} items skipped`;
       }
 
       toast({

@@ -16,7 +16,6 @@ import {
   templates,
   templateRooms,
   templateItems,
-  rates,
   interiorItems,
   falseCeilingItems,
   globalRules,

@@ -4,7 +4,6 @@ import {
   templates,
   templateRooms,
   templateItems,
-  rates,
   insertTemplateSchema,
   insertTemplateRoomSchema,
   insertTemplateItemSchema,

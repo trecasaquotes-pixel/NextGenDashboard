@@ -4,7 +4,7 @@ import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shar
 import { saveJSON, loadJSON, getDataDir } from "./store";
 import { generateAllQuotationPDFs } from "./pdf-generator";
 import { db } from "../db";
-import { rates, brands, globalRules, agreements } from "@shared/schema";
+import { brands, globalRules, agreements } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import fs from "fs/promises";
 import path from "path";
