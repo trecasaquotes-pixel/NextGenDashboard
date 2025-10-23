@@ -259,7 +259,7 @@ export default function Dashboard() {
                       {quotation.status.replace("_", " ")}
                     </Badge>
                   </div>
-                  <CardDescription className="text-sm">{quotation.clientName}</CardDescription>
+                  <CardDescription className="text-sm">{quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName}</CardDescription>
                 </CardHeader>
                 <CardContent className="pb-4">
                   <div className="space-y-2 text-sm">

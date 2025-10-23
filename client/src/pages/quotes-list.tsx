@@ -421,7 +421,7 @@ export default function QuotesList() {
                         {quotation.projectName}
                       </TableCell>
                       <TableCell data-testid={`text-client-name-${quotation.id}`}>
-                        {quotation.clientName}
+                        {quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName}
                       </TableCell>
                       <TableCell data-testid={`text-category-${quotation.id}`}>
                         {quotation.projectType || "—"}

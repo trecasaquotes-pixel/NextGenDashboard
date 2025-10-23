@@ -610,7 +610,7 @@ export default function Print() {
 
                   <div className="cover-details">
                     <div className="mb-3">
-                      <strong>For:</strong> {quotation.clientName || "Valued Client"}
+                      <strong>For:</strong> {quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : (quotation.clientName || "Valued Client")}
                     </div>
                     <div className="mb-3">
                       <strong>Project:</strong> {quotation.projectName || "Untitled Project"}
@@ -668,7 +668,7 @@ export default function Print() {
                       <div className="text-[9pt] mt-2 space-y-0.5">
                         <div>
                           <span className="font-medium">Client Name:</span>{" "}
-                          <span>{quotation.clientName || "N/A"}</span>
+                          <span>{quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : (quotation.clientName || "N/A")}</span>
                         </div>
                         <div>
                           <span className="font-medium">Project Address:</span>{" "}
@@ -685,7 +685,7 @@ export default function Print() {
                           lineHeight: "1.2",
                         }}
                       >
-                        Hi {quotation.clientName || "Valued Client"} & Family
+                        Hi {quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : (quotation.clientName || "Valued Client")} & Family
                       </p>
                     </div>
 
@@ -1145,7 +1145,7 @@ export default function Print() {
                           ? renderTerms(
                               defaultTerms.default_interiors,
                               {
-                                clientName: quotation.clientName,
+                                clientName: quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName,
                                 projectName: quotation.projectName,
                                 quoteId: quotation.quoteId,
                                 validUntilDate,
@@ -1204,7 +1204,7 @@ export default function Print() {
                             <p className="text-[8px] text-gray-500">Name:</p>
                             <p className="text-xs font-medium">
                               {quotation.signoff?.client?.name ||
-                                quotation.clientName ||
+                                (quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName) ||
                                 "_____________"}
                             </p>
                           </div>
@@ -1310,7 +1310,7 @@ export default function Print() {
 
                   <div className="cover-details">
                     <div className="mb-3">
-                      <strong>For:</strong> {quotation.clientName || "Valued Client"}
+                      <strong>For:</strong> {quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : (quotation.clientName || "Valued Client")}
                     </div>
                     <div className="mb-3">
                       <strong>Project:</strong> {quotation.projectName || "Untitled Project"}
@@ -1368,7 +1368,7 @@ export default function Print() {
                       <div className="text-[9pt] mt-2 space-y-0.5">
                         <div>
                           <span className="font-medium">Client Name:</span>{" "}
-                          <span>{quotation.clientName || "N/A"}</span>
+                          <span>{quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : (quotation.clientName || "N/A")}</span>
                         </div>
                         <div>
                           <span className="font-medium">Project Address:</span>{" "}
@@ -1385,7 +1385,7 @@ export default function Print() {
                           lineHeight: "1.2",
                         }}
                       >
-                        Hi {quotation.clientName || "Valued Client"} & Family
+                        Hi {quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : (quotation.clientName || "Valued Client")} & Family
                       </p>
                     </div>
 
@@ -1894,7 +1894,7 @@ export default function Print() {
                           ? renderTerms(
                               defaultTerms.default_false_ceiling,
                               {
-                                clientName: quotation.clientName,
+                                clientName: quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName,
                                 projectName: quotation.projectName,
                                 quoteId: quotation.quoteId,
                                 validUntilDate,
@@ -1953,7 +1953,7 @@ export default function Print() {
                             <p className="text-[8px] text-gray-500">Name:</p>
                             <p className="text-xs font-medium">
                               {quotation.signoff?.client?.name ||
-                                quotation.clientName ||
+                                (quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName) ||
                                 "_____________"}
                             </p>
                           </div>

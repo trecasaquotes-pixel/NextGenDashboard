@@ -171,7 +171,7 @@ export default function Agreement() {
             letter="A"
             title="Interiors Quotation"
             quoteId={quotation.quoteId}
-            clientName={quotation.clientName}
+            clientName={quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName}
           />,
         );
 
@@ -207,7 +207,7 @@ export default function Agreement() {
             letter="B"
             title="False Ceiling Quotation"
             quoteId={quotation.quoteId}
-            clientName={quotation.clientName}
+            clientName={quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName}
           />,
         );
 
@@ -539,7 +539,7 @@ export default function Agreement() {
                   <div className="text-[9pt] mt-2 space-y-0.5">
                     <div>
                       <span className="font-medium">Client Name:</span>{" "}
-                      <span>{quotation.clientName || "N/A"}</span>
+                      <span>{quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : (quotation.clientName || "N/A")}</span>
                     </div>
                     <div>
                       <span className="font-medium">Project Address:</span>{" "}
@@ -556,7 +556,7 @@ export default function Agreement() {
                       lineHeight: "1.2",
                     }}
                   >
-                    Hi {quotation.clientName || "Valued Client"} & Family
+                    Hi {quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : (quotation.clientName || "Valued Client")} & Family
                   </p>
                 </div>
 
@@ -612,7 +612,7 @@ export default function Agreement() {
 
                 <div className="ml-4 space-y-2">
                   <p>
-                    <strong>{quotation.clientName}</strong> (hereinafter referred to as "Client")
+                    <strong>{quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName}</strong> (hereinafter referred to as "Client")
                   </p>
                   <p className="text-xs text-gray-600">
                     Project: {quotation.projectName}
@@ -727,7 +727,7 @@ export default function Agreement() {
                             ? renderTerms(
                                 defaultTerms.default_interiors,
                                 {
-                                  clientName: quotation.clientName,
+                                  clientName: quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName,
                                   projectName: quotation.projectName,
                                   quoteId: quotation.quoteId,
                                   validDays: terms.vars?.validDays ?? 15,
@@ -765,7 +765,7 @@ export default function Agreement() {
                             ? renderTerms(
                                 defaultTerms.default_false_ceiling,
                                 {
-                                  clientName: quotation.clientName,
+                                  clientName: quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName,
                                   projectName: quotation.projectName,
                                   quoteId: quotation.quoteId,
                                   validDays: terms.vars?.validDays ?? 15,
@@ -844,7 +844,7 @@ export default function Agreement() {
                           <p className="text-xs text-gray-500">Name:</p>
                           <p className="text-sm">
                             {quotation.signoff?.client?.name ||
-                              quotation.clientName ||
+                              (quotation.clientSuffix ? `${quotation.clientSuffix} ${quotation.clientName}` : quotation.clientName) ||
                               "_____________"}
                           </p>
                         </div>
