@@ -20,8 +20,8 @@ The frontend uses React with Wouter, TanStack Query, React Hook Form, and Zod fo
 
 Key features include:
 - **Data Validation**: Comprehensive server-side validation using Zod schemas for all input data.
-- **Pricing System**: Smart Rate Calculator with brand-based pricing and project-level "Build Type" for real-time cost adjustments.
-- **Template System**: Auto-creation of room items based on 4 predefined templates (Modern 1BHK, 2BHK, 3BHK, Commercial) with backward compatibility for legacy quotations.
+- **Pricing System**: Hardcoded pricing in `server/lib/pricing.ts` and `client/src/lib/rates.ts` (handmade: ₹1300, factory: ₹1500 + brand adjustments). Project-level "Build Type" for real-time cost adjustments. The rates table is no longer used for pricing calculations.
+- **Template System**: Database-driven template system (manual creation via admin panel, no seeding). Templates define room items with itemKey, displayName, unit, and wall highlight flags.
 - **Painting Pack Integration**: Admin-configured painting packages are integrated into the quotation workflow with BHK-based dynamic pricing (basePriceLsum × (1 + (actualBHK - bhkFactorBase) × perBedroomDelta)). Painting cost is calculated server-side, included in quotation totals, and displayed in the estimate page with package selection UI.
 - **PDF Generation**: Dual client-side (html2pdf.js) and server-side (Puppeteer) PDF generation, ensuring consistent branding, detailed room-wise breakdowns, and proper page handling.
 - **Agreement Pack**: Functionality to merge multiple PDFs, customize agreement details (materials, specs, payment schedules), and dynamically include annexures.
@@ -31,7 +31,7 @@ Key features include:
 - **Client Portal**: Secure, token-based system for client access and quotation acceptance.
 - **Project Management & Expense Tracking**: Workflow for creating and tracking projects, managing expenses, and monitoring profit/loss.
 - **Business Expenses Management**: Comprehensive system for tracking overhead expenses with categorization, recurring expense support, and statistical dashboards.
-- **Admin Interfaces**: CRUD interfaces for managing rates, templates, brands, painting/FC items, and global rules.
+- **Admin Interfaces**: CRUD interfaces for managing templates, brands, painting/FC items, and global rules.
 - **Audit Log & Version History**: Comprehensive tracking of all changes, including user, timestamp, and diff viewing for admin actions and detailed versioning for quotations.
 
 ## External Dependencies
