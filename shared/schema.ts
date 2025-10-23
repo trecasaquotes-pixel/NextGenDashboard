@@ -566,6 +566,10 @@ export const templates = pgTable("templates", {
   name: varchar("name", { length: 100 }).notNull(),
   category: varchar("category").notNull(),
   isActive: boolean("is_active").notNull().default(true),
+  // FC defaults configuration
+  includeFCPainting: boolean("include_fc_painting").notNull().default(true),
+  includeLights: boolean("include_lights").notNull().default(true),
+  includeFanHooks: boolean("include_fan_hooks").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -579,6 +583,7 @@ export const templateRooms = pgTable("template_rooms", {
     .references(() => templates.id, { onDelete: "cascade" }),
   roomName: varchar("room_name", { length: 60 }).notNull(),
   sortOrder: integer("sort_order").notNull().default(0),
+  isFcRoom: boolean("is_fc_room").notNull().default(false), // True for FC rooms
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -632,6 +637,7 @@ export const insertTemplateSchema = createInsertSchema(templates, {
 export const insertTemplateRoomSchema = createInsertSchema(templateRooms, {
   roomName: z.string().min(2).max(60),
   sortOrder: z.number().min(0).default(0),
+  isFcRoom: z.boolean().default(false),
 }).omit({
   id: true,
   createdAt: true,
