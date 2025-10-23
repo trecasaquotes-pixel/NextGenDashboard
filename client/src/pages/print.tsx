@@ -33,6 +33,7 @@ export default function Print() {
   // Check if we should exclude T&C (for Agreement Pack annexures)
   const urlParams = new URLSearchParams(window.location.search);
   const excludeTerms = urlParams.get('excludeTerms') === 'true';
+  const pdfType = urlParams.get('pdfType');
 
   // Scroll to top when page loads
   useEffect(() => {
@@ -75,6 +76,26 @@ export default function Print() {
     queryKey: [`/api/quotations/${quotationId}/other-items`],
     enabled: !!quotationId && isAuthenticated,
   });
+
+  // If loaded in iframe for PDF generation, notify parent when ready
+  useEffect(() => {
+    if (pdfType && window.parent !== window) {
+      // Only send ready signal when all data has loaded
+      const allDataLoaded = quotation && !quotationLoading && interiorItems && falseCeilingItems && otherItems;
+      
+      if (allDataLoaded) {
+        // Give DOM a moment to render after data loads
+        const timer = setTimeout(() => {
+          window.parent.postMessage({
+            type: "PDF_READY",
+            pdfType: pdfType
+          }, window.location.origin); // Send to same origin only for security
+        }, 500);
+
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [pdfType, quotation, quotationLoading, interiorItems, falseCeilingItems, otherItems]);
 
   // Status update mutations
   const markAsSentMutation = useMutation({
@@ -208,45 +229,16 @@ export default function Print() {
   const handleDownloadAgreementPack = async () => {
     if (!quotation) return;
 
-    setIsGeneratingPDF(true);
-
-    try {
-      toast({
-        title: "Generating Agreement Pack...",
-        description: "Creating Service Agreement with Annexures A & B",
-      });
-
-      const response = await fetch(`/api/quotations/${quotationId}/pdf/agreement-pack`);
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `TRECASA_${quotation.quoteId}_AgreementPack.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        toast({
-          title: "Success",
-          description: "Agreement Pack downloaded successfully",
-        });
-      } else {
-        const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
-        throw new Error(errorData.message || `Server returned ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Error generating Agreement Pack:", error);
-      toast({
-        title: "Failed to Generate Agreement Pack",
-        description: error instanceof Error ? error.message : "Please try again or contact support",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingPDF(false);
-    }
+    // Navigate to Agreement page for Agreement Pack generation
+    // The Agreement page has full client-side PDF generation for all 3 documents
+    toast({
+      title: "Redirecting...",
+      description: "Please use the Agreement page to download the Agreement Pack",
+    });
+    
+    setTimeout(() => {
+      navigate(`/quotation/${quotationId}/agreement`);
+    }, 1000);
   };
 
   if (!match) {

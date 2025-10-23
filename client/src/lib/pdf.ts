@@ -1,5 +1,5 @@
 import html2pdf from "html2pdf.js";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, grayscale } from "pdf-lib";
 
 export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
   // Add marker class for PDF generation mode
@@ -45,6 +45,28 @@ export async function mergePdfBytes(docs: Uint8Array[]): Promise<Uint8Array> {
   }
 
   return await mergedPdf.save();
+}
+
+export async function addContinuousPageNumbers(pdfBytes: Uint8Array): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.load(pdfBytes);
+  const pages = pdfDoc.getPages();
+  const totalPages = pages.length;
+
+  for (let i = 0; i < totalPages; i++) {
+    const page = pages[i];
+    const { width, height } = page.getSize();
+    const pageNumber = i + 1;
+    const text = `Page ${pageNumber} of ${totalPages}`;
+    
+    page.drawText(text, {
+      x: width / 2 - 30,
+      y: 15,
+      size: 9,
+      color: grayscale(0.5),
+    });
+  }
+
+  return await pdfDoc.save();
 }
 
 export async function downloadBytesAs(filename: string, bytes: Uint8Array) {

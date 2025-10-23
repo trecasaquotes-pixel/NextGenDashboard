@@ -116,40 +116,144 @@ export default function Agreement() {
     try {
       toast({
         title: "Generating Agreement Pack...",
-        description: "Creating Service Agreement with Annexures A & B",
+        description: "Creating Service Agreement with Annexures A & B (client-side)",
       });
 
-      const response = await fetch(`/api/quotations/${quotationId}/pdf/agreement-pack`);
+      // Import PDF utilities
+      const { htmlToPdfBytes, mergePdfBytes, addContinuousPageNumbers, downloadBytesAs } = await import("@/lib/pdf");
 
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `TRECASA_${quotation.quoteId}_AgreementPack.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        toast({
-          title: "Success",
-          description: "Agreement Pack downloaded successfully",
-        });
-      } else {
-        const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
-        throw new Error(errorData.message || `Server returned ${response.status}`);
+      // Step 1: Generate Agreement PDF from current page
+      const agreementElement = document.getElementById("print-agreement-root");
+      if (!agreementElement) {
+        throw new Error("Agreement content not found");
       }
+
+      toast({
+        title: "Step 1/4",
+        description: "Generating Service Agreement PDF...",
+      });
+      const agreementPdfBytes = await htmlToPdfBytes(agreementElement);
+
+      // Step 2: Generate Interiors PDF by opening print page in hidden iframe
+      toast({
+        title: "Step 2/4",
+        description: "Generating Interiors Annexure PDF...",
+      });
+      const interiorsPdfBytes = await generatePdfFromPrintPage(quotationId!, "interiors");
+
+      // Step 3: Generate False Ceiling PDF (if applicable)
+      let fcPdfBytes: Uint8Array | null = null;
+      if (quotation.includeAnnexureFC && agreementData?.falseCeiling?.hasItems) {
+        toast({
+          title: "Step 3/4",
+          description: "Generating False Ceiling Annexure PDF...",
+        });
+        fcPdfBytes = await generatePdfFromPrintPage(quotationId!, "false-ceiling");
+      }
+
+      // Step 4: Merge PDFs in order: Agreement, Interiors, FC (if included)
+      toast({
+        title: "Step 4/4",
+        description: "Merging documents with continuous page numbering...",
+      });
+
+      const pdfsToMerge = [agreementPdfBytes, interiorsPdfBytes];
+      if (fcPdfBytes) {
+        pdfsToMerge.push(fcPdfBytes);
+      }
+
+      let mergedPdfBytes = await mergePdfBytes(pdfsToMerge);
+
+      // Add continuous page numbers
+      mergedPdfBytes = await addContinuousPageNumbers(mergedPdfBytes);
+
+      // Download the merged PDF
+      await downloadBytesAs(`TRECASA_${quotation.quoteId}_AgreementPack.pdf`, mergedPdfBytes);
+
+      toast({
+        title: "Success",
+        description: "Agreement Pack downloaded successfully",
+      });
     } catch (error) {
       console.error("Error generating Agreement Pack:", error);
       toast({
         title: "Failed to Generate Agreement Pack",
-        description: error instanceof Error ? error.message : "Please try again or contact support",
+        description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
       });
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  // Helper function to generate PDF from print page using iframe
+  const generatePdfFromPrintPage = async (
+    quotationId: string,
+    type: "interiors" | "false-ceiling"
+  ): Promise<Uint8Array> => {
+    return new Promise((resolve, reject) => {
+      // Create hidden iframe
+      const iframe = document.createElement("iframe");
+      iframe.style.position = "absolute";
+      iframe.style.left = "-9999px";
+      iframe.style.width = "1200px";
+      iframe.style.height = "1600px";
+      document.body.appendChild(iframe);
+
+      // Set up message listener for PDF data with security validation
+      const messageHandler = async (event: MessageEvent) => {
+        // Security: Validate origin and source
+        if (event.origin !== window.location.origin) {
+          console.warn("Rejected postMessage from untrusted origin:", event.origin);
+          return;
+        }
+        
+        if (event.source !== iframe.contentWindow) {
+          console.warn("Rejected postMessage from unexpected source");
+          return;
+        }
+
+        if (event.data.type === "PDF_READY" && event.data.pdfType === type) {
+          window.removeEventListener("message", messageHandler);
+          
+          try {
+            const { htmlToPdfBytes } = await import("@/lib/pdf");
+            const contentWindow = iframe.contentWindow;
+            if (!contentWindow) {
+              throw new Error("iframe content window not available");
+            }
+
+            const elementId = type === "interiors" ? "print-interiors-root" : "print-fc-root";
+            const element = contentWindow.document.getElementById(elementId);
+            
+            if (!element) {
+              throw new Error(`Element ${elementId} not found in iframe`);
+            }
+
+            const pdfBytes = await htmlToPdfBytes(element);
+            document.body.removeChild(iframe);
+            resolve(pdfBytes);
+          } catch (error) {
+            document.body.removeChild(iframe);
+            reject(error);
+          }
+        }
+      };
+
+      window.addEventListener("message", messageHandler);
+
+      // Load print page with excludeTerms parameter
+      iframe.src = `/quotation/${quotationId}/print?excludeTerms=true&pdfType=${type}`;
+
+      // Timeout after 30 seconds with proper cleanup
+      const timeoutId = setTimeout(() => {
+        window.removeEventListener("message", messageHandler);
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+        reject(new Error(`Timeout: ${type} PDF generation took too long. Please try again.`));
+      }, 30000);
+    });
   };
 
   if (authLoading || !quotation) {
