@@ -20,7 +20,7 @@ The frontend uses React with Wouter, TanStack Query, React Hook Form, and Zod fo
 
 Key features include:
 - **Data Validation**: Comprehensive server-side validation using Zod schemas for all input data.
-- **Pricing System**: Hardcoded pricing in `server/lib/pricing.ts` and `client/src/lib/rates.ts` (handmade: ₹1300, factory: ₹1500 + brand adjustments). Project-level "Build Type" for real-time cost adjustments. The rates table is no longer used for pricing calculations.
+- **Pricing System**: Dynamic database-driven brand pricing with 1-minute caching. Base rates (handmade: ₹1300, factory: ₹1500) plus brand-specific adjustments fetched from `brands.adderPerSft`. Server-side pricing in `server/lib/pricing.ts` uses async database lookups with fallback to hardcoded values for backward compatibility. Client-side preview in `client/src/lib/rates.ts` uses hardcoded values. Admin Brands panel controls all available brand options in Scope of Work dropdowns via `/api/brands/active` endpoint. The rates table is no longer used for pricing calculations.
 - **Template System**: Database-driven template system (manual creation via admin panel, no seeding). Templates define room items with itemKey, displayName, unit, and wall highlight flags.
 - **Painting Pack Integration**: Admin-configured painting packages are integrated into the quotation workflow with BHK-based dynamic pricing (basePriceLsum × (1 + (actualBHK - bhkFactorBase) × perBedroomDelta)). Painting cost is calculated server-side, included in quotation totals, and displayed in the estimate page with package selection UI.
 - **PDF Generation**: Dual client-side (html2pdf.js) and server-side (Puppeteer) PDF generation, ensuring consistent branding, detailed room-wise breakdowns, and proper page handling.
