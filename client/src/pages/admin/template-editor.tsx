@@ -53,7 +53,7 @@ const categories: TemplateCategory[] = [
   "Commercial",
 ];
 
-const units = ["LSUM", "SQFT", "RSUM", "COUNT"];
+const units = ["SFT", "COUNT", "LSUM"];
 
 export default function TemplateEditorPage() {
   const { id } = useParams<{ id: string }>();
