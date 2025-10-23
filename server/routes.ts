@@ -43,12 +43,10 @@ import {
   buildQuoteZip,
 } from "./lib/backup";
 import { generateRenderToken, verifyRenderToken } from "./lib/render-token";
-import { seedRates } from "./seed/rates.seed";
 import { seedTemplates } from "./seed/templates.seed";
 import { seedBrands } from "./seed/brands.seed";
 import { seedPaintingFc } from "./seed/paintingFc.seed";
 import { seedGlobalRules } from "./seed/globalRules.seed";
-import { registerAdminRatesRoutes } from "./routes.admin.rates";
 import { registerAdminTemplatesRoutes } from "./routes.admin.templates";
 import { registerAdminBrandsRoutes } from "./routes.admin.brands";
 import { registerAdminPaintingFcRoutes } from "./routes.admin.paintingFc";
@@ -65,7 +63,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
 
   // Seed default data on first run
-  await seedRates();
   await seedTemplates();
   await seedBrands();
   await seedPaintingFc();
@@ -489,26 +486,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(interiorItems)
         .where(eq(interiorItems.quotationId, quotationId));
 
-      // Load active rates for validation
-      const activeRates = await db.select().from(rates).where(eq(rates.isActive, true));
-      const activeRateKeys = new Set(activeRates.map((r) => r.itemKey));
-
       // Track stats
       let itemsAdded = 0;
-      const skipped: string[] = [];
 
       // Apply template items
       for (const room of roomsWithItems) {
         const roomName = room.roomName;
 
         for (const templateItem of room.items) {
-          // Check if rate exists and is active
-          if (!activeRateKeys.has(templateItem.itemKey)) {
-            skipped.push(`${roomName} → ${templateItem.displayName} (${templateItem.itemKey})`);
-            continue;
-          }
-
-          // Check if item already exists (match by roomType + itemKey)
+          // Check if item already exists (match by roomType + description)
           const exists = existingItems.some(
             (item) =>
               item.roomType?.toLowerCase() === roomName.toLowerCase() &&
@@ -553,7 +539,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           roomsAdded: 0, // We're using roomType field, not separate rooms
           itemsAdded,
         },
-        skipped: skipped.length > 0 ? skipped : undefined,
       };
 
       res.json(response);
@@ -2789,7 +2774,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
-  registerAdminRatesRoutes(app, isAuthenticated);
   registerAdminTemplatesRoutes(app, isAuthenticated);
   registerAdminBrandsRoutes(app, isAuthenticated);
   registerAdminPaintingFcRoutes(app, isAuthenticated);

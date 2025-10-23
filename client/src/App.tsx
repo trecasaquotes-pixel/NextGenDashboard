@@ -21,7 +21,6 @@ import Scope from "@/pages/scope";
 import Estimate from "@/pages/estimate";
 import Print from "@/pages/print";
 import Agreement from "@/pages/agreement";
-import AdminRates from "@/pages/admin/rates";
 import AdminTemplates from "@/pages/admin/templates";
 import AdminTemplateEditor from "@/pages/admin/template-editor";
 import AdminBrands from "@/pages/admin/brands";
@@ -64,7 +63,6 @@ function Router() {
       <Route path="/quotation/:id/estimate" component={Estimate} />
       <Route path="/quotation/:id/print" component={Print} />
       <Route path="/quotation/:id/agreement" component={Agreement} />
-      <Route path="/admin/rates" component={AdminRates} />
       <Route path="/admin/templates" component={AdminTemplates} />
       <Route path="/admin/templates/:id/edit" component={AdminTemplateEditor} />
       <Route path="/admin/brands" component={AdminBrands} />
