@@ -62,6 +62,71 @@ See `.env.example` for a complete list of required environment variables:
 - `CLIENT_URL`: Frontend URL for CORS configuration
 - `RENDER_SECRET`: Secret for server-side PDF rendering
 
+## Code Quality
+
+This project uses ESLint and Prettier to enforce consistent code style and catch common errors.
+
+### Configuration Files
+
+- **`eslint.config.js`**: ESLint configuration using the flat config format (ESLint 9.x)
+  - Enforces TypeScript and React best practices
+  - Integrates with Prettier for consistent formatting
+  - Rules for React hooks and JSX
+
+- **`.prettierrc`**: Prettier configuration
+  - Single quotes, semicolons, 100 character line width
+  - Trailing commas in ES5-compatible locations
+
+- **`.lintstagedrc.json`**: Lint-staged configuration for pre-commit hooks
+  - Auto-fixes ESLint issues and formats code before commits
+
+### Usage
+
+Since package.json script modifications are restricted in this environment, use these commands directly:
+
+```bash
+# Check for linting errors (all TypeScript files)
+npx eslint . --ext .ts,.tsx --quiet
+
+# Auto-fix linting errors
+npx eslint . --ext .ts,.tsx --fix
+
+# Check formatting
+npx prettier --check .
+
+# Auto-format all files
+npx prettier --write .
+```
+
+### Recommended: Manual package.json Scripts
+
+For easier access, you can manually add these scripts to `package.json`:
+
+```json
+"scripts": {
+  "lint": "eslint . --ext .ts,.tsx --quiet",
+  "format": "prettier --write ."
+}
+```
+
+Then you can use:
+```bash
+npm run lint
+npm run format
+```
+
+### Git Hooks (Optional)
+
+Pre-commit hooks with Husky are not compatible with the Replit environment due to git configuration restrictions. However, lint-staged configuration is available in `.lintstagedrc.json` for manual use or alternative hook systems.
+
+### IDE Integration
+
+For the best experience, install ESLint and Prettier extensions in your code editor:
+- **VS Code**: Install "ESLint" and "Prettier - Code formatter" extensions
+- **WebStorm/IntelliJ**: Enable ESLint and Prettier in Settings > Languages & Frameworks
+
+Enable "Format on Save" in your editor to automatically format code as you work.
+
 ## Security & Stability Notes
 
 ### Security Enhancements
