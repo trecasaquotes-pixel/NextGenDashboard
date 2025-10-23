@@ -173,7 +173,7 @@ export default function Estimate() {
     return match ? parseInt(match[1], 10) : 3;
   }, [quotation?.projectType]);
 
-  // Calculate painting cost based on selected pack and BHK
+  // Calculate painting cost based on selected pack and BHK (for preview in dropdown only)
   const calculatePaintingCost = (pack: PaintingPackRow | undefined) => {
     if (!pack) return 0;
     const bhkDiff = bhkCount - pack.bhkFactorBase;
@@ -188,9 +188,8 @@ export default function Estimate() {
     return paintingPacks.find((p) => p.id === quotation.selectedPaintingPackId);
   }, [quotation?.selectedPaintingPackId, paintingPacks]);
 
-  const paintingCost = useMemo(() => {
-    return calculatePaintingCost(selectedPack);
-  }, [selectedPack, bhkCount]);
+  // Use painting cost from backend totals (authoritative)
+  const paintingCost = quotation?.totals?.paintingCost || 0;
 
   // Update painting pack mutation
   const updatePaintingPack = useMutation({

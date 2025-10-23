@@ -220,14 +220,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let changeType: "update_info" | "update_pricing" | "status_change" = "update_info";
       if (req.body.status !== undefined && req.body.status !== quotation.status) {
         changeType = "status_change";
-      } else if (req.body.discountType !== undefined || req.body.discountValue !== undefined) {
+      } else if (req.body.discountType !== undefined || req.body.discountValue !== undefined || req.body.selectedPaintingPackId !== undefined) {
         changeType = "update_pricing";
       }
 
       const updated = await storage.updateQuotation(req.params.id, req.body);
 
-      // Recalculate totals if discount fields were updated
-      if (req.body.discountType !== undefined || req.body.discountValue !== undefined) {
+      // Recalculate totals if discount fields or painting pack were updated
+      if (req.body.discountType !== undefined || req.body.discountValue !== undefined || req.body.selectedPaintingPackId !== undefined) {
         const { recalculateQuotationTotals } = await import("./lib/totals");
         await recalculateQuotationTotals(req.params.id, storage);
       }
