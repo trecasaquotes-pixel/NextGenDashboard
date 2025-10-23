@@ -29,6 +29,11 @@ export default function Agreement() {
     enabled: !!quotationId && isAuthenticated,
   });
 
+  const { data: agreementData } = useQuery<any>({
+    queryKey: [`/api/agreements/${quotationId}`],
+    enabled: !!quotationId && isAuthenticated,
+  });
+
   const updateAnnexureMutation = useMutation({
     mutationFn: async (data: { includeAnnexureInteriors?: boolean; includeAnnexureFC?: boolean }) => {
       await apiRequest("PATCH", `/api/quotations/${quotationId}`, data);
@@ -359,13 +364,25 @@ export default function Agreement() {
                 <div className="space-y-4">
                   <h3 className="font-semibold text-[#0E2F1B] text-base">3. PAYMENT TERMS</h3>
                   <p className="ml-4">
-                    The Client agrees to make payments as per the schedule outlined in the attached quotations. Typically:
+                    The Client agrees to make payments as per the following schedule:
                   </p>
-                  <ul className="ml-8 list-disc space-y-1">
-                    <li>50% advance payment at the time of agreement signing</li>
-                    <li>40% mid-term payment upon completion of 50% of the work</li>
-                    <li>10% final payment upon project completion and handover</li>
-                  </ul>
+                  {agreementData?.paymentSchedule && (
+                    <ul className="ml-8 list-disc space-y-1">
+                      {agreementData.paymentSchedule.map((payment: any, idx: number) => (
+                        <li key={idx}>
+                          {payment.label} — ₹{(payment.amount / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {!agreementData?.paymentSchedule && (
+                    <ul className="ml-8 list-disc space-y-1">
+                      <li>Token Advance – 10% upon agreement signing</li>
+                      <li>Design Finalisation – 60% upon design approval</li>
+                      <li>Mid Execution – 25% upon completion of 50% of the work</li>
+                      <li>After Handover – 5% upon project completion</li>
+                    </ul>
+                  )}
                 </div>
 
                 <div className="space-y-4">
@@ -395,6 +412,43 @@ export default function Agreement() {
                     This Agreement shall be governed by and construed in accordance with the laws of India. Any disputes arising shall be subject to the jurisdiction of courts in [City].
                   </p>
                 </div>
+
+                {/* Materials & Brands */}
+                {agreementData?.materials && (agreementData.materials.coreMaterials.length > 0 || agreementData.materials.finishes.length > 0 || agreementData.materials.hardware.length > 0) && (
+                  <div className="space-y-4 mt-8 p-4 bg-gray-50 rounded">
+                    <h3 className="font-semibold text-[#0E2F1B] text-base">MATERIALS & BRANDS</h3>
+                    {agreementData.materials.coreMaterials.length > 0 && (
+                      <div className="ml-4">
+                        <p className="font-medium text-sm mb-1">Core Materials:</p>
+                        <ul className="ml-6 list-disc space-y-0.5 text-xs">
+                          {agreementData.materials.coreMaterials.map((material: string, idx: number) => (
+                            <li key={idx}>{material}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {agreementData.materials.finishes.length > 0 && (
+                      <div className="ml-4">
+                        <p className="font-medium text-sm mb-1">Finishes:</p>
+                        <ul className="ml-6 list-disc space-y-0.5 text-xs">
+                          {agreementData.materials.finishes.map((finish: string, idx: number) => (
+                            <li key={idx}>{finish}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {agreementData.materials.hardware.length > 0 && (
+                      <div className="ml-4">
+                        <p className="font-medium text-sm mb-1">Hardware:</p>
+                        <ul className="ml-6 list-disc space-y-0.5 text-xs">
+                          {agreementData.materials.hardware.map((hw: string, idx: number) => (
+                            <li key={idx}>{hw}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Signatures */}
                 <div className="mt-12 pt-8 border-t-2 border-gray-300">
