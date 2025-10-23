@@ -8,43 +8,84 @@
  * - HANDMADE: ₹1300/sft
  * - FACTORY: ₹1500/sft
  *
- * Brand/Finish Adjustments (additive):
- * - Core material: NOT "Generic Ply" → +₹100
- * - Finish: NOT "Generic Laminate (Nimmi)" → +₹100
- * - Finish = "Acrylic" → +₹200 (replaces +₹100)
- * - Hardware: NOT "Generic" → +₹100
+ * Brand/Finish Adjustments:
+ * - Fetched from database brands table (adderPerSft field)
+ * - Falls back to hardcoded values if brand not found
  */
 
 export type BuildType = "handmade" | "factory";
 export type CalcType = "SQFT" | "COUNT" | "LSUM";
 
+export interface BrandLookup {
+  [brandName: string]: number; // brandName -> adderPerSft
+}
+
+// Cache for brand pricing data
+let cachedBrandLookup: BrandLookup | null = null;
+let lastFetchTime = 0;
+const CACHE_TTL = 60000; // 1 minute cache
+
+/**
+ * Fetch and cache brand pricing data from database
+ */
+export async function getBrandPricingLookup(): Promise<BrandLookup> {
+  const now = Date.now();
+  
+  // Return cached data if still fresh
+  if (cachedBrandLookup && (now - lastFetchTime) < CACHE_TTL) {
+    return cachedBrandLookup;
+  }
+
+  try {
+    const { db } = await import("../db");
+    const { brands } = await import("@shared/schema");
+    const { eq } = await import("drizzle-orm");
+    
+    const activeBrands = await db.select().from(brands).where(eq(brands.isActive, true));
+    
+    const lookup: BrandLookup = {};
+    activeBrands.forEach(brand => {
+      lookup[brand.name] = brand.adderPerSft;
+    });
+    
+    cachedBrandLookup = lookup;
+    lastFetchTime = now;
+    
+    return lookup;
+  } catch (error) {
+    console.error("Error fetching brand pricing:", error);
+    // Return empty lookup on error (will fall back to hardcoded values)
+    return {};
+  }
+}
+
 /**
  * Calculate rate per square foot based on build type and material selections
+ * Uses database brand pricing if available, falls back to hardcoded values
  */
-export function calculateRatePerSqft(
+export async function calculateRatePerSqft(
   buildType: BuildType,
   core: string,
   finish: string,
   hardware: string,
-): number {
+): Promise<number> {
   // Base rate
   const baseRate = buildType === "handmade" ? 1300 : 1500;
 
-  // Core material adjustment (Generic Ply = 0, all others = +100)
-  const coreAdj = core === "Generic Ply" ? 0 : 100;
+  // Get brand pricing from database
+  const brandLookup = await getBrandPricingLookup();
+
+  // Core material adjustment
+  const coreAdj = brandLookup[core] !== undefined ? brandLookup[core] : (core === "Generic Ply" ? 0 : 100);
 
   // Finish adjustment
-  let finishAdj = 0;
-  if (finish === "Acrylic") {
-    finishAdj = 200; // Special pricing for Acrylic
-  } else if (finish === "Generic Laminate" || finish === "Generic Laminate (Nimmi)") {
-    finishAdj = 0; // Generic laminates have no adjustment
-  } else {
-    finishAdj = 100; // Standard adjustment for non-generic finishes
-  }
+  const finishAdj = brandLookup[finish] !== undefined ? brandLookup[finish] : 
+    (finish === "Acrylic" ? 200 : 
+     (finish === "Generic Laminate" || finish === "Generic Laminate (Nimmi)" ? 0 : 100));
 
-  // Hardware adjustment (Generic or Nimmi = 0, all others = +100)
-  const hardwareAdj = hardware === "Generic" || hardware === "Nimmi" ? 0 : 100;
+  // Hardware adjustment
+  const hardwareAdj = brandLookup[hardware] !== undefined ? brandLookup[hardware] :
+    (hardware === "Generic" || hardware === "Nimmi" ? 0 : 100);
 
   return baseRate + coreAdj + finishAdj + hardwareAdj;
 }
@@ -127,7 +168,7 @@ export function roundCurrency(value: number): number {
  * Normalize and calculate interior item data server-side
  * This ensures all pricing is accurate regardless of client-sent values
  */
-export function normalizeInteriorItemData(data: {
+export async function normalizeInteriorItemData(data: {
   calc: string;
   length?: string | null;
   height?: string | null;
@@ -141,13 +182,13 @@ export function normalizeInteriorItemData(data: {
   rateOverride?: string | null;
   isRateOverridden?: boolean;
   [key: string]: any;
-}): {
+}): Promise<{
   sqft: string;
   rateAuto: string;
   unitPrice: string;
   totalPrice: string;
   [key: string]: any;
-} {
+}> {
   // Parse dimensions
   const length = parseFloat(data.length || "0");
   const height = parseFloat(data.height || "0");
@@ -170,8 +211,8 @@ export function normalizeInteriorItemData(data: {
   const description = data.description || "";
   const effectiveBuildType = getEffectiveBuildType(projectBuildType, description);
 
-  // Calculate auto rate based on materials
-  const rateAuto = calculateRatePerSqft(
+  // Calculate auto rate based on materials (now async with database lookup)
+  const rateAuto = await calculateRatePerSqft(
     effectiveBuildType,
     data.material || "Generic Ply",
     data.finish || "Generic Laminate",

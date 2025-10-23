@@ -56,34 +56,6 @@ import {
 import { calculateQuoteTotals } from "@/lib/calculateTotals";
 import { getEffectiveBuildType } from "@/lib/pricing";
 
-// Brand options for dropdowns
-const CORE_MATERIALS: CoreMaterial[] = [
-  "Generic Ply",
-  "Century Ply",
-  "Green Ply",
-  "Kitply",
-  "HDHMR",
-  "BWP",
-  "MDF",
-  "HDF",
-];
-
-const FINISH_MATERIALS: FinishMaterial[] = [
-  "Generic Laminate",
-  "Greenlam",
-  "Merino",
-  "Century Laminate",
-  "Duco",
-  "PU",
-  "Acrylic",
-  "Veneer",
-  "Fluted Panel",
-  "Back Painted Glass",
-  "CNC Finish",
-];
-
-const HARDWARE_BRANDS: HardwareBrand[] = ["Nimmi", "Ebco", "Hettich", "Hafele", "Sleek", "Blum"];
-
 const BUILD_TYPES: { value: BuildType; label: string }[] = [
   { value: "handmade", label: "Work-on-Site" },
   { value: "factory", label: "Factory Finish" },
@@ -119,6 +91,21 @@ export default function Scope() {
       }, 500);
     }
   }, [isAuthenticated, authLoading, toast]);
+
+  // Fetch active brands from database
+  const { data: activeBrands, isLoading: loadingBrands } = useQuery<{
+    core: Array<{ id: string; name: string; adderPerSft: number; type: string }>;
+    finish: Array<{ id: string; name: string; adderPerSft: number; type: string }>;
+    hardware: Array<{ id: string; name: string; adderPerSft: number; type: string }>;
+  }>({
+    queryKey: ['/api/brands/active'],
+    enabled: isAuthenticated,
+  });
+
+  // Extract brand names for dropdowns
+  const CORE_MATERIALS = activeBrands?.core.map(b => b.name) || [];
+  const FINISH_MATERIALS = activeBrands?.finish.map(b => b.name) || [];
+  const HARDWARE_BRANDS = activeBrands?.hardware.map(b => b.name) || [];
 
   const { data: quotation } = useQuery<Quotation>({
     queryKey: [`/api/quotations/${quotationId}`],

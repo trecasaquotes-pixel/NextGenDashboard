@@ -297,11 +297,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const activeBrands = await db.select().from(brands).where(eq(brands.isActive, true));
       
-      // Group brands by type
+      // Group brands by type with full data for pricing
       const grouped = {
-        core: activeBrands.filter(b => b.type === 'core').map(b => b.name),
-        finish: activeBrands.filter(b => b.type === 'finish').map(b => b.name),
-        hardware: activeBrands.filter(b => b.type === 'hardware').map(b => b.name),
+        core: activeBrands.filter(b => b.type === 'core'),
+        finish: activeBrands.filter(b => b.type === 'finish'),
+        hardware: activeBrands.filter(b => b.type === 'hardware'),
       };
       
       res.json(grouped);
