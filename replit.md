@@ -22,6 +22,7 @@ Key features include:
 - **Data Validation**: Comprehensive server-side validation using Zod schemas for all input data.
 - **Pricing System**: Smart Rate Calculator with brand-based pricing and project-level "Build Type" for real-time cost adjustments.
 - **Template System**: Auto-creation of room items based on 4 predefined templates (Modern 1BHK, 2BHK, 3BHK, Commercial) with backward compatibility for legacy quotations.
+- **Painting Pack Integration**: Admin-configured painting packages are integrated into the quotation workflow with BHK-based dynamic pricing (basePriceLsum × (1 + (actualBHK - bhkFactorBase) × perBedroomDelta)). Painting cost is calculated server-side, included in quotation totals, and displayed in the estimate page with package selection UI.
 - **PDF Generation**: Dual client-side (html2pdf.js) and server-side (Puppeteer) PDF generation, ensuring consistent branding, detailed room-wise breakdowns, and proper page handling.
 - **Agreement Pack**: Functionality to merge multiple PDFs, customize agreement details (materials, specs, payment schedules), and dynamically include annexures.
 - **Quotation Management**: CRUD operations for quotations, including dynamic custom room addition, estimate generation, and print functionalities.
