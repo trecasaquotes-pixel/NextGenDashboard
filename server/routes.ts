@@ -1493,6 +1493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create agreement
       const agreement = await storage.createAgreement({
         quotationId,
+        clientSuffix: quotation.clientSuffix,
         clientName: quotation.clientName,
         projectName: quotation.projectName,
         siteAddress: siteAddress || quotation.projectAddress || "",
@@ -1542,6 +1543,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId: req.user.claims.sub,
           projectId,
           projectName: quotation.projectName,
+          clientSuffix: quotation.clientSuffix,
           clientName: quotation.clientName,
           projectAddress: quotation.projectAddress || "",
           contractAmount: grandTotal.toFixed(2),

@@ -61,6 +61,7 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
         project: {
           name: quotation.projectName,
           clientName: quotation.clientName,
+          clientSuffix: quotation.clientSuffix,
           siteAddress: quotation.projectAddress,
         },
         totals: {

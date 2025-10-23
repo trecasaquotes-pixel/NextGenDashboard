@@ -158,7 +158,7 @@ export default function ClientQuotePortal() {
           <CardHeader>
             <CardTitle>Quotation for {project.name}</CardTitle>
             <CardDescription>
-              Client: {project.clientName} | Address: {project.siteAddress}
+              Client: {project.clientSuffix ? `${project.clientSuffix} ${project.clientName}` : project.clientName} | Address: {project.siteAddress}
             </CardDescription>
           </CardHeader>
         </Card>

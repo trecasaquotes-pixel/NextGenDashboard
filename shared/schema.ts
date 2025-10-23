@@ -197,6 +197,7 @@ export const agreements = pgTable("agreements", {
     .references(() => quotations.id, { onDelete: "cascade" }),
 
   // Project details (snapshot at approval time)
+  clientSuffix: varchar("client_suffix"), // Mr, Mrs, Miss, Dr, etc.
   clientName: varchar("client_name").notNull(),
   projectName: varchar("project_name").notNull(),
   siteAddress: text("site_address").notNull(),
@@ -1082,6 +1083,7 @@ export const projects = pgTable("projects", {
 
   // Project Info (snapshot from quotation)
   projectName: varchar("project_name").notNull(),
+  clientSuffix: varchar("client_suffix"), // Mr, Mrs, Miss, Dr, etc.
   clientName: varchar("client_name").notNull(),
   projectAddress: text("project_address"),
 
