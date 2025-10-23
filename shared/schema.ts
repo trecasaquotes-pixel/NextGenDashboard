@@ -852,6 +852,8 @@ export type NewFCCatalogRow = z.infer<typeof insertFCCatalogSchema>;
 export const globalRules = pgTable("global_rules", {
   id: varchar("id").primaryKey().default("global"),
   buildTypeDefault: varchar("build_type_default", { length: 20 }).notNull().default("handmade"),
+  handmadeBaseRate: integer("handmade_base_rate").notNull().default(1300),
+  factoryBaseRate: integer("factory_base_rate").notNull().default(1500),
   gstPercent: integer("gst_percent").notNull().default(18),
   validityDays: integer("validity_days").notNull().default(15),
   bedroomFactorBase: integer("bedroom_factor_base").notNull().default(3),
@@ -874,6 +876,8 @@ const buildTypeEnum = z.enum(["handmade", "factory"]);
 
 export const insertGlobalRulesSchema = createInsertSchema(globalRules, {
   buildTypeDefault: buildTypeEnum,
+  handmadeBaseRate: z.number().int().min(500).max(5000).default(1300),
+  factoryBaseRate: z.number().int().min(500).max(5000).default(1500),
   gstPercent: z.number().int().min(0).max(28).default(18),
   validityDays: z.number().int().min(1).max(90).default(15),
   bedroomFactorBase: z.number().int().min(1).max(5).default(3),

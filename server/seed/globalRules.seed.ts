@@ -12,6 +12,8 @@ export async function seedGlobalRules() {
     const defaultRules = {
       id: "global",
       buildTypeDefault: "handmade",
+      handmadeBaseRate: 1300,
+      factoryBaseRate: 1500,
       gstPercent: 18,
       validityDays: 15,
       bedroomFactorBase: 3,
