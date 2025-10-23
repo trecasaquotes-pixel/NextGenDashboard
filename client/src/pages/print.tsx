@@ -400,6 +400,7 @@ export default function Print() {
   const serverInteriorsSubtotal = safeN(quotation?.totals?.interiorsSubtotal);
   const serverFcSubtotal = safeN(quotation?.totals?.fcSubtotal);
   const serverGrandSubtotal = safeN(quotation?.totals?.grandSubtotal);
+  const paintingCost = safeN(quotation?.totals?.paintingCost);
 
   // Fallback: Calculate from room totals if server totals not available
   const calculatedInteriorsSubtotal = interiorsRoomTotals.reduce(
@@ -815,6 +816,12 @@ export default function Print() {
                         <span>Subtotal:</span>
                         <span className="font-medium">{formatINR(interiorsSubtotal)}</span>
                       </div>
+                      {paintingCost > 0 && (
+                        <div className="flex justify-between">
+                          <span>Painting Package:</span>
+                          <span className="font-medium">{formatINR(paintingCost)}</span>
+                        </div>
+                      )}
                       {interiorsDiscountAmount > 0 && (
                         <div className="flex justify-between text-red-600">
                           <span>
@@ -1520,6 +1527,12 @@ export default function Print() {
                           <span>Subtotal:</span>
                           <span className="font-medium">{formatINR(fcSubtotal)}</span>
                         </div>
+                        {paintingCost > 0 && (
+                          <div className="flex justify-between">
+                            <span>Painting Package:</span>
+                            <span className="font-medium">{formatINR(paintingCost)}</span>
+                          </div>
+                        )}
                         {fcDiscountAmount > 0 && (
                           <div className="flex justify-between text-red-600">
                             <span>
@@ -1813,6 +1826,14 @@ export default function Print() {
                             {formatINR(fcSubtotal)}
                           </td>
                         </tr>
+                        {paintingCost > 0 && (
+                          <tr className="row">
+                            <td className="py-1 text-right pr-4">Painting Package:</td>
+                            <td className="py-1 text-right font-mono tabular-nums font-semibold">
+                              {formatINR(paintingCost)}
+                            </td>
+                          </tr>
+                        )}
                         {fcDiscountAmount > 0 && (
                           <tr className="row">
                             <td className="py-1 text-right pr-4">
