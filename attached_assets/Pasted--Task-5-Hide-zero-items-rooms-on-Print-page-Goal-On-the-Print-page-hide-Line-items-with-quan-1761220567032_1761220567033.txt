@@ -1,0 +1,190 @@
+🧩 Task 5 — Hide zero items/rooms on Print page
+
+Goal
+On the Print page, hide:
+
+Line items with quantity = 0
+
+Rooms/scopes with total = 0
+
+Files (likely)
+Client print view: client/src/pages/print/* or client/src/components/print/*
+Shared helpers used in print
+
+Edits
+
+Before render, filter out zero-qty items and zero-total rooms.
+
+Keep totals correct after filtering.
+
+Manual Test
+
+Prepare a quotation with zero-qty items/zero-total rooms → Print page should not show them.
+
+Acceptance Criteria
+
+ Zero items/rooms are not rendered on Print page.
+
+ Non-zero data unaffected.
+
+Guardrails
+
+Do not modify calculation logic used elsewhere.
+
+🧩 Task 6 — Hide zero items/rooms in Downloaded PDFs
+
+Goal
+Apply the same hiding rules from Task 5 to generated PDFs.
+
+Files (likely)
+Server PDF generator: server/pdf/* or server/services/pdfService.ts
+Templates used for Interiors/False Ceiling PDFs
+
+Edits
+
+Filter zero-qty items / zero-total rooms in server-side PDF data pipeline.
+
+Ensure totals and pagination remain correct.
+
+Manual Test
+
+Generate PDFs for the same quotation → zero items/rooms do not appear.
+
+Acceptance Criteria
+
+ PDFs hide zero items/rooms consistently.
+
+ No blank gaps where content was removed.
+
+Guardrails
+
+Don’t change visual theme except hiding rules.
+
+🧩 Task 7 — Add footer on every page (Interiors & False Ceiling PDFs)
+
+Goal
+Ensure the footer appears on all pages of both Interiors and False Ceiling PDFs.
+
+Files (likely)
+PDF layout templates: server/pdf/templates/*, shared layout/footer component
+
+Edits
+
+Move footer rendering to a shared layout used by all pages.
+
+Confirm it renders on multipage exports.
+
+Manual Test
+
+Generate a multi-page Interiors and False Ceiling PDF → footer present on each page.
+
+Acceptance Criteria
+
+ Footer present on all pages for both PDFs.
+
+ No layout overlap with content.
+
+Guardrails
+
+Don’t alter header margins unless necessary.
+
+🧩 Task 8 — Agreement PDF: remove empty pages
+
+Goal
+Fix Agreement PDF generating empty pages; output only real content pages.
+
+Files (likely)
+Agreement PDF composer: server/pdf/agreement/*, server/services/pdfService.ts
+
+Edits
+
+Review page composition and pagination.
+
+Remove dummy/spacer pages; tighten page breaks.
+
+Manual Test
+
+Download Agreement → no empty pages before/after content.
+
+Acceptance Criteria
+
+ Agreement PDF contains only meaningful pages.
+
+ Page count matches visible content.
+
+Guardrails
+
+Do not remove valid annexure pages.
+
+🧩 Task 9 — Agreement PDF: include both quotations as annexures
+
+Goal
+The Agreement PDF should include both Interiors and False Ceiling quotations as annexures (back-to-back), with no blank pages between.
+
+Files (likely)
+Agreement PDF pipeline: server/pdf/agreement/*, quotation PDF merger logic
+
+Edits
+
+After main agreement pages, append Interiors quotation, then False Ceiling quotation (if present).
+
+Ensure continuous pagination and shared footer.
+
+Manual Test
+
+Generate Agreement with both scopes → annexures included in order, no blanks.
+
+If only one scope exists, only that annexure appears.
+
+Acceptance Criteria
+
+ Annexures appended correctly, continuous pagination.
+
+ No blank pages.
+
+Guardrails
+
+Don’t change the individual quotation PDFs’ content.
+
+🧩 Task 10 — Agreement revamp: dynamic specs + payment schedule (with FC conditional)
+
+Goal
+Revamp Agreement generation to support:
+
+Dynamic materials & specs (user-editable before generate)
+
+Payment schedule displaying combined total of Interiors + False Ceiling
+
+Conditional exclusion: if no False Ceiling scope, omit all FC mentions/sections/totals
+
+Files (likely)
+Client: client/src/pages/agreement/AgreementEditor.tsx (new), form state & preview
+Server: server/routes/agreement.ts, server/pdf/agreement/*, server/db/schema/agreement_specs.ts (if needed)
+
+Edits
+
+Add an Agreement Editor UI (materials/specs form + payment schedule editor).
+
+Store agreement specs per project/quotation.
+
+Generate HTML/PDF applying rules: combined totals; FC omitted if absent; zero-qty/zero-total already covered by Tasks 5–6; footer on every page; no blank pages.
+
+Manual Test
+
+Open Agreement editor → fill materials/specs and schedule → preview → download PDF.
+
+With and without FC scope: PDFs adapt correctly.
+
+Acceptance Criteria
+
+ Editor saves & reuses agreement specs.
+
+ PDF shows combined totals and correct schedule.
+
+ FC sections auto-omit when scope is absent.
+
+ Footer all pages; no blanks.
+
+Guardrails
+
+Don’t break existing quoting flow or PDFs.
