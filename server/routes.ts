@@ -1597,29 +1597,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get agreement by quotation ID
-  app.get("/api/quotations/:quotationId/agreement", isAuthenticated, async (req: any, res) => {
+  // Get agreement data for quotation (for agreement page display)
+  app.get("/api/agreements/:quotationId", isAuthenticated, async (req: any, res) => {
     try {
       const quotationId = req.params.quotationId;
-
-      // Verify ownership first
+      
+      // Get quotation to extract data
       const quotation = await storage.getQuotation(quotationId);
       if (!quotation) {
         return res.status(404).json({ message: "Quotation not found" });
       }
+
+      // Verify ownership
       if (quotation.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
       }
 
-      const agreement = await storage.getAgreementByQuotationId(quotationId);
-      if (!agreement) {
-        return res.status(404).json({ message: "Agreement not found for this quotation" });
-      }
+      // Get all items to check what exists
+      const [interiorItems, falseCeilingItems] = await Promise.all([
+        storage.getInteriorItems(quotationId),
+        storage.getFalseCeilingItems(quotationId),
+      ]);
 
-      res.json(agreement);
+      // Calculate if false ceiling has items
+      const hasFCItems = falseCeilingItems.length > 0;
+
+      // Get existing agreement if any
+      const existingAgreement = await storage.getAgreementByQuotationId(quotationId);
+
+      // Extract materials and brands from items
+      const materials = {
+        coreMaterials: Array.from(new Set(interiorItems.map(item => item.material).filter(Boolean))),
+        finishes: Array.from(new Set(interiorItems.map(item => item.finish).filter(Boolean))),
+        hardware: Array.from(new Set(interiorItems.map(item => item.hardware).filter(Boolean))),
+      };
+
+      // Get payment schedule - use default since quotation doesn't store it yet
+      const paymentSchedule = [
+        { label: "Advance Payment", percent: 40 },
+        { label: "After Measurements", percent: 30 },
+        { label: "Before Installation", percent: 20 },
+        { label: "After Completion", percent: 10 },
+      ];
+
+      // Return agreement data structure
+      res.json({
+        quotationId,
+        falseCeiling: {
+          hasItems: hasFCItems,
+        },
+        materials,
+        paymentSchedule,
+        customizations: existingAgreement ? {
+          materials,
+          paymentSchedule: existingAgreement.paymentScheduleJson,
+          specs: "",
+        } : undefined,
+      });
     } catch (error) {
-      console.error("Error fetching agreement by quotation:", error);
-      res.status(500).json({ message: "Failed to fetch agreement" });
+      console.error("Error fetching agreement data:", error);
+      res.status(500).json({ message: "Failed to fetch agreement data" });
     }
   });
 
