@@ -765,7 +765,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Normalize pricing data server-side
         const { normalizeInteriorItemData } = await import("./lib/pricing");
-        const normalizedData = normalizeInteriorItemData(mergedData);
+        const normalizedData = await normalizeInteriorItemData(mergedData);
 
         const item = await storage.updateInteriorItem(req.params.itemId, normalizedData);
 
