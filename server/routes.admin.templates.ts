@@ -1,48 +1,52 @@
 import type { Express } from "express";
 import { db } from "./db";
-import { 
-  templates, 
-  templateRooms, 
-  templateItems, 
+import {
+  templates,
+  templateRooms,
+  templateItems,
   rates,
-  insertTemplateSchema, 
-  insertTemplateRoomSchema, 
-  insertTemplateItemSchema 
+  insertTemplateSchema,
+  insertTemplateRoomSchema,
+  insertTemplateItemSchema,
 } from "@shared/schema";
 import { eq, sql, and, or, like } from "drizzle-orm";
 import { z } from "zod";
 import { getAdminUser, logAudit, createTemplateSummary } from "./lib/audit";
 
 export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any) {
-  
   // GET /api/admin/templates - List all templates with filters
-  app.get('/api/admin/templates', isAuthenticated, async (req: any, res) => {
+  app.get("/api/admin/templates", isAuthenticated, async (req: any, res) => {
     try {
       const { q, category, active } = req.query;
-      
+
       let conditions = [];
-      
+
       // Search filter
       if (q) {
         const searchTerm = `%${q}%`;
         conditions.push(like(templates.name, searchTerm));
       }
-      
+
       // Category filter
-      if (category && category !== 'all') {
+      if (category && category !== "all") {
         conditions.push(eq(templates.category, category as string));
       }
-      
+
       // Active filter
-      if (active && active !== 'all' && active !== '') {
-        const isActive = active === '1' || active === 'true';
+      if (active && active !== "all" && active !== "") {
+        const isActive = active === "1" || active === "true";
         conditions.push(eq(templates.isActive, isActive));
       }
-      
-      const result = conditions.length > 0
-        ? await db.select().from(templates).where(and(...conditions)).orderBy(templates.name)
-        : await db.select().from(templates).orderBy(templates.name);
-      
+
+      const result =
+        conditions.length > 0
+          ? await db
+              .select()
+              .from(templates)
+              .where(and(...conditions))
+              .orderBy(templates.name)
+          : await db.select().from(templates).orderBy(templates.name);
+
       res.json(result);
     } catch (error) {
       console.error("Error fetching templates:", error);
@@ -51,29 +55,33 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
   });
 
   // GET /api/admin/templates/:id - Get template with rooms and items
-  app.get('/api/admin/templates/:id', isAuthenticated, async (req: any, res) => {
+  app.get("/api/admin/templates/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      
+
       const [template] = await db.select().from(templates).where(eq(templates.id, id));
       if (!template) {
         return res.status(404).json({ message: "Template not found" });
       }
-      
-      const rooms = await db.select().from(templateRooms)
+
+      const rooms = await db
+        .select()
+        .from(templateRooms)
         .where(eq(templateRooms.templateId, id))
         .orderBy(templateRooms.sortOrder);
-      
+
       const roomsWithItems = await Promise.all(
         rooms.map(async (room) => {
-          const items = await db.select().from(templateItems)
+          const items = await db
+            .select()
+            .from(templateItems)
             .where(eq(templateItems.templateRoomId, room.id))
             .orderBy(templateItems.sortOrder);
-          
+
           return { ...room, items };
-        })
+        }),
       );
-      
+
       res.json({ ...template, rooms: roomsWithItems });
     } catch (error) {
       console.error("Error fetching template:", error);
@@ -82,17 +90,18 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
   });
 
   // POST /api/admin/templates - Create new template
-  app.post('/api/admin/templates', isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/templates", isAuthenticated, async (req: any, res) => {
     try {
       const validatedData = insertTemplateSchema.parse(req.body);
-      
-      const [newTemplate] = await db.insert(templates)
+
+      const [newTemplate] = await db
+        .insert(templates)
         .values({
           ...validatedData,
           isActive: validatedData.isActive ?? true,
         })
         .returning();
-      
+
       // Log audit
       const adminUser = getAdminUser(req);
       await logAudit({
@@ -103,7 +112,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
         summary: createTemplateSummary("CREATE", null, newTemplate),
         afterJson: newTemplate,
       });
-      
+
       res.status(201).json(newTemplate);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -115,33 +124,36 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
   });
 
   // PUT /api/admin/templates/:id - Update template
-  app.put('/api/admin/templates/:id', isAuthenticated, async (req: any, res) => {
+  app.put("/api/admin/templates/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const updateData = z.object({
-        name: z.string().min(2).max(100).optional(),
-        category: z.string().optional(),
-        isActive: z.boolean().optional(),
-      }).parse(req.body);
-      
+      const updateData = z
+        .object({
+          name: z.string().min(2).max(100).optional(),
+          category: z.string().optional(),
+          isActive: z.boolean().optional(),
+        })
+        .parse(req.body);
+
       // Fetch existing template for audit
       const [existingTemplate] = await db.select().from(templates).where(eq(templates.id, id));
       if (!existingTemplate) {
         return res.status(404).json({ message: "Template not found" });
       }
-      
-      const [updatedTemplate] = await db.update(templates)
+
+      const [updatedTemplate] = await db
+        .update(templates)
         .set({
           ...updateData,
           updatedAt: new Date(),
         })
         .where(eq(templates.id, id))
         .returning();
-      
+
       if (!updatedTemplate) {
         return res.status(404).json({ message: "Template not found" });
       }
-      
+
       // Log audit
       const adminUser = getAdminUser(req);
       await logAudit({
@@ -153,7 +165,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
         beforeJson: existingTemplate,
         afterJson: updatedTemplate,
       });
-      
+
       res.json(updatedTemplate);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -165,25 +177,26 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
   });
 
   // DELETE /api/admin/templates/:id - Soft delete template
-  app.delete('/api/admin/templates/:id', isAuthenticated, async (req: any, res) => {
+  app.delete("/api/admin/templates/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      
+
       // Fetch existing template for audit
       const [existingTemplate] = await db.select().from(templates).where(eq(templates.id, id));
       if (!existingTemplate) {
         return res.status(404).json({ message: "Template not found" });
       }
-      
-      const [deletedTemplate] = await db.update(templates)
+
+      const [deletedTemplate] = await db
+        .update(templates)
         .set({ isActive: false, updatedAt: new Date() })
         .where(eq(templates.id, id))
         .returning();
-      
+
       if (!deletedTemplate) {
         return res.status(404).json({ message: "Template not found" });
       }
-      
+
       // Log audit
       const adminUser = getAdminUser(req);
       await logAudit({
@@ -195,7 +208,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
         beforeJson: existingTemplate,
         afterJson: deletedTemplate,
       });
-      
+
       res.json(deletedTemplate);
     } catch (error) {
       console.error("Error deleting template:", error);
@@ -204,15 +217,13 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
   });
 
   // POST /api/admin/templates/:id/rooms - Add room to template
-  app.post('/api/admin/templates/:id/rooms', isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/templates/:id/rooms", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
       const roomData = insertTemplateRoomSchema.parse({ ...req.body, templateId: id });
-      
-      const [newRoom] = await db.insert(templateRooms)
-        .values(roomData)
-        .returning();
-      
+
+      const [newRoom] = await db.insert(templateRooms).values(roomData).returning();
+
       res.status(201).json(newRoom);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -224,26 +235,29 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
   });
 
   // PUT /api/admin/templates/:id/rooms/:roomId - Update room
-  app.put('/api/admin/templates/:id/rooms/:roomId', isAuthenticated, async (req: any, res) => {
+  app.put("/api/admin/templates/:id/rooms/:roomId", isAuthenticated, async (req: any, res) => {
     try {
       const { roomId } = req.params;
-      const updateData = z.object({
-        roomName: z.string().min(2).max(60).optional(),
-        sortOrder: z.number().min(0).optional(),
-      }).parse(req.body);
-      
-      const [updatedRoom] = await db.update(templateRooms)
+      const updateData = z
+        .object({
+          roomName: z.string().min(2).max(60).optional(),
+          sortOrder: z.number().min(0).optional(),
+        })
+        .parse(req.body);
+
+      const [updatedRoom] = await db
+        .update(templateRooms)
         .set({
           ...updateData,
           updatedAt: new Date(),
         })
         .where(eq(templateRooms.id, roomId))
         .returning();
-      
+
       if (!updatedRoom) {
         return res.status(404).json({ message: "Room not found" });
       }
-      
+
       res.json(updatedRoom);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -255,12 +269,12 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
   });
 
   // DELETE /api/admin/templates/:id/rooms/:roomId - Delete room
-  app.delete('/api/admin/templates/:id/rooms/:roomId', isAuthenticated, async (req: any, res) => {
+  app.delete("/api/admin/templates/:id/rooms/:roomId", isAuthenticated, async (req: any, res) => {
     try {
       const { roomId } = req.params;
-      
+
       await db.delete(templateRooms).where(eq(templateRooms.id, roomId));
-      
+
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting room:", error);
@@ -269,120 +283,141 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
   });
 
   // POST /api/admin/templates/:id/rooms/:roomId/items - Add item to room
-  app.post('/api/admin/templates/:id/rooms/:roomId/items', isAuthenticated, async (req: any, res) => {
-    try {
-      const { roomId } = req.params;
-      const itemData = insertTemplateItemSchema.parse({ ...req.body, templateRoomId: roomId });
-      
-      // Validate that itemKey exists in rates table (case-insensitive)
-      const [rateExists] = await db.select().from(rates).where(
-        sql`LOWER(${rates.itemKey}) = LOWER(${itemData.itemKey})`
-      );
-      if (!rateExists) {
-        return res.status(400).json({ message: `Item key '${itemData.itemKey}' not found in rates` });
+  app.post(
+    "/api/admin/templates/:id/rooms/:roomId/items",
+    isAuthenticated,
+    async (req: any, res) => {
+      try {
+        const { roomId } = req.params;
+        const itemData = insertTemplateItemSchema.parse({ ...req.body, templateRoomId: roomId });
+
+        // Validate that itemKey exists in rates table (case-insensitive)
+        const [rateExists] = await db
+          .select()
+          .from(rates)
+          .where(sql`LOWER(${rates.itemKey}) = LOWER(${itemData.itemKey})`);
+        if (!rateExists) {
+          return res
+            .status(400)
+            .json({ message: `Item key '${itemData.itemKey}' not found in rates` });
+        }
+
+        const [newItem] = await db.insert(templateItems).values(itemData).returning();
+
+        res.status(201).json(newItem);
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ message: "Validation error", errors: error.errors });
+        }
+        console.error("Error adding item:", error);
+        res.status(500).json({ message: "Failed to add item" });
       }
-      
-      const [newItem] = await db.insert(templateItems)
-        .values(itemData)
-        .returning();
-      
-      res.status(201).json(newItem);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
-      }
-      console.error("Error adding item:", error);
-      res.status(500).json({ message: "Failed to add item" });
-    }
-  });
+    },
+  );
 
   // PUT /api/admin/templates/:id/rooms/:roomId/items/:itemId - Update item
-  app.put('/api/admin/templates/:id/rooms/:roomId/items/:itemId', isAuthenticated, async (req: any, res) => {
-    try {
-      const { itemId } = req.params;
-      const updateData = z.object({
-        itemKey: z.string().min(2).optional(),
-        displayName: z.string().min(2).max(80).optional(),
-        unit: z.enum(["SFT", "COUNT", "LSUM"]).optional(),
-        isWallHighlightOrPanel: z.boolean().optional(),
-        sortOrder: z.number().min(0).optional(),
-      }).parse(req.body);
-      
-      // If itemKey is being updated, validate it exists (case-insensitive)
-      if (updateData.itemKey) {
-        const [rateExists] = await db.select().from(rates).where(
-          sql`LOWER(${rates.itemKey}) = LOWER(${updateData.itemKey})`
-        );
-        if (!rateExists) {
-          return res.status(400).json({ message: `Item key '${updateData.itemKey}' not found in rates` });
+  app.put(
+    "/api/admin/templates/:id/rooms/:roomId/items/:itemId",
+    isAuthenticated,
+    async (req: any, res) => {
+      try {
+        const { itemId } = req.params;
+        const updateData = z
+          .object({
+            itemKey: z.string().min(2).optional(),
+            displayName: z.string().min(2).max(80).optional(),
+            unit: z.enum(["SFT", "COUNT", "LSUM"]).optional(),
+            isWallHighlightOrPanel: z.boolean().optional(),
+            sortOrder: z.number().min(0).optional(),
+          })
+          .parse(req.body);
+
+        // If itemKey is being updated, validate it exists (case-insensitive)
+        if (updateData.itemKey) {
+          const [rateExists] = await db
+            .select()
+            .from(rates)
+            .where(sql`LOWER(${rates.itemKey}) = LOWER(${updateData.itemKey})`);
+          if (!rateExists) {
+            return res
+              .status(400)
+              .json({ message: `Item key '${updateData.itemKey}' not found in rates` });
+          }
         }
+
+        const [updatedItem] = await db
+          .update(templateItems)
+          .set({
+            ...updateData,
+            updatedAt: new Date(),
+          })
+          .where(eq(templateItems.id, itemId))
+          .returning();
+
+        if (!updatedItem) {
+          return res.status(404).json({ message: "Item not found" });
+        }
+
+        res.json(updatedItem);
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ message: "Validation error", errors: error.errors });
+        }
+        console.error("Error updating item:", error);
+        res.status(500).json({ message: "Failed to update item" });
       }
-      
-      const [updatedItem] = await db.update(templateItems)
-        .set({
-          ...updateData,
-          updatedAt: new Date(),
-        })
-        .where(eq(templateItems.id, itemId))
-        .returning();
-      
-      if (!updatedItem) {
-        return res.status(404).json({ message: "Item not found" });
-      }
-      
-      res.json(updatedItem);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
-      }
-      console.error("Error updating item:", error);
-      res.status(500).json({ message: "Failed to update item" });
-    }
-  });
+    },
+  );
 
   // DELETE /api/admin/templates/:id/rooms/:roomId/items/:itemId - Delete item
-  app.delete('/api/admin/templates/:id/rooms/:roomId/items/:itemId', isAuthenticated, async (req: any, res) => {
-    try {
-      const { itemId } = req.params;
-      
-      await db.delete(templateItems).where(eq(templateItems.id, itemId));
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting item:", error);
-      res.status(500).json({ message: "Failed to delete item" });
-    }
-  });
+  app.delete(
+    "/api/admin/templates/:id/rooms/:roomId/items/:itemId",
+    isAuthenticated,
+    async (req: any, res) => {
+      try {
+        const { itemId } = req.params;
+
+        await db.delete(templateItems).where(eq(templateItems.id, itemId));
+
+        res.json({ success: true });
+      } catch (error) {
+        console.error("Error deleting item:", error);
+        res.status(500).json({ message: "Failed to delete item" });
+      }
+    },
+  );
 
   // POST /api/admin/templates/import - Import template from JSON
-  app.post('/api/admin/templates/import', isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/templates/import", isAuthenticated, async (req: any, res) => {
     try {
       const { json: templateData } = req.body;
-      
+
       if (!templateData || !templateData.template) {
         return res.status(400).json({ message: "Invalid import data" });
       }
-      
+
       // Create template
-      const [newTemplate] = await db.insert(templates)
+      const [newTemplate] = await db
+        .insert(templates)
         .values({
           name: templateData.template.name,
           category: templateData.template.category,
           isActive: templateData.template.isActive ?? true,
         })
         .returning();
-      
+
       // Create rooms and items
       if (templateData.rooms && templateData.rooms.length > 0) {
         for (const roomData of templateData.rooms) {
-          const [newRoom] = await db.insert(templateRooms)
+          const [newRoom] = await db
+            .insert(templateRooms)
             .values({
               templateId: newTemplate.id,
               roomName: roomData.roomName,
               sortOrder: roomData.sortOrder || 0,
             })
             .returning();
-          
+
           if (roomData.items && roomData.items.length > 0) {
             await db.insert(templateItems).values(
               roomData.items.map((item: any) => ({
@@ -392,12 +427,12 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
                 unit: item.unit || "SFT",
                 isWallHighlightOrPanel: item.isWallHighlightOrPanel || false,
                 sortOrder: item.sortOrder || 0,
-              }))
+              })),
             );
           }
         }
       }
-      
+
       res.status(201).json(newTemplate);
     } catch (error) {
       console.error("Error importing template:", error);
@@ -406,29 +441,33 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
   });
 
   // GET /api/admin/templates/:id/export - Export template as JSON
-  app.get('/api/admin/templates/:id/export', isAuthenticated, async (req: any, res) => {
+  app.get("/api/admin/templates/:id/export", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      
+
       const [template] = await db.select().from(templates).where(eq(templates.id, id));
       if (!template) {
         return res.status(404).json({ message: "Template not found" });
       }
-      
-      const rooms = await db.select().from(templateRooms)
+
+      const rooms = await db
+        .select()
+        .from(templateRooms)
         .where(eq(templateRooms.templateId, id))
         .orderBy(templateRooms.sortOrder);
-      
+
       const roomsWithItems = await Promise.all(
         rooms.map(async (room) => {
-          const items = await db.select().from(templateItems)
+          const items = await db
+            .select()
+            .from(templateItems)
             .where(eq(templateItems.templateRoomId, room.id))
             .orderBy(templateItems.sortOrder);
-          
+
           return {
             roomName: room.roomName,
             sortOrder: room.sortOrder,
-            items: items.map(item => ({
+            items: items.map((item) => ({
               itemKey: item.itemKey,
               displayName: item.displayName,
               unit: item.unit,
@@ -436,9 +475,9 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
               sortOrder: item.sortOrder,
             })),
           };
-        })
+        }),
       );
-      
+
       const exportData = {
         template: {
           name: template.name,
@@ -448,7 +487,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
         rooms: roomsWithItems,
         exportedAt: new Date().toISOString(),
       };
-      
+
       res.json(exportData);
     } catch (error) {
       console.error("Error exporting template:", error);
@@ -457,56 +496,62 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
   });
 
   // POST /api/admin/templates/:id/duplicate - Duplicate a template
-  app.post('/api/admin/templates/:id/duplicate', isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/templates/:id/duplicate", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      
+
       const [originalTemplate] = await db.select().from(templates).where(eq(templates.id, id));
       if (!originalTemplate) {
         return res.status(404).json({ message: "Template not found" });
       }
-      
+
       // Create new template with "(copy)" appended
-      const [newTemplate] = await db.insert(templates)
+      const [newTemplate] = await db
+        .insert(templates)
         .values({
           name: `${originalTemplate.name} (copy)`,
           category: originalTemplate.category,
           isActive: originalTemplate.isActive,
         })
         .returning();
-      
+
       // Copy rooms
-      const rooms = await db.select().from(templateRooms)
+      const rooms = await db
+        .select()
+        .from(templateRooms)
         .where(eq(templateRooms.templateId, id))
         .orderBy(templateRooms.sortOrder);
-      
+
       for (const room of rooms) {
-        const [newRoom] = await db.insert(templateRooms)
+        const [newRoom] = await db
+          .insert(templateRooms)
           .values({
             templateId: newTemplate.id,
             roomName: room.roomName,
             sortOrder: room.sortOrder,
           })
           .returning();
-        
+
         // Copy items
-        const items = await db.select().from(templateItems)
+        const items = await db
+          .select()
+          .from(templateItems)
           .where(eq(templateItems.templateRoomId, room.id));
-        
+
         if (items.length > 0) {
           await db.insert(templateItems).values(
-            items.map(item => ({
+            items.map((item) => ({
               templateRoomId: newRoom.id,
               itemKey: item.itemKey,
               displayName: item.displayName,
               unit: item.unit,
               isWallHighlightOrPanel: item.isWallHighlightOrPanel,
               sortOrder: item.sortOrder,
-            }))
+            })),
           );
         }
       }
-      
+
       res.status(201).json(newTemplate);
     } catch (error) {
       console.error("Error duplicating template:", error);

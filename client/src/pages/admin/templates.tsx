@@ -40,7 +40,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, Plus, MoreVertical, Download, Upload, Copy, Trash2, FileJson } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  MoreVertical,
+  Download,
+  Upload,
+  Copy,
+  Trash2,
+  FileJson,
+} from "lucide-react";
 import type { TemplateRow, TemplateCategory } from "@shared/schema";
 import {
   getTemplates,
@@ -59,7 +68,7 @@ const categories: TemplateCategory[] = [
   "Residential 2BHK",
   "Residential 3BHK",
   "Villa",
-  "Commercial"
+  "Commercial",
 ];
 
 export default function TemplatesPage() {
@@ -93,7 +102,11 @@ export default function TemplatesPage() {
     }
   }, [isAuthenticated, authLoading, navigate, toast]);
 
-  const { data: templates = [], isLoading, refetch } = useQuery<TemplateRow[]>({
+  const {
+    data: templates = [],
+    isLoading,
+    refetch,
+  } = useQuery<TemplateRow[]>({
     queryKey: ["/api/admin/templates", filters],
     queryFn: () => getTemplates(filters),
     enabled: isAuthenticated,
@@ -193,7 +206,7 @@ export default function TemplatesPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_template.json`;
+      a.download = `${name.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_template.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -215,7 +228,7 @@ export default function TemplatesPage() {
     input.onchange = async (e: any) => {
       const file = e.target.files[0];
       if (!file) return;
-      
+
       try {
         const text = await file.text();
         const json = JSON.parse(text);
@@ -263,23 +276,18 @@ export default function TemplatesPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold" data-testid="text-page-title">Templates</h1>
+              <h1 className="text-3xl font-bold" data-testid="text-page-title">
+                Templates
+              </h1>
               <p className="text-muted-foreground">Manage quotation templates</p>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleImport}
-              data-testid="button-import"
-            >
+            <Button variant="outline" onClick={handleImport} data-testid="button-import">
               <Upload className="h-4 w-4 mr-2" />
               Import JSON
             </Button>
-            <Button
-              onClick={() => setIsAddDialogOpen(true)}
-              data-testid="button-add-template"
-            >
+            <Button onClick={() => setIsAddDialogOpen(true)} data-testid="button-add-template">
               <Plus className="h-4 w-4 mr-2" />
               Add Template
             </Button>
@@ -312,7 +320,9 @@ export default function TemplatesPage() {
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
                     {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -342,9 +352,7 @@ export default function TemplatesPage() {
         <Card>
           <CardContent className="pt-6">
             {templates.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                No templates found
-              </div>
+              <div className="text-center py-12 text-muted-foreground">No templates found</div>
             ) : (
               <Table>
                 <TableHeader>
@@ -374,7 +382,11 @@ export default function TemplatesPage() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" data-testid={`button-actions-${template.id}`}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              data-testid={`button-actions-${template.id}`}
+                            >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -446,14 +458,18 @@ export default function TemplatesPage() {
               <Label htmlFor="category">Category</Label>
               <Select
                 value={newTemplate.category}
-                onValueChange={(value) => setNewTemplate({ ...newTemplate, category: value as TemplateCategory })}
+                onValueChange={(value) =>
+                  setNewTemplate({ ...newTemplate, category: value as TemplateCategory })
+                }
               >
                 <SelectTrigger data-testid="select-template-category">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

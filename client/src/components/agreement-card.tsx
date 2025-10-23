@@ -76,28 +76,38 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
               <CheckCircle2 className="h-5 w-5 text-green-600" />
               Agreement Generated
             </CardTitle>
-            <Badge variant="secondary" data-testid="badge-approved">Approved</Badge>
+            <Badge variant="secondary" data-testid="badge-approved">
+              Approved
+            </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Approved By</p>
-              <p className="font-medium" data-testid="text-approved-by">{approvedBy || "Unknown"}</p>
+              <p className="font-medium" data-testid="text-approved-by">
+                {approvedBy || "Unknown"}
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground">Approved On</p>
-              <p className="font-medium" data-testid="text-approved-date">{approvalDate}</p>
+              <p className="font-medium" data-testid="text-approved-date">
+                {approvalDate}
+              </p>
             </div>
             {agreement && (
               <>
                 <div>
                   <p className="text-muted-foreground">GST Amount</p>
-                  <p className="font-medium" data-testid="text-gst-amount">{formatINR(gstAmount)}</p>
+                  <p className="font-medium" data-testid="text-gst-amount">
+                    {formatINR(gstAmount)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Grand Total</p>
-                  <p className="font-semibold text-lg" data-testid="text-grand-total">{formatINR(grandTotal)}</p>
+                  <p className="font-semibold text-lg" data-testid="text-grand-total">
+                    {formatINR(grandTotal)}
+                  </p>
                 </div>
               </>
             )}
@@ -117,7 +127,9 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.open(`/api/quotations/${quotationId}/agreement/download`, '_blank')}
+              onClick={() =>
+                window.open(`/api/quotations/${quotationId}/agreement/download`, "_blank")
+              }
               data-testid="button-download-agreement"
             >
               <Download className="mr-2 h-4 w-4" />
@@ -142,9 +154,7 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
         <DialogContent data-testid="dialog-sign-agreement">
           <DialogHeader>
             <DialogTitle>Mark Agreement as Signed</DialogTitle>
-            <DialogDescription>
-              Record the client's signature on this agreement
-            </DialogDescription>
+            <DialogDescription>Record the client's signature on this agreement</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2 py-4">

@@ -17,13 +17,23 @@ interface SignoffEditorProps {
 
 export function SignoffEditor({ quotationId, quotation }: SignoffEditorProps) {
   const { toast } = useToast();
-  
+
   // Local state for editing
-  const [clientName, setClientName] = useState(quotation.signoff?.client?.name || quotation.clientName || "");
-  const [clientSignature, setClientSignature] = useState(quotation.signoff?.client?.signature || "");
-  const [trecasaName, setTrecasaName] = useState(quotation.signoff?.trecasa?.name || "Authorized Signatory");
-  const [trecasaTitle, setTrecasaTitle] = useState(quotation.signoff?.trecasa?.title || "For TRECASA DESIGN STUDIO");
-  const [trecasaSignature, setTrecasaSignature] = useState(quotation.signoff?.trecasa?.signature || "");
+  const [clientName, setClientName] = useState(
+    quotation.signoff?.client?.name || quotation.clientName || "",
+  );
+  const [clientSignature, setClientSignature] = useState(
+    quotation.signoff?.client?.signature || "",
+  );
+  const [trecasaName, setTrecasaName] = useState(
+    quotation.signoff?.trecasa?.name || "Authorized Signatory",
+  );
+  const [trecasaTitle, setTrecasaTitle] = useState(
+    quotation.signoff?.trecasa?.title || "For TRECASA DESIGN STUDIO",
+  );
+  const [trecasaSignature, setTrecasaSignature] = useState(
+    quotation.signoff?.trecasa?.signature || "",
+  );
 
   const updateMutation = useMutation({
     mutationFn: async (updates: any) => {
@@ -44,13 +54,18 @@ export function SignoffEditor({ quotationId, quotation }: SignoffEditorProps) {
   const handleUpdateSignoff = (field: string, value: any) => {
     const currentSignoff = quotation.signoff || {
       client: { name: "", signature: "", signedAt: undefined },
-      trecasa: { name: "Authorized Signatory", title: "For TRECASA DESIGN STUDIO", signature: "", signedAt: undefined },
+      trecasa: {
+        name: "Authorized Signatory",
+        title: "For TRECASA DESIGN STUDIO",
+        signature: "",
+        signedAt: undefined,
+      },
       accepted: false,
-      acceptedAt: undefined
+      acceptedAt: undefined,
     };
 
     const updates: any = { signoff: { ...currentSignoff } };
-    
+
     if (field.startsWith("client.")) {
       const subfield = field.split(".")[1];
       updates.signoff.client = { ...currentSignoff.client, [subfield]: value };
@@ -68,9 +83,14 @@ export function SignoffEditor({ quotationId, quotation }: SignoffEditorProps) {
     const now = Date.now();
     const currentSignoff = quotation.signoff || {
       client: { name: "", signature: "", signedAt: undefined },
-      trecasa: { name: "Authorized Signatory", title: "For TRECASA DESIGN STUDIO", signature: "", signedAt: undefined },
+      trecasa: {
+        name: "Authorized Signatory",
+        title: "For TRECASA DESIGN STUDIO",
+        signature: "",
+        signedAt: undefined,
+      },
       accepted: false,
-      acceptedAt: undefined
+      acceptedAt: undefined,
     };
 
     updateMutation.mutate({
@@ -78,7 +98,7 @@ export function SignoffEditor({ quotationId, quotation }: SignoffEditorProps) {
         ...currentSignoff,
         accepted: true,
         acceptedAt: now,
-      }
+      },
     });
   };
 
@@ -100,7 +120,7 @@ export function SignoffEditor({ quotationId, quotation }: SignoffEditorProps) {
           {/* Client Column */}
           <div className="space-y-4">
             <h3 className="font-semibold text-lg border-b pb-2">Client</h3>
-            
+
             <div className="space-y-2">
               <Label htmlFor="client-name">Client Name</Label>
               <Input
@@ -128,7 +148,11 @@ export function SignoffEditor({ quotationId, quotation }: SignoffEditorProps) {
 
             <div className="pt-2">
               {isClientAccepted ? (
-                <Badge variant="default" className="bg-green-600 hover:bg-green-700" data-testid="badge-client-accepted">
+                <Badge
+                  variant="default"
+                  className="bg-green-600 hover:bg-green-700"
+                  data-testid="badge-client-accepted"
+                >
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                   Accepted on {dateFormat(quotation.signoff.acceptedAt)}
                 </Badge>
@@ -148,7 +172,7 @@ export function SignoffEditor({ quotationId, quotation }: SignoffEditorProps) {
           {/* Trecasa Column */}
           <div className="space-y-4">
             <h3 className="font-semibold text-lg border-b pb-2">TRECASA</h3>
-            
+
             <div className="space-y-2">
               <Label htmlFor="trecasa-name">Signatory Name</Label>
               <Input

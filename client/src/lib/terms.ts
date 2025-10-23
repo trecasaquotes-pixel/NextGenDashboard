@@ -31,7 +31,7 @@ export const defaultTerms: Record<TermsTemplateId, string[]> = {
     "DEFECTS LIABILITY: TRECASA will rectify any defects in workmanship reported within the warranty period, subject to verification. Liability is limited to repair/replacement of defective components only.",
     "FORCE MAJEURE: TRECASA shall not be liable for delays or non-performance due to acts of God, natural disasters, pandemics, government restrictions, labor strikes, material shortages, or other events beyond reasonable control.",
     "DISPUTE RESOLUTION: Any disputes arising from this quotation shall be resolved through amicable discussion. If unresolved, disputes shall be subject to arbitration under Indian Arbitration and Conciliation Act, 1996, with jurisdiction limited to courts in Hyderabad.",
-    "GOVERNING LAW: This quotation and any resulting contract shall be governed by the laws of India. Acceptance of this quotation constitutes agreement to these terms and conditions."
+    "GOVERNING LAW: This quotation and any resulting contract shall be governed by the laws of India. Acceptance of this quotation constitutes agreement to these terms and conditions.",
   ],
   default_false_ceiling: [
     "SCOPE & INCLUSIONS: Rates include framework (MS/GI channels), boards/grids as per selected brand, standard jointing compound, taping, and basic finishing. Premium finishes, custom designs, and decorative elements are excluded unless specified.",
@@ -51,7 +51,7 @@ export const defaultTerms: Record<TermsTemplateId, string[]> = {
     "LIABILITY LIMITATION: TRECASA's liability is limited to repair/replacement of defective work within warranty period. No liability for consequential damages, business losses, or damages beyond the contract value.",
     "FORCE MAJEURE: TRECASA shall not be liable for delays/non-performance due to acts of God, pandemics, government orders, strikes, material shortages, or events beyond reasonable control.",
     "DISPUTE RESOLUTION: Disputes shall be resolved amicably through discussion. Unresolved disputes subject to arbitration under Indian Arbitration Act, 1996. Jurisdiction limited to courts in Hyderabad.",
-    "GOVERNING LAW: This quotation is governed by laws of India. Acceptance constitutes agreement to these terms and conditions."
+    "GOVERNING LAW: This quotation is governed by laws of India. Acceptance constitutes agreement to these terms and conditions.",
   ],
 };
 
@@ -60,104 +60,123 @@ function buildDynamicMaterialsBullets(items: MaterialsData): string[] {
   const coreSet = new Set<string>();
   const finishSet = new Set<string>();
   const hardwareSet = new Set<string>();
-  
-  items.forEach(item => {
+
+  items.forEach((item) => {
     if (item.material) {
       const normalized = item.material.trim();
-      if (normalized && normalized.toLowerCase() !== 'generic ply') {
+      if (normalized && normalized.toLowerCase() !== "generic ply") {
         coreSet.add(normalized);
       }
     }
     if (item.finish) {
       const normalized = item.finish.trim();
-      if (normalized && normalized.toLowerCase() !== 'generic laminate') {
+      if (normalized && normalized.toLowerCase() !== "generic laminate") {
         finishSet.add(normalized);
       }
     }
     if (item.hardware) {
       const normalized = item.hardware.trim();
-      if (normalized && normalized.toLowerCase() !== 'nimmi') {
+      if (normalized && normalized.toLowerCase() !== "nimmi") {
         hardwareSet.add(normalized);
       }
     }
   });
-  
+
   // Format finish names with thickness hints
   const formatFinish = (finish: string): string => {
     const lower = finish.toLowerCase();
-    
+
     // Check if thickness already in label
-    if (lower.includes('mm') || lower.includes('millimeter')) {
+    if (lower.includes("mm") || lower.includes("millimeter")) {
       return finish;
     }
-    
-    if (lower.includes('external laminate') || (lower.includes('laminate') && !lower.includes('internal'))) {
-      return 'External laminates (1.0 mm)';
+
+    if (
+      lower.includes("external laminate") ||
+      (lower.includes("laminate") && !lower.includes("internal"))
+    ) {
+      return "External laminates (1.0 mm)";
     }
-    if (lower.includes('internal laminate')) {
-      return 'Internal laminates (0.8 mm)';
+    if (lower.includes("internal laminate")) {
+      return "Internal laminates (0.8 mm)";
     }
-    if (lower.includes('acrylic')) {
-      return 'Acrylic (1.5 mm for kitchens)';
+    if (lower.includes("acrylic")) {
+      return "Acrylic (1.5 mm for kitchens)";
     }
-    if (lower.includes('pu') || lower.includes('duco')) {
-      return 'PU-Duco as per design';
+    if (lower.includes("pu") || lower.includes("duco")) {
+      return "PU-Duco as per design";
     }
-    
+
     return finish;
   };
-  
+
   // Build bullet strings with improved formatting
   const bullets: string[] = [];
-  
+
   // Core Materials bullet
   if (coreSet.size > 0) {
-    const coreList = Array.from(coreSet).sort().join(', ');
-    bullets.push(`CORE MATERIALS — ${coreList} (BWP/BWR grade) as per approved design requirements. Note: Blockboard is not used in any scope of work.`);
+    const coreList = Array.from(coreSet).sort().join(", ");
+    bullets.push(
+      `CORE MATERIALS — ${coreList} (BWP/BWR grade) as per approved design requirements. Note: Blockboard is not used in any scope of work.`,
+    );
   } else {
-    bullets.push("CORE MATERIALS — BWP/BWR grade plywood (710 Grade) as per approved design. Note: Blockboard is not used in any scope of work.");
+    bullets.push(
+      "CORE MATERIALS — BWP/BWR grade plywood (710 Grade) as per approved design. Note: Blockboard is not used in any scope of work.",
+    );
   }
-  
+
   // Finishes bullet
   if (finishSet.size > 0) {
     const formattedFinishes = Array.from(finishSet).map(formatFinish);
     const uniqueFormatted = Array.from(new Set(formattedFinishes)).sort();
-    const finishList = uniqueFormatted.join(', ');
+    const finishList = uniqueFormatted.join(", ");
     bullets.push(`FINISHES — ${finishList}, unless otherwise specified in design drawings.`);
   } else {
-    bullets.push("FINISHES — External laminates (1.0 mm), Internal laminates (0.8 mm), Acrylic (1.5 mm for kitchens), PU-Duco as per design.");
+    bullets.push(
+      "FINISHES — External laminates (1.0 mm), Internal laminates (0.8 mm), Acrylic (1.5 mm for kitchens), PU-Duco as per design.",
+    );
   }
-  
+
   // Hardware bullet
   if (hardwareSet.size > 0) {
-    const hardwareList = Array.from(hardwareSet).sort().join(', ');
-    const orEquivalent = hardwareSet.size >= 2 ? ' or equivalent' : '';
-    bullets.push(`HARDWARE — ${hardwareList}${orEquivalent}, with soft-close mechanisms where applicable.`);
+    const hardwareList = Array.from(hardwareSet).sort().join(", ");
+    const orEquivalent = hardwareSet.size >= 2 ? " or equivalent" : "";
+    bullets.push(
+      `HARDWARE — ${hardwareList}${orEquivalent}, with soft-close mechanisms where applicable.`,
+    );
   } else {
-    bullets.push("HARDWARE — Hettich/Ebco or equivalent, with soft-close mechanisms where applicable.");
+    bullets.push(
+      "HARDWARE — Hettich/Ebco or equivalent, with soft-close mechanisms where applicable.",
+    );
   }
-  
+
   // Glass & Metal Works bullet (always static)
-  bullets.push("GLASS & METAL WORKS — 5mm/8mm toughened glass, stainless steel or powder-coated mild steel as per design specifications.");
-  
+  bullets.push(
+    "GLASS & METAL WORKS — 5mm/8mm toughened glass, stainless steel or powder-coated mild steel as per design specifications.",
+  );
+
   return bullets;
 }
 
-export function renderTerms(lines: string[], vars: TermsVars = {}, materialsData?: MaterialsData): string[] {
+export function renderTerms(
+  lines: string[],
+  vars: TermsVars = {},
+  materialsData?: MaterialsData,
+): string[] {
   const v = {
     validDays: 15,
     validUntilDate: "",
     warrantyMonths: 12,
     paymentSchedule: "50% booking, 40% mid, 10% handover",
-    ...vars
+    ...vars,
   };
-  
-  return lines.map(l => {
+
+  return lines.map((l) => {
     // Replace MATERIALS & BRANDS line with dynamic bullets
     if (l.startsWith("MATERIALS & BRANDS:")) {
       if (materialsData && materialsData.length > 0) {
         const bullets = buildDynamicMaterialsBullets(materialsData);
-        return `MATERIALS & BRANDS:\n${bullets.map(b => `  • ${b}`).join('\n')}`;
+        return `MATERIALS & BRANDS:\n${bullets.map((b) => `  • ${b}`).join("\n")}`;
       }
       // Fallback to enhanced static version with bullets
       return `MATERIALS & BRANDS:
@@ -166,7 +185,7 @@ export function renderTerms(lines: string[], vars: TermsVars = {}, materialsData
   • HARDWARE — Hettich/Ebco or equivalent, with soft-close mechanisms where applicable.
   • GLASS & METAL WORKS — 5mm/8mm toughened glass, stainless steel or powder-coated mild steel as per design specifications.`;
     }
-    
+
     // Standard variable replacements
     return l
       .replaceAll("{clientName}", v.clientName ?? "")
@@ -187,8 +206,8 @@ export const defaultTermsConfig = {
     vars: {
       validDays: 15,
       warrantyMonths: 12,
-      paymentSchedule: "50% booking, 40% mid, 10% handover"
-    }
+      paymentSchedule: "50% booking, 40% mid, 10% handover",
+    },
   },
   falseCeiling: {
     useDefault: true,
@@ -197,7 +216,7 @@ export const defaultTermsConfig = {
     vars: {
       validDays: 15,
       warrantyMonths: 12,
-      paymentSchedule: "50% booking, 40% mid, 10% handover"
-    }
-  }
+      paymentSchedule: "50% booking, 40% mid, 10% handover",
+    },
+  },
 };

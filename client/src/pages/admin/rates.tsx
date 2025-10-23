@@ -42,7 +42,16 @@ import { AppFooter } from "@/components/app-footer";
 import { Plus, MoreVertical, Copy, Trash2, ArrowLeft } from "lucide-react";
 import { useLocation } from "wouter";
 import type { RateRow, NewRateRow, Category, Unit } from "@shared/schema";
-import { getRates, createRate, updateRate, toggleRateActive, deleteRate, isUnitLocked, getLockedUnit, type RatesFilters } from "@/api/adminRates";
+import {
+  getRates,
+  createRate,
+  updateRate,
+  toggleRateActive,
+  deleteRate,
+  isUnitLocked,
+  getLockedUnit,
+  type RatesFilters,
+} from "@/api/adminRates";
 import { queryClient } from "@/lib/queryClient";
 import { useDebounce } from "@/hooks/useDebounce.ts";
 
@@ -96,7 +105,11 @@ export default function AdminRatesPage() {
     }
   }, [isAuthenticated, authLoading, navigate, toast]);
 
-  const { data: rates = [], isLoading, refetch } = useQuery<RateRow[]>({
+  const {
+    data: rates = [],
+    isLoading,
+    refetch,
+  } = useQuery<RateRow[]>({
     queryKey: ["/api/admin/rates", filters],
     queryFn: () => getRates(filters),
     enabled: isAuthenticated,
@@ -123,8 +136,13 @@ export default function AdminRatesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Omit<RateRow, 'id' | 'createdAt' | 'updatedAt'>> }) =>
-      updateRate(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<Omit<RateRow, "id" | "createdAt" | "updatedAt">>;
+    }) => updateRate(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/rates"] });
       toast({
@@ -231,7 +249,7 @@ export default function AdminRatesPage() {
     if (editingRate) {
       updateMutation.mutate({
         id: editingRate.id,
-        data: newRate as Partial<Omit<RateRow, 'id' | 'createdAt' | 'updatedAt'>>,
+        data: newRate as Partial<Omit<RateRow, "id" | "createdAt" | "updatedAt">>,
       });
     } else {
       createMutation.mutate(newRate as NewRateRow);
@@ -246,7 +264,13 @@ export default function AdminRatesPage() {
   };
 
   // Debounced inline update for number inputs
-  const DebouncedNumberInput = ({ rate, field }: { rate: RateRow; field: 'baseRateHandmade' | 'baseRateFactory' }) => {
+  const DebouncedNumberInput = ({
+    rate,
+    field,
+  }: {
+    rate: RateRow;
+    field: "baseRateHandmade" | "baseRateFactory";
+  }) => {
     const [value, setValue] = useState(rate[field].toString());
     const debouncedValue = useDebounce(value, 500);
 
@@ -286,7 +310,7 @@ export default function AdminRatesPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <AppHeader />
-      
+
       <div className="flex-1 container-trecasa py-6 lg:py-8">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -298,7 +322,9 @@ export default function AdminRatesPage() {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-3xl font-bold" data-testid="text-page-title">Admin - Rates</h1>
+            <h1 className="text-3xl font-bold" data-testid="text-page-title">
+              Admin - Rates
+            </h1>
           </div>
           <Button onClick={handleAdd} data-testid="button-add-rate">
             <Plus className="h-4 w-4 mr-2" />
@@ -330,7 +356,9 @@ export default function AdminRatesPage() {
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -347,7 +375,9 @@ export default function AdminRatesPage() {
                 <SelectContent>
                   <SelectItem value="all">All Units</SelectItem>
                   {units.map((unit) => (
-                    <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                    <SelectItem key={unit} value={unit}>
+                      {unit}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -406,20 +436,25 @@ export default function AdminRatesPage() {
                     </TableCell>
                     <TableCell>
                       {isUnitLocked(rate.itemKey) ? (
-                        <span className="text-sm text-muted-foreground" data-testid={`text-unit-${rate.id}`}>
+                        <span
+                          className="text-sm text-muted-foreground"
+                          data-testid={`text-unit-${rate.id}`}
+                        >
                           {rate.unit} (locked)
                         </span>
                       ) : (
                         <Select
                           value={rate.unit}
-                          onValueChange={(value) => handleInlineUpdate(rate.id, 'unit', value)}
+                          onValueChange={(value) => handleInlineUpdate(rate.id, "unit", value)}
                         >
                           <SelectTrigger className="w-28" data-testid={`select-unit-${rate.id}`}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             {units.map((unit) => (
-                              <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                              <SelectItem key={unit} value={unit}>
+                                {unit}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -434,14 +469,16 @@ export default function AdminRatesPage() {
                     <TableCell>
                       <Select
                         value={rate.category}
-                        onValueChange={(value) => handleInlineUpdate(rate.id, 'category', value)}
+                        onValueChange={(value) => handleInlineUpdate(rate.id, "category", value)}
                       >
                         <SelectTrigger className="w-40" data-testid={`select-category-${rate.id}`}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {categories.map((cat) => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -458,15 +495,25 @@ export default function AdminRatesPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" data-testid={`button-actions-${rate.id}`}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            data-testid={`button-actions-${rate.id}`}
+                          >
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(rate)} data-testid={`action-edit-${rate.id}`}>
+                          <DropdownMenuItem
+                            onClick={() => handleEdit(rate)}
+                            data-testid={`action-edit-${rate.id}`}
+                          >
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDuplicate(rate)} data-testid={`action-duplicate-${rate.id}`}>
+                          <DropdownMenuItem
+                            onClick={() => handleDuplicate(rate)}
+                            data-testid={`action-duplicate-${rate.id}`}
+                          >
                             <Copy className="h-4 w-4 mr-2" />
                             Duplicate
                           </DropdownMenuItem>
@@ -541,7 +588,9 @@ export default function AdminRatesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {units.map((unit) => (
-                      <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                      <SelectItem key={unit} value={unit}>
+                        {unit}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -561,7 +610,9 @@ export default function AdminRatesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -575,7 +626,9 @@ export default function AdminRatesPage() {
                   id="handmade"
                   type="number"
                   value={newRate.baseRateHandmade}
-                  onChange={(e) => setNewRate({ ...newRate, baseRateHandmade: parseInt(e.target.value, 10) || 0 })}
+                  onChange={(e) =>
+                    setNewRate({ ...newRate, baseRateHandmade: parseInt(e.target.value, 10) || 0 })
+                  }
                   data-testid="input-handmade-rate"
                 />
               </div>
@@ -586,7 +639,9 @@ export default function AdminRatesPage() {
                   id="factory"
                   type="number"
                   value={newRate.baseRateFactory}
-                  onChange={(e) => setNewRate({ ...newRate, baseRateFactory: parseInt(e.target.value, 10) || 0 })}
+                  onChange={(e) =>
+                    setNewRate({ ...newRate, baseRateFactory: parseInt(e.target.value, 10) || 0 })
+                  }
                   data-testid="input-factory-rate"
                 />
               </div>

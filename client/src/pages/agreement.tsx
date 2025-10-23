@@ -35,7 +35,10 @@ export default function Agreement() {
   });
 
   const updateAnnexureMutation = useMutation({
-    mutationFn: async (data: { includeAnnexureInteriors?: boolean; includeAnnexureFC?: boolean }) => {
+    mutationFn: async (data: {
+      includeAnnexureInteriors?: boolean;
+      includeAnnexureFC?: boolean;
+    }) => {
       await apiRequest("PATCH", `/api/quotations/${quotationId}`, data);
     },
     onSuccess: () => {
@@ -45,11 +48,11 @@ export default function Agreement() {
 
   const handleDownloadPack = async () => {
     if (!quotation) return;
-    
+
     // Check if required print roots exist
-    const interiorsRoot = document.getElementById('print-interiors-root');
-    const fcRoot = document.getElementById('print-fc-root');
-    
+    const interiorsRoot = document.getElementById("print-interiors-root");
+    const fcRoot = document.getElementById("print-fc-root");
+
     const missingRoots = [];
     if (quotation.includeAnnexureInteriors && !interiorsRoot) {
       missingRoots.push("Interiors");
@@ -57,7 +60,7 @@ export default function Agreement() {
     if (quotation.includeAnnexureFC && !fcRoot) {
       missingRoots.push("False Ceiling");
     }
-    
+
     if (missingRoots.length > 0) {
       toast({
         title: "Cannot Generate Agreement Pack",
@@ -66,7 +69,7 @@ export default function Agreement() {
       });
       return;
     }
-    
+
     setIsGenerating(true);
     toast({
       title: "Generating Agreement Pack...",
@@ -74,102 +77,102 @@ export default function Agreement() {
     });
 
     try {
-      console.log('[Agreement Pack] Starting PDF generation...');
+      console.log("[Agreement Pack] Starting PDF generation...");
       const pdfs: Uint8Array[] = [];
 
       // 1. Capture Agreement
-      console.log('[Agreement Pack] Capturing Agreement PDF...');
-      const agreementRoot = document.getElementById('print-agreement-root');
+      console.log("[Agreement Pack] Capturing Agreement PDF...");
+      const agreementRoot = document.getElementById("print-agreement-root");
       if (!agreementRoot) {
         throw new Error("Agreement content not found");
       }
-      
+
       const agreementPdf = await htmlToPdfBytes(agreementRoot);
-      console.log('[Agreement Pack] Agreement PDF captured, size:', agreementPdf.length);
+      console.log("[Agreement Pack] Agreement PDF captured, size:", agreementPdf.length);
       pdfs.push(agreementPdf);
 
       // 2. Capture Annexure A (Interiors) if included
       if (quotation.includeAnnexureInteriors) {
-        console.log('[Agreement Pack] Adding Annexure A (Interiors)...');
+        console.log("[Agreement Pack] Adding Annexure A (Interiors)...");
         // Create Annexure A title page
-        const annexureADiv = document.createElement('div');
-        annexureADiv.id = 'temp-annexure-a';
-        annexureADiv.style.cssText = 'position: absolute; left: -10000px;';
+        const annexureADiv = document.createElement("div");
+        annexureADiv.id = "temp-annexure-a";
+        annexureADiv.style.cssText = "position: absolute; left: -10000px;";
         document.body.appendChild(annexureADiv);
-        
+
         const rootA = createRoot(annexureADiv);
         rootA.render(
-          <AnnexureTitle 
-            letter="A" 
-            title="Interiors Quotation" 
+          <AnnexureTitle
+            letter="A"
+            title="Interiors Quotation"
             quoteId={quotation.quoteId}
             clientName={quotation.clientName}
-          />
+          />,
         );
-        
+
         // Wait for render
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         const annexureAPdf = await htmlToPdfBytes(annexureADiv);
         pdfs.push(annexureAPdf);
-        
+
         // Cleanup
         rootA.unmount();
         document.body.removeChild(annexureADiv);
 
         // Capture Interiors PDF
-        console.log('[Agreement Pack] Capturing Interiors PDF...');
-        const interiorsRoot = document.getElementById('print-interiors-root')!;
+        console.log("[Agreement Pack] Capturing Interiors PDF...");
+        const interiorsRoot = document.getElementById("print-interiors-root")!;
         const interiorsPdf = await htmlToPdfBytes(interiorsRoot);
-        console.log('[Agreement Pack] Interiors PDF captured, size:', interiorsPdf.length);
+        console.log("[Agreement Pack] Interiors PDF captured, size:", interiorsPdf.length);
         pdfs.push(interiorsPdf);
       }
 
       // 3. Capture Annexure B (False Ceiling) if included
       if (quotation.includeAnnexureFC) {
-        console.log('[Agreement Pack] Adding Annexure B (False Ceiling)...');
+        console.log("[Agreement Pack] Adding Annexure B (False Ceiling)...");
         // Create Annexure B title page
-        const annexureBDiv = document.createElement('div');
-        annexureBDiv.id = 'temp-annexure-b';
-        annexureBDiv.style.cssText = 'position: absolute; left: -10000px;';
+        const annexureBDiv = document.createElement("div");
+        annexureBDiv.id = "temp-annexure-b";
+        annexureBDiv.style.cssText = "position: absolute; left: -10000px;";
         document.body.appendChild(annexureBDiv);
-        
+
         const rootB = createRoot(annexureBDiv);
         rootB.render(
-          <AnnexureTitle 
-            letter="B" 
-            title="False Ceiling Quotation" 
+          <AnnexureTitle
+            letter="B"
+            title="False Ceiling Quotation"
             quoteId={quotation.quoteId}
             clientName={quotation.clientName}
-          />
+          />,
         );
-        
+
         // Wait for render
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         const annexureBPdf = await htmlToPdfBytes(annexureBDiv);
         pdfs.push(annexureBPdf);
-        
+
         // Cleanup
         rootB.unmount();
         document.body.removeChild(annexureBDiv);
 
         // Capture False Ceiling PDF
-        console.log('[Agreement Pack] Capturing False Ceiling PDF...');
-        const fcRoot = document.getElementById('print-fc-root')!;
+        console.log("[Agreement Pack] Capturing False Ceiling PDF...");
+        const fcRoot = document.getElementById("print-fc-root")!;
         const fcPdf = await htmlToPdfBytes(fcRoot);
-        console.log('[Agreement Pack] False Ceiling PDF captured, size:', fcPdf.length);
+        console.log("[Agreement Pack] False Ceiling PDF captured, size:", fcPdf.length);
         pdfs.push(fcPdf);
       }
 
       // 4. Merge all PDFs
-      console.log('[Agreement Pack] Merging', pdfs.length, 'PDFs...');
+      console.log("[Agreement Pack] Merging", pdfs.length, "PDFs...");
       const mergedPdf = await mergePdfBytes(pdfs);
-      console.log('[Agreement Pack] Merged PDF size:', mergedPdf.length);
+      console.log("[Agreement Pack] Merged PDF size:", mergedPdf.length);
 
       // 5. Download
       const filename = `TRECASA_AgreementPack_${quotation.quoteId}.pdf`;
-      console.log('[Agreement Pack] Downloading as:', filename);
+      console.log("[Agreement Pack] Downloading as:", filename);
       await downloadBytesAs(filename, mergedPdf);
-      console.log('[Agreement Pack] Download triggered successfully');
+      console.log("[Agreement Pack] Download triggered successfully");
 
       toast({
         title: "Agreement Pack Downloaded",
@@ -179,7 +182,10 @@ export default function Agreement() {
       console.error("[Agreement Pack] Error:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate Agreement Pack. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to generate Agreement Pack. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -205,8 +211,8 @@ export default function Agreement() {
         <div className="space-y-6">
           {/* Navigation */}
           <div className="print:hidden flex items-center justify-between">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => navigate(`/quotation/${quotationId}/estimate`)}
               data-testid="button-back-to-estimate"
             >
@@ -235,7 +241,9 @@ export default function Agreement() {
                 <Checkbox
                   id="include-interiors"
                   checked={quotation.includeAnnexureInteriors ?? true}
-                  onCheckedChange={(checked) => updateAnnexureMutation.mutate({ includeAnnexureInteriors: checked as boolean })}
+                  onCheckedChange={(checked) =>
+                    updateAnnexureMutation.mutate({ includeAnnexureInteriors: checked as boolean })
+                  }
                   data-testid="checkbox-include-annexure-interiors"
                 />
                 <label htmlFor="include-interiors" className="text-sm font-medium cursor-pointer">
@@ -246,7 +254,9 @@ export default function Agreement() {
                 <Checkbox
                   id="include-fc"
                   checked={quotation.includeAnnexureFC ?? true}
-                  onCheckedChange={(checked) => updateAnnexureMutation.mutate({ includeAnnexureFC: checked as boolean })}
+                  onCheckedChange={(checked) =>
+                    updateAnnexureMutation.mutate({ includeAnnexureFC: checked as boolean })
+                  }
                   data-testid="checkbox-include-annexure-fc"
                 />
                 <label htmlFor="include-fc" className="text-sm font-medium cursor-pointer">
@@ -259,36 +269,57 @@ export default function Agreement() {
           {/* Agreement Document */}
           <div id="print-agreement-root" className="bg-white text-black" data-pdf-ready="true">
             {/* Universal Header - Official Trecasa Style */}
-            <div className="bg-[#154734] text-white rounded-t-lg print:rounded-none" style={{minHeight: '110px', padding: '16px 24px', fontFamily: "'Montserrat', Arial, sans-serif", lineHeight: '1.3'}}>
+            <div
+              className="bg-[#154734] text-white rounded-t-lg print:rounded-none"
+              style={{
+                minHeight: "110px",
+                padding: "16px 24px",
+                fontFamily: "'Montserrat', Arial, sans-serif",
+                lineHeight: "1.3",
+              }}
+            >
               <div className="grid grid-cols-[70%_30%] gap-4">
                 {/* Left Column */}
                 <div>
                   {/* Company Name */}
-                  <h1 className="text-[15pt] font-semibold uppercase tracking-wide mb-1" style={{letterSpacing: '0.4px'}}>
+                  <h1
+                    className="text-[15pt] font-semibold uppercase tracking-wide mb-1"
+                    style={{ letterSpacing: "0.4px" }}
+                  >
                     TRECASA DESIGN STUDIO
                   </h1>
-                  
+
                   {/* Company Address */}
                   <p className="text-[8.5pt] mb-2">
-                    H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana - 500049
+                    H.No. 7-31, Shop No. C2, Phase-II, JPN Nagar, Miyapur, Hyderabad, Telangana -
+                    500049
                   </p>
-                  
+
                   {/* Client and Project Details */}
                   <div className="text-[9pt] mt-2 space-y-0.5">
                     <div>
-                      <span className="font-medium">Client Name:</span> <span>{quotation.clientName || "N/A"}</span>
+                      <span className="font-medium">Client Name:</span>{" "}
+                      <span>{quotation.clientName || "N/A"}</span>
                     </div>
                     <div>
-                      <span className="font-medium">Project Address:</span> <span>{quotation.projectAddress || "N/A"}</span>
+                      <span className="font-medium">Project Address:</span>{" "}
+                      <span>{quotation.projectAddress || "N/A"}</span>
                     </div>
                   </div>
-                  
+
                   {/* Greeting Line */}
-                  <p className="text-[9.5pt] italic mt-1" style={{fontFamily: "'Playfair Display', Georgia, serif", color: '#EAEAEA', lineHeight: '1.2'}}>
+                  <p
+                    className="text-[9.5pt] italic mt-1"
+                    style={{
+                      fontFamily: "'Playfair Display', Georgia, serif",
+                      color: "#EAEAEA",
+                      lineHeight: "1.2",
+                    }}
+                  >
                     Hi {quotation.clientName || "Valued Client"} & Family
                   </p>
                 </div>
-                
+
                 {/* Right Column */}
                 <div className="text-right">
                   {/* Contact Details */}
@@ -296,14 +327,16 @@ export default function Agreement() {
                     <p className="text-[8.5pt] mb-0.5">contact@trecasainfra.com</p>
                     <p className="text-[8.5pt] font-semibold">+91 9059784422</p>
                   </div>
-                  
+
                   {/* Issue Date and Quote ID */}
                   <div className="text-[9pt] font-medium mt-2 space-y-1">
                     <div>
-                      <span style={{opacity: 0.8}}>Issue Date:</span> <span className="ml-1">{currentDate}</span>
+                      <span style={{ opacity: 0.8 }}>Issue Date:</span>{" "}
+                      <span className="ml-1">{currentDate}</span>
                     </div>
                     <div>
-                      <span style={{opacity: 0.8}}>Quote ID:</span> <span className="ml-1">{quotation.quoteId}</span>
+                      <span style={{ opacity: 0.8 }}>Quote ID:</span>{" "}
+                      <span className="ml-1">{quotation.quoteId}</span>
                     </div>
                   </div>
                 </div>
@@ -319,12 +352,18 @@ export default function Agreement() {
 
               {/* Agreement Content */}
               <div className="space-y-6 text-sm">
-                <p>This Agreement is entered into on <strong>{currentDate}</strong> between:</p>
+                <p>
+                  This Agreement is entered into on <strong>{currentDate}</strong> between:
+                </p>
 
                 <div className="ml-4 space-y-2">
-                  <p><strong>TRECASA DESIGN STUDIO</strong> (hereinafter referred to as "Service Provider")</p>
+                  <p>
+                    <strong>TRECASA DESIGN STUDIO</strong> (hereinafter referred to as "Service
+                    Provider")
+                  </p>
                   <p className="text-xs text-gray-600">
-                    Address: [Service Provider Address]<br />
+                    Address: [Service Provider Address]
+                    <br />
                     Contact: www.trecasadesignstudio.com | @trecasa.designstudio
                   </p>
                 </div>
@@ -332,9 +371,12 @@ export default function Agreement() {
                 <p>AND</p>
 
                 <div className="ml-4 space-y-2">
-                  <p><strong>{quotation.clientName}</strong> (hereinafter referred to as "Client")</p>
+                  <p>
+                    <strong>{quotation.clientName}</strong> (hereinafter referred to as "Client")
+                  </p>
                   <p className="text-xs text-gray-600">
-                    Project: {quotation.projectName}<br />
+                    Project: {quotation.projectName}
+                    <br />
                     Address: {quotation.projectAddress || "N/A"}
                   </p>
                 </div>
@@ -342,7 +384,8 @@ export default function Agreement() {
                 <div className="space-y-4">
                   <h3 className="font-semibold text-[#0E2F1B] text-base">1. SCOPE OF WORK</h3>
                   <p className="ml-4">
-                    The Service Provider agrees to provide interior design and execution services as detailed in the attached quotations:
+                    The Service Provider agrees to provide interior design and execution services as
+                    detailed in the attached quotations:
                   </p>
                   <ul className="ml-8 list-disc space-y-1">
                     {quotation.includeAnnexureInteriors && (
@@ -357,7 +400,8 @@ export default function Agreement() {
                 <div className="space-y-4">
                   <h3 className="font-semibold text-[#0E2F1B] text-base">2. PROJECT TIMELINE</h3>
                   <p className="ml-4">
-                    The project shall commence upon receipt of the advance payment and completion shall be as mutually agreed upon by both parties in writing.
+                    The project shall commence upon receipt of the advance payment and completion
+                    shall be as mutually agreed upon by both parties in writing.
                   </p>
                 </div>
 
@@ -370,7 +414,11 @@ export default function Agreement() {
                     <ul className="ml-8 list-disc space-y-1">
                       {agreementData.paymentSchedule.map((payment: any, idx: number) => (
                         <li key={idx}>
-                          {payment.label} — ₹{(payment.amount / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {payment.label} — ₹
+                          {(payment.amount / 100).toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </li>
                       ))}
                     </ul>
@@ -388,85 +436,106 @@ export default function Agreement() {
                 <div className="space-y-4">
                   <h3 className="font-semibold text-[#0E2F1B] text-base">4. WARRANTY</h3>
                   <p className="ml-4">
-                    The Service Provider provides a warranty period of 12 months from the date of project handover against manufacturing defects. Normal wear and tear is not covered under warranty.
+                    The Service Provider provides a warranty period of 12 months from the date of
+                    project handover against manufacturing defects. Normal wear and tear is not
+                    covered under warranty.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <h3 className="font-semibold text-[#0E2F1B] text-base">5. MODIFICATIONS</h3>
                   <p className="ml-4">
-                    Any modifications to the agreed scope of work must be communicated in writing and may result in additional charges and timeline extensions.
+                    Any modifications to the agreed scope of work must be communicated in writing
+                    and may result in additional charges and timeline extensions.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <h3 className="font-semibold text-[#0E2F1B] text-base">6. TERMINATION</h3>
                   <p className="ml-4">
-                    Either party may terminate this agreement with 15 days written notice. In case of termination by the Client, payments made are non-refundable and work completed till date shall be billed proportionately.
+                    Either party may terminate this agreement with 15 days written notice. In case
+                    of termination by the Client, payments made are non-refundable and work
+                    completed till date shall be billed proportionately.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <h3 className="font-semibold text-[#0E2F1B] text-base">7. GOVERNING LAW</h3>
                   <p className="ml-4">
-                    This Agreement shall be governed by and construed in accordance with the laws of India. Any disputes arising shall be subject to the jurisdiction of courts in [City].
+                    This Agreement shall be governed by and construed in accordance with the laws of
+                    India. Any disputes arising shall be subject to the jurisdiction of courts in
+                    [City].
                   </p>
                 </div>
 
                 {/* Materials & Brands */}
-                {agreementData?.materials && (agreementData.materials.coreMaterials.length > 0 || agreementData.materials.finishes.length > 0 || agreementData.materials.hardware.length > 0) && (
-                  <div className="space-y-4 mt-8 p-4 bg-gray-50 rounded">
-                    <h3 className="font-semibold text-[#0E2F1B] text-base">MATERIALS & BRANDS</h3>
-                    {agreementData.materials.coreMaterials.length > 0 && (
-                      <div className="ml-4">
-                        <p className="font-medium text-sm mb-1">Core Materials:</p>
-                        <ul className="ml-6 list-disc space-y-0.5 text-xs">
-                          {agreementData.materials.coreMaterials.map((material: string, idx: number) => (
-                            <li key={idx}>{material}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {agreementData.materials.finishes.length > 0 && (
-                      <div className="ml-4">
-                        <p className="font-medium text-sm mb-1">Finishes:</p>
-                        <ul className="ml-6 list-disc space-y-0.5 text-xs">
-                          {agreementData.materials.finishes.map((finish: string, idx: number) => (
-                            <li key={idx}>{finish}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {agreementData.materials.hardware.length > 0 && (
-                      <div className="ml-4">
-                        <p className="font-medium text-sm mb-1">Hardware:</p>
-                        <ul className="ml-6 list-disc space-y-0.5 text-xs">
-                          {agreementData.materials.hardware.map((hw: string, idx: number) => (
-                            <li key={idx}>{hw}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
+                {agreementData?.materials &&
+                  (agreementData.materials.coreMaterials.length > 0 ||
+                    agreementData.materials.finishes.length > 0 ||
+                    agreementData.materials.hardware.length > 0) && (
+                    <div className="space-y-4 mt-8 p-4 bg-gray-50 rounded">
+                      <h3 className="font-semibold text-[#0E2F1B] text-base">MATERIALS & BRANDS</h3>
+                      {agreementData.materials.coreMaterials.length > 0 && (
+                        <div className="ml-4">
+                          <p className="font-medium text-sm mb-1">Core Materials:</p>
+                          <ul className="ml-6 list-disc space-y-0.5 text-xs">
+                            {agreementData.materials.coreMaterials.map(
+                              (material: string, idx: number) => (
+                                <li key={idx}>{material}</li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                      {agreementData.materials.finishes.length > 0 && (
+                        <div className="ml-4">
+                          <p className="font-medium text-sm mb-1">Finishes:</p>
+                          <ul className="ml-6 list-disc space-y-0.5 text-xs">
+                            {agreementData.materials.finishes.map((finish: string, idx: number) => (
+                              <li key={idx}>{finish}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {agreementData.materials.hardware.length > 0 && (
+                        <div className="ml-4">
+                          <p className="font-medium text-sm mb-1">Hardware:</p>
+                          <ul className="ml-6 list-disc space-y-0.5 text-xs">
+                            {agreementData.materials.hardware.map((hw: string, idx: number) => (
+                              <li key={idx}>{hw}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                 {/* Signatures */}
                 <div className="mt-12 pt-8 border-t-2 border-gray-300">
-                  <div className="grid grid-cols-2 gap-8 break-inside-avoid" data-testid="signature-block-agreement">
+                  <div
+                    className="grid grid-cols-2 gap-8 break-inside-avoid"
+                    data-testid="signature-block-agreement"
+                  >
                     {/* Client Signature */}
                     <div>
-                      <p className="text-xs font-semibold uppercase text-gray-600 mb-4">Client Acceptance</p>
+                      <p className="text-xs font-semibold uppercase text-gray-600 mb-4">
+                        Client Acceptance
+                      </p>
                       <div className="space-y-2">
                         <div>
                           <p className="text-xs text-gray-500">Name:</p>
                           <p className="text-sm">
-                            {quotation.signoff?.client?.name || quotation.clientName || "_____________"}
+                            {quotation.signoff?.client?.name ||
+                              quotation.clientName ||
+                              "_____________"}
                           </p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Signature:</p>
                           {quotation.signoff?.client?.signature ? (
-                            <p className="text-lg font-serif italic text-gray-800">{quotation.signoff.client.signature}</p>
+                            <p className="text-lg font-serif italic text-gray-800">
+                              {quotation.signoff.client.signature}
+                            </p>
                           ) : (
                             <p className="text-sm text-gray-400">_____________</p>
                           )}
@@ -474,7 +543,9 @@ export default function Agreement() {
                         <div>
                           <p className="text-xs text-gray-500">Date:</p>
                           <p className="text-sm">
-                            {quotation.signoff?.client?.signedAt ? formatDisplayDate(new Date(quotation.signoff.client.signedAt)) : "_____________"}
+                            {quotation.signoff?.client?.signedAt
+                              ? formatDisplayDate(new Date(quotation.signoff.client.signedAt))
+                              : "_____________"}
                           </p>
                         </div>
                       </div>
@@ -482,20 +553,30 @@ export default function Agreement() {
 
                     {/* TRECASA Signature */}
                     <div>
-                      <p className="text-xs font-semibold uppercase text-gray-600 mb-4">Trecasa Design Studio – Authorized Signatory</p>
+                      <p className="text-xs font-semibold uppercase text-gray-600 mb-4">
+                        Trecasa Design Studio – Authorized Signatory
+                      </p>
                       <div className="space-y-2">
                         <div>
                           <p className="text-xs text-gray-500">Title:</p>
-                          <p className="text-sm">{quotation.signoff?.trecasa?.title || "Trecasa Design Studio – Authorized Signatory"}</p>
+                          <p className="text-sm">
+                            {quotation.signoff?.trecasa?.title ||
+                              "Trecasa Design Studio – Authorized Signatory"}
+                          </p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Name:</p>
-                          <p className="text-sm">{quotation.signoff?.trecasa?.name || "Trecasa Design Studio – Authorized Signatory"}</p>
+                          <p className="text-sm">
+                            {quotation.signoff?.trecasa?.name ||
+                              "Trecasa Design Studio – Authorized Signatory"}
+                          </p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Signature:</p>
                           {quotation.signoff?.trecasa?.signature ? (
-                            <p className="text-lg font-serif italic text-gray-800">{quotation.signoff.trecasa.signature}</p>
+                            <p className="text-lg font-serif italic text-gray-800">
+                              {quotation.signoff.trecasa.signature}
+                            </p>
                           ) : (
                             <p className="text-sm text-gray-400">_____________</p>
                           )}
@@ -503,7 +584,9 @@ export default function Agreement() {
                         <div>
                           <p className="text-xs text-gray-500">Date:</p>
                           <p className="text-sm">
-                            {quotation.signoff?.trecasa?.signedAt ? formatDisplayDate(new Date(quotation.signoff.trecasa.signedAt)) : "_____________"}
+                            {quotation.signoff?.trecasa?.signedAt
+                              ? formatDisplayDate(new Date(quotation.signoff.trecasa.signedAt))
+                              : "_____________"}
                           </p>
                         </div>
                       </div>
@@ -513,9 +596,21 @@ export default function Agreement() {
               </div>
 
               {/* Universal Footer */}
-              <div className="bg-white border-t border-[#C7A948] p-4 flex items-center justify-center rounded-b-lg print:rounded-none mt-8" style={{height: '40px', padding: '10px 0', fontFamily: "'Montserrat', Arial, sans-serif"}}>
+              <div
+                className="bg-white border-t border-[#C7A948] p-4 flex items-center justify-center rounded-b-lg print:rounded-none mt-8"
+                style={{
+                  height: "40px",
+                  padding: "10px 0",
+                  fontFamily: "'Montserrat', Arial, sans-serif",
+                }}
+              >
                 <div className="text-center text-[8pt] text-[#666666]">
-                  © 2025 TRECASA DESIGN STUDIO <span className="mx-2">|</span> www.trecasadesignstudio.com <span className="mx-2">|</span> @trecasa.designstudio <span className="inline-block w-[5px] h-[5px] rounded-full bg-red-600 ml-2" style={{verticalAlign: 'middle'}}></span>
+                  © 2025 TRECASA DESIGN STUDIO <span className="mx-2">|</span>{" "}
+                  www.trecasadesignstudio.com <span className="mx-2">|</span> @trecasa.designstudio{" "}
+                  <span
+                    className="inline-block w-[5px] h-[5px] rounded-full bg-red-600 ml-2"
+                    style={{ verticalAlign: "middle" }}
+                  ></span>
                 </div>
               </div>
             </div>

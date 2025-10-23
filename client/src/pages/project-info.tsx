@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ArrowLeft, ArrowRight, Save, FileText } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation } from "@shared/schema";
@@ -29,24 +35,29 @@ import { AppFooter } from "@/components/app-footer";
 import { TemplateModal } from "@/components/template-modal";
 import { ApplyTemplateModal } from "@/components/apply-template-modal";
 
-const projectInfoSchema = z.object({
-  projectName: z.string().min(1, "Required"),
-  projectType: z.string().min(1, "Required"),
-  projectTypeOther: z.string().optional(),
-  buildType: z.enum(["handmade", "factory"]),
-  clientName: z.string().min(1, "Required"),
-  clientEmail: z.string().email("Invalid email").optional().or(z.literal("")),
-  clientPhone: z.string().min(1, "Required"),
-  projectAddress: z.string().min(1, "Required"),
-}).refine((data) => {
-  if (data.projectType === "Other") {
-    return data.projectTypeOther && data.projectTypeOther.trim().length > 0;
-  }
-  return true;
-}, {
-  message: "Required",
-  path: ["projectTypeOther"],
-});
+const projectInfoSchema = z
+  .object({
+    projectName: z.string().min(1, "Required"),
+    projectType: z.string().min(1, "Required"),
+    projectTypeOther: z.string().optional(),
+    buildType: z.enum(["handmade", "factory"]),
+    clientName: z.string().min(1, "Required"),
+    clientEmail: z.string().email("Invalid email").optional().or(z.literal("")),
+    clientPhone: z.string().min(1, "Required"),
+    projectAddress: z.string().min(1, "Required"),
+  })
+  .refine(
+    (data) => {
+      if (data.projectType === "Other") {
+        return data.projectTypeOther && data.projectTypeOther.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Required",
+      path: ["projectTypeOther"],
+    },
+  );
 
 type ProjectInfoForm = z.infer<typeof projectInfoSchema>;
 
@@ -96,13 +107,22 @@ export default function ProjectInfo() {
   // Update form when quotation loads
   useEffect(() => {
     if (quotation) {
-      const standardCategories = ["1 BHK", "2 BHK", "3 BHK", "4 BHK", "Duplex", "Triplex", "Villa", "Commercial"];
+      const standardCategories = [
+        "1 BHK",
+        "2 BHK",
+        "3 BHK",
+        "4 BHK",
+        "Duplex",
+        "Triplex",
+        "Villa",
+        "Commercial",
+      ];
       const projectType = quotation.projectType || "";
       const isStandardCategory = standardCategories.includes(projectType);
-      
+
       form.reset({
         projectName: quotation.projectName,
-        projectType: isStandardCategory ? projectType : (projectType ? "Other" : ""),
+        projectType: isStandardCategory ? projectType : projectType ? "Other" : "",
         projectTypeOther: isStandardCategory ? "" : projectType,
         buildType: (quotation.buildType as "handmade" | "factory") || "handmade",
         clientName: quotation.clientName,
@@ -115,7 +135,8 @@ export default function ProjectInfo() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: ProjectInfoForm) => {
-      const finalProjectType = data.projectType === "Other" ? data.projectTypeOther : data.projectType;
+      const finalProjectType =
+        data.projectType === "Other" ? data.projectTypeOther : data.projectType;
       const { projectTypeOther, ...quotationData } = data;
       await apiRequest("PATCH", `/api/quotations/${quotationId}`, {
         ...quotationData,
@@ -159,9 +180,19 @@ export default function ProjectInfo() {
       updateMutation.mutate(data, {
         onSuccess: () => {
           // Show template modal if category is set (and not "Other")
-          const finalProjectType = data.projectType === "Other" ? data.projectTypeOther : data.projectType;
-          const standardCategories = ["1 BHK", "2 BHK", "3 BHK", "4 BHK", "Duplex", "Triplex", "Villa", "Commercial"];
-          
+          const finalProjectType =
+            data.projectType === "Other" ? data.projectTypeOther : data.projectType;
+          const standardCategories = [
+            "1 BHK",
+            "2 BHK",
+            "3 BHK",
+            "4 BHK",
+            "Duplex",
+            "Triplex",
+            "Villa",
+            "Commercial",
+          ];
+
           if (finalProjectType && standardCategories.includes(finalProjectType)) {
             setShowTemplateModal(true);
           } else {
@@ -208,7 +239,12 @@ export default function ProjectInfo() {
       <main className="container-trecasa py-6 lg:py-8 flex-1">
         <div>
           {/* Back Button */}
-          <Button variant="ghost" onClick={() => navigate("/quotes")} className="mb-6" data-testid="button-back">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/quotes")}
+            className="mb-6"
+            data-testid="button-back"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Quotes
           </Button>
@@ -230,7 +266,11 @@ export default function ProjectInfo() {
                         <FormItem>
                           <FormLabel>Project Name *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Modern Villa Interior" {...field} data-testid="input-project-name" />
+                            <Input
+                              placeholder="Modern Villa Interior"
+                              {...field}
+                              data-testid="input-project-name"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -296,7 +336,11 @@ export default function ProjectInfo() {
                           <FormItem>
                             <FormLabel>Specify Category *</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter project category" {...field} data-testid="input-project-category-other" />
+                              <Input
+                                placeholder="Enter project category"
+                                {...field}
+                                data-testid="input-project-category-other"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -311,7 +355,11 @@ export default function ProjectInfo() {
                         <FormItem>
                           <FormLabel>Client Name *</FormLabel>
                           <FormControl>
-                            <Input placeholder="John Doe" {...field} data-testid="input-client-name" />
+                            <Input
+                              placeholder="John Doe"
+                              {...field}
+                              data-testid="input-client-name"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -325,7 +373,12 @@ export default function ProjectInfo() {
                         <FormItem>
                           <FormLabel>Client Email</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="john@example.com" {...field} data-testid="input-client-email" />
+                            <Input
+                              type="email"
+                              placeholder="john@example.com"
+                              {...field}
+                              data-testid="input-client-email"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -339,7 +392,11 @@ export default function ProjectInfo() {
                         <FormItem>
                           <FormLabel>Client Phone *</FormLabel>
                           <FormControl>
-                            <Input placeholder="+1 (555) 000-0000" {...field} data-testid="input-client-phone" />
+                            <Input
+                              placeholder="+1 (555) 000-0000"
+                              {...field}
+                              data-testid="input-client-phone"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -354,11 +411,11 @@ export default function ProjectInfo() {
                       <FormItem>
                         <FormLabel>Project Address *</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="123 Main Street, City, State, ZIP" 
-                            className="resize-none" 
+                          <Textarea
+                            placeholder="123 Main Street, City, State, ZIP"
+                            className="resize-none"
                             rows={3}
-                            {...field} 
+                            {...field}
                             data-testid="input-project-address"
                           />
                         </FormControl>
@@ -368,17 +425,17 @@ export default function ProjectInfo() {
                   />
 
                   <div className="flex gap-3 pt-4">
-                    <Button 
-                      type="submit" 
-                      variant="outline" 
+                    <Button
+                      type="submit"
+                      variant="outline"
                       disabled={updateMutation.isPending}
                       data-testid="button-save"
                     >
                       <Save className="mr-2 h-4 w-4" />
                       Save
                     </Button>
-                    <Button 
-                      type="button" 
+                    <Button
+                      type="button"
                       onClick={handleContinue}
                       disabled={updateMutation.isPending || !form.formState.isValid}
                       data-testid="button-continue"
@@ -415,7 +472,7 @@ export default function ProjectInfo() {
       </main>
 
       <AppFooter />
-      
+
       <TemplateModal
         open={showTemplateModal}
         onOpenChange={setShowTemplateModal}

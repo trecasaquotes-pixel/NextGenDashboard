@@ -13,7 +13,7 @@ interface QuotationHeaderProps {
 
 export function QuotationHeader({ quotationId, currentStep }: QuotationHeaderProps) {
   const [showVersionHistory, setShowVersionHistory] = useState(false);
-  
+
   const { data: quotation } = useQuery<Quotation>({
     queryKey: [`/api/quotations/${quotationId}`],
     enabled: !!quotationId,
@@ -58,10 +58,10 @@ export function QuotationHeader({ quotationId, currentStep }: QuotationHeaderPro
                 {index > 0 && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                 {index <= currentStepIndex ? (
                   <Link href={step.href}>
-                    <span 
+                    <span
                       className={`text-sm ${
-                        step.key === currentStep 
-                          ? "font-semibold text-primary" 
+                        step.key === currentStep
+                          ? "font-semibold text-primary"
                           : "text-foreground hover-elevate px-2 py-1 rounded-md transition-colors"
                       }`}
                       data-testid={`nav-${step.key}`}
@@ -79,7 +79,7 @@ export function QuotationHeader({ quotationId, currentStep }: QuotationHeaderPro
           </nav>
         </div>
       </header>
-      
+
       <VersionHistoryDialog
         quotationId={quotationId}
         open={showVersionHistory}

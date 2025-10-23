@@ -49,15 +49,15 @@ const changeTypeLabels: Record<string, string> = {
   status_change: "Status Changed",
 };
 
-export function VersionHistoryDialog({ 
-  quotationId, 
-  open, 
-  onOpenChange 
+export function VersionHistoryDialog({
+  quotationId,
+  open,
+  onOpenChange,
 }: VersionHistoryDialogProps) {
   const [openVersionId, setOpenVersionId] = useState<string | null>(null);
-  
+
   const { data: versions, isLoading } = useQuery<QuotationVersion[]>({
-    queryKey: ['/api/quotations', quotationId, 'versions'],
+    queryKey: ["/api/quotations", quotationId, "versions"],
     enabled: open && !!quotationId,
   });
 
@@ -69,9 +69,7 @@ export function VersionHistoryDialog({
             <Clock className="w-5 h-5" />
             Version History
           </DialogTitle>
-          <DialogDescription>
-            Track all changes made to this quotation over time
-          </DialogDescription>
+          <DialogDescription>Track all changes made to this quotation over time</DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="flex-1 pr-4 max-h-[60vh]">
@@ -91,7 +89,7 @@ export function VersionHistoryDialog({
               {versions.map((version, index) => {
                 const isOpen = openVersionId === version.id;
                 const snapshot = version.snapshot;
-                
+
                 return (
                   <Collapsible
                     key={version.id}
@@ -105,14 +103,17 @@ export function VersionHistoryDialog({
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
-                            <Badge 
-                              variant="outline" 
+                            <Badge
+                              variant="outline"
                               className={changeTypeColors[version.changeType] || ""}
                               data-testid={`badge-change-type-${version.versionNumber}`}
                             >
                               {changeTypeLabels[version.changeType] || version.changeType}
                             </Badge>
-                            <span className="text-sm font-medium" data-testid={`text-version-${version.versionNumber}`}>
+                            <span
+                              className="text-sm font-medium"
+                              data-testid={`text-version-${version.versionNumber}`}
+                            >
                               Version {version.versionNumber}
                             </span>
                             {index === 0 && (
@@ -121,16 +122,22 @@ export function VersionHistoryDialog({
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm mb-2" data-testid={`text-summary-${version.versionNumber}`}>
+                          <p
+                            className="text-sm mb-2"
+                            data-testid={`text-summary-${version.versionNumber}`}
+                          >
                             {version.changeSummary}
                           </p>
-                          <p className="text-xs text-muted-foreground" data-testid={`text-timestamp-${version.versionNumber}`}>
+                          <p
+                            className="text-xs text-muted-foreground"
+                            data-testid={`text-timestamp-${version.versionNumber}`}
+                          >
                             {format(new Date(version.createdAt), "PPp")}
                           </p>
                         </div>
                         <CollapsibleTrigger asChild>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
                             data-testid={`button-toggle-details-${version.versionNumber}`}
                           >
@@ -144,23 +151,30 @@ export function VersionHistoryDialog({
                         </CollapsibleTrigger>
                       </div>
 
-                      <CollapsibleContent className="mt-4 pt-4 border-t" data-testid={`details-${version.versionNumber}`}>
+                      <CollapsibleContent
+                        className="mt-4 pt-4 border-t"
+                        data-testid={`details-${version.versionNumber}`}
+                      >
                         <div className="space-y-3 text-sm">
                           {/* Quotation Info */}
                           <div className="bg-muted/50 rounded p-3">
                             <h4 className="font-semibold mb-2">Project Info</h4>
                             <div className="grid grid-cols-2 gap-2 text-xs">
                               <div>
-                                <span className="text-muted-foreground">Client:</span> {snapshot?.quotation?.clientName}
+                                <span className="text-muted-foreground">Client:</span>{" "}
+                                {snapshot?.quotation?.clientName}
                               </div>
                               <div>
-                                <span className="text-muted-foreground">Project:</span> {snapshot?.quotation?.projectName}
+                                <span className="text-muted-foreground">Project:</span>{" "}
+                                {snapshot?.quotation?.projectName}
                               </div>
                               <div>
-                                <span className="text-muted-foreground">Build Type:</span> {snapshot?.quotation?.buildType}
+                                <span className="text-muted-foreground">Build Type:</span>{" "}
+                                {snapshot?.quotation?.buildType}
                               </div>
                               <div>
-                                <span className="text-muted-foreground">Status:</span> {snapshot?.quotation?.status}
+                                <span className="text-muted-foreground">Status:</span>{" "}
+                                {snapshot?.quotation?.status}
                               </div>
                             </div>
                           </div>
@@ -168,13 +182,24 @@ export function VersionHistoryDialog({
                           {/* Interior Items */}
                           {snapshot?.interiorItems && snapshot.interiorItems.length > 0 && (
                             <div className="bg-muted/50 rounded p-3">
-                              <h4 className="font-semibold mb-2">Interior Items ({snapshot.interiorItems.length})</h4>
+                              <h4 className="font-semibold mb-2">
+                                Interior Items ({snapshot.interiorItems.length})
+                              </h4>
                               <div className="space-y-1 text-xs max-h-40 overflow-y-auto">
                                 {snapshot.interiorItems.map((item: any, idx: number) => (
-                                  <div key={idx} className="flex justify-between py-1 border-b border-border/50 last:border-0">
-                                    <span className="flex-1">{item.description || 'Unnamed item'}</span>
-                                    <span className="text-muted-foreground ml-2">{item.sqft || item.quantity || '—'} {item.calc}</span>
-                                    <span className="font-mono ml-2">{formatINR(item.totalPrice || 0)}</span>
+                                  <div
+                                    key={idx}
+                                    className="flex justify-between py-1 border-b border-border/50 last:border-0"
+                                  >
+                                    <span className="flex-1">
+                                      {item.description || "Unnamed item"}
+                                    </span>
+                                    <span className="text-muted-foreground ml-2">
+                                      {item.sqft || item.quantity || "—"} {item.calc}
+                                    </span>
+                                    <span className="font-mono ml-2">
+                                      {formatINR(item.totalPrice || 0)}
+                                    </span>
                                   </div>
                                 ))}
                               </div>
@@ -184,13 +209,24 @@ export function VersionHistoryDialog({
                           {/* False Ceiling Items */}
                           {snapshot?.falseCeilingItems && snapshot.falseCeilingItems.length > 0 && (
                             <div className="bg-muted/50 rounded p-3">
-                              <h4 className="font-semibold mb-2">False Ceiling Items ({snapshot.falseCeilingItems.length})</h4>
+                              <h4 className="font-semibold mb-2">
+                                False Ceiling Items ({snapshot.falseCeilingItems.length})
+                              </h4>
                               <div className="space-y-1 text-xs max-h-40 overflow-y-auto">
                                 {snapshot.falseCeilingItems.map((item: any, idx: number) => (
-                                  <div key={idx} className="flex justify-between py-1 border-b border-border/50 last:border-0">
-                                    <span className="flex-1">{item.description || 'Unnamed item'}</span>
-                                    <span className="text-muted-foreground ml-2">{item.area} sqft</span>
-                                    <span className="font-mono ml-2">{formatINR(item.totalPrice || 0)}</span>
+                                  <div
+                                    key={idx}
+                                    className="flex justify-between py-1 border-b border-border/50 last:border-0"
+                                  >
+                                    <span className="flex-1">
+                                      {item.description || "Unnamed item"}
+                                    </span>
+                                    <span className="text-muted-foreground ml-2">
+                                      {item.area} sqft
+                                    </span>
+                                    <span className="font-mono ml-2">
+                                      {formatINR(item.totalPrice || 0)}
+                                    </span>
                                   </div>
                                 ))}
                               </div>
@@ -200,12 +236,21 @@ export function VersionHistoryDialog({
                           {/* Other Items */}
                           {snapshot?.otherItems && snapshot.otherItems.length > 0 && (
                             <div className="bg-muted/50 rounded p-3">
-                              <h4 className="font-semibold mb-2">Other Items ({snapshot.otherItems.length})</h4>
+                              <h4 className="font-semibold mb-2">
+                                Other Items ({snapshot.otherItems.length})
+                              </h4>
                               <div className="space-y-1 text-xs max-h-40 overflow-y-auto">
                                 {snapshot.otherItems.map((item: any, idx: number) => (
-                                  <div key={idx} className="flex justify-between py-1 border-b border-border/50 last:border-0">
-                                    <span className="flex-1">{item.description || 'Unnamed item'}</span>
-                                    <span className="font-mono ml-2">{formatINR(item.totalPrice || 0)}</span>
+                                  <div
+                                    key={idx}
+                                    className="flex justify-between py-1 border-b border-border/50 last:border-0"
+                                  >
+                                    <span className="flex-1">
+                                      {item.description || "Unnamed item"}
+                                    </span>
+                                    <span className="font-mono ml-2">
+                                      {formatINR(item.totalPrice || 0)}
+                                    </span>
                                   </div>
                                 ))}
                               </div>
@@ -218,10 +263,12 @@ export function VersionHistoryDialog({
                               <h4 className="font-semibold mb-2">Financial Summary</h4>
                               <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                                 <div>
-                                  <span className="text-muted-foreground">Subtotal:</span> {formatINR(snapshot.totals.beforeDiscountTotal || 0)}
+                                  <span className="text-muted-foreground">Subtotal:</span>{" "}
+                                  {formatINR(snapshot.totals.beforeDiscountTotal || 0)}
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Final Total:</span> {formatINR(snapshot.totals.grandTotal || 0)}
+                                  <span className="text-muted-foreground">Final Total:</span>{" "}
+                                  {formatINR(snapshot.totals.grandTotal || 0)}
                                 </div>
                               </div>
                             </div>
@@ -237,8 +284,8 @@ export function VersionHistoryDialog({
         </ScrollArea>
 
         <div className="flex justify-end pt-4 border-t">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => onOpenChange(false)}
             data-testid="button-close-history"
           >

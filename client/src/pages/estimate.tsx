@@ -6,8 +6,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2, Download, Save, Share2, FileEdit, Briefcase, TrendingUp, FileText } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Percent,
+  IndianRupee,
+  CheckCircle2,
+  Download,
+  Save,
+  Share2,
+  FileEdit,
+  Briefcase,
+  TrendingUp,
+  FileText,
+} from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
@@ -35,7 +54,7 @@ export default function Estimate() {
 
   // Scroll to top when page loads
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
   useEffect(() => {
@@ -96,7 +115,13 @@ export default function Estimate() {
 
   // Update discount mutation
   const updateDiscount = useMutation({
-    mutationFn: async ({ discountType, discountValue }: { discountType: string; discountValue: string }) => {
+    mutationFn: async ({
+      discountType,
+      discountValue,
+    }: {
+      discountType: string;
+      discountValue: string;
+    }) => {
       await apiRequest("PATCH", `/api/quotations/${quotationId}`, { discountType, discountValue });
     },
     onSuccess: () => {
@@ -135,27 +160,27 @@ export default function Estimate() {
   const exportZip = useMutation({
     mutationFn: async () => {
       const response = await fetch(`/api/quotations/${quotationId}/export-zip`, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to export ZIP');
+        throw new Error(error.message || "Failed to export ZIP");
       }
-      
+
       return response.blob();
     },
     onSuccess: (blob) => {
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `Trecasa_Quote_${quotation?.quoteId}_${new Date().toISOString().split('T')[0]}.zip`;
+      a.download = `Trecasa_Quote_${quotation?.quoteId}_${new Date().toISOString().split("T")[0]}.zip`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
       toast({
         title: "Success",
         description: "Quote exported successfully",
@@ -201,27 +226,35 @@ export default function Estimate() {
   const grandSubtotal = safeN(quotation?.totals?.grandSubtotal);
 
   // Use server-calculated totals if available, otherwise calculate client-side
-  const discountAmount = quotation?.totals?.discountAmount !== undefined 
-    ? safeN(quotation.totals.discountAmount)
-    : discountType === "percent" 
-      ? (grandSubtotal * safeN(discountValue)) / 100 
-      : safeN(discountValue);
+  const discountAmount =
+    quotation?.totals?.discountAmount !== undefined
+      ? safeN(quotation.totals.discountAmount)
+      : discountType === "percent"
+        ? (grandSubtotal * safeN(discountValue)) / 100
+        : safeN(discountValue);
 
-  const discounted = quotation?.totals?.afterDiscount !== undefined
-    ? safeN(quotation.totals.afterDiscount)
-    : Math.max(0, grandSubtotal - discountAmount);
+  const discounted =
+    quotation?.totals?.afterDiscount !== undefined
+      ? safeN(quotation.totals.afterDiscount)
+      : Math.max(0, grandSubtotal - discountAmount);
 
-  const gstAmount = quotation?.totals?.gstAmount !== undefined
-    ? safeN(quotation.totals.gstAmount)
-    : discounted * 0.18;
+  const gstAmount =
+    quotation?.totals?.gstAmount !== undefined
+      ? safeN(quotation.totals.gstAmount)
+      : discounted * 0.18;
 
-  const finalTotal = quotation?.totals?.finalTotal !== undefined
-    ? safeN(quotation.totals.finalTotal)
-    : discounted + gstAmount;
+  const finalTotal =
+    quotation?.totals?.finalTotal !== undefined
+      ? safeN(quotation.totals.finalTotal)
+      : discounted + gstAmount;
 
   // Extract unique room types from items and sort them
-  const interiorRoomTypes = sortRoomNames(Array.from(new Set(interiorItems.map(item => item.roomType).filter(Boolean))));
-  const fcRoomTypes = sortRoomNames(Array.from(new Set(falseCeilingItems.map(item => item.roomType).filter(Boolean))));
+  const interiorRoomTypes = sortRoomNames(
+    Array.from(new Set(interiorItems.map((item) => item.roomType).filter(Boolean))),
+  );
+  const fcRoomTypes = sortRoomNames(
+    Array.from(new Set(falseCeilingItems.map((item) => item.roomType).filter(Boolean))),
+  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -251,7 +284,9 @@ export default function Estimate() {
                       <div key={roomType} className="space-y-3">
                         <div className="flex items-center justify-between pb-2 border-b border-muted">
                           <h4 className="font-semibold text-foreground">{roomType}</h4>
-                          <span className="text-sm font-mono text-muted-foreground">{roomTotal.toFixed(2)} SQFT</span>
+                          <span className="text-sm font-mono text-muted-foreground">
+                            {roomTotal.toFixed(2)} SQFT
+                          </span>
                         </div>
                         <div className="space-y-2">
                           {roomItems.map((item) => (
@@ -262,7 +297,9 @@ export default function Estimate() {
                                   {item.material} • {item.finish} • {item.hardware}
                                 </p>
                               </div>
-                              <span className="font-mono text-muted-foreground ml-4">{item.sqft} SQFT</span>
+                              <span className="font-mono text-muted-foreground ml-4">
+                                {item.sqft} SQFT
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -280,7 +317,10 @@ export default function Estimate() {
                   <div className="pt-4 border-t border-border">
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-semibold text-foreground">Subtotal</span>
-                      <span className="text-xl font-bold font-mono text-foreground" data-testid="text-interior-subtotal">
+                      <span
+                        className="text-xl font-bold font-mono text-foreground"
+                        data-testid="text-interior-subtotal"
+                      >
                         {formatINR(interiorsSubtotal)}
                       </span>
                     </div>
@@ -299,7 +339,9 @@ export default function Estimate() {
                 <div className="space-y-6">
                   {/* Room breakdown */}
                   {fcRoomTypes.map((roomType) => {
-                    const roomItems = falseCeilingItems.filter((item) => item.roomType === roomType);
+                    const roomItems = falseCeilingItems.filter(
+                      (item) => item.roomType === roomType,
+                    );
                     if (roomItems.length === 0) return null;
 
                     const roomTotal = roomItems.reduce((sum, item) => sum + safeN(item.area), 0);
@@ -308,23 +350,30 @@ export default function Estimate() {
                       <div key={roomType} className="space-y-3">
                         <div className="flex items-center justify-between pb-2 border-b border-muted">
                           <h4 className="font-semibold text-foreground">{roomType}</h4>
-                          <span className="text-sm font-mono text-muted-foreground">{roomTotal.toFixed(2)} SQFT</span>
+                          <span className="text-sm font-mono text-muted-foreground">
+                            {roomTotal.toFixed(2)} SQFT
+                          </span>
                         </div>
                         <div className="space-y-2">
                           {roomItems.map((item) => {
                             const unitPrice = parseFloat(item.unitPrice || "0");
                             const area = parseFloat(item.area || "0");
                             const total = area * unitPrice;
-                            
+
                             return (
-                              <div key={item.id} className="flex items-start justify-between text-sm">
+                              <div
+                                key={item.id}
+                                className="flex items-start justify-between text-sm"
+                              >
                                 <div className="flex-1">
                                   <p className="text-foreground">{item.description || "Ceiling"}</p>
                                   <p className="text-xs text-muted-foreground">
                                     {item.area} SQFT × ₹{unitPrice.toFixed(2)}/sqft
                                   </p>
                                 </div>
-                                <span className="font-mono text-muted-foreground ml-4">{formatINR(total)}</span>
+                                <span className="font-mono text-muted-foreground ml-4">
+                                  {formatINR(total)}
+                                </span>
                               </div>
                             );
                           })}
@@ -367,7 +416,10 @@ export default function Estimate() {
                   <div className="pt-4 border-t border-border">
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-semibold text-foreground">Subtotal</span>
-                      <span className="text-xl font-bold font-mono text-foreground" data-testid="text-fc-subtotal">
+                      <span
+                        className="text-xl font-bold font-mono text-foreground"
+                        data-testid="text-fc-subtotal"
+                      >
                         {formatINR(fcSubtotal)}
                       </span>
                     </div>
@@ -388,7 +440,10 @@ export default function Estimate() {
                 {/* Subtotal */}
                 <div className="flex items-center justify-between text-lg">
                   <span className="text-foreground">Subtotal</span>
-                  <span className="font-mono font-semibold text-foreground" data-testid="text-grand-subtotal">
+                  <span
+                    className="font-mono font-semibold text-foreground"
+                    data-testid="text-grand-subtotal"
+                  >
                     {formatINR(grandSubtotal)}
                   </span>
                 </div>
@@ -396,7 +451,9 @@ export default function Estimate() {
                 {/* Discount */}
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <Label htmlFor="discount-value" className="text-foreground mb-2 block">Discount</Label>
+                    <Label htmlFor="discount-value" className="text-foreground mb-2 block">
+                      Discount
+                    </Label>
                     <div className="flex gap-2">
                       <Select value={discountType} onValueChange={handleDiscountTypeChange}>
                         <SelectTrigger className="w-32" data-testid="select-discount-type">
@@ -448,7 +505,10 @@ export default function Estimate() {
                 {/* Final Total */}
                 <div className="flex items-center justify-between pt-4 border-t border-border">
                   <span className="text-2xl font-bold text-foreground">Final Total</span>
-                  <span className="text-3xl font-bold font-mono text-primary" data-testid="text-final-total">
+                  <span
+                    className="text-3xl font-bold font-mono text-primary"
+                    data-testid="text-final-total"
+                  >
                     {formatINR(finalTotal)}
                   </span>
                 </div>
@@ -490,9 +550,10 @@ export default function Estimate() {
                 <div className="space-y-3">
                   {changeOrders.map((co: any) => {
                     const subtotal = safeN(co.totals?.grandSubtotal);
-                    const discountAmt = co.discountType === "percent" 
-                      ? (subtotal * safeN(co.discountValue)) / 100
-                      : safeN(co.discountValue);
+                    const discountAmt =
+                      co.discountType === "percent"
+                        ? (subtotal * safeN(co.discountValue)) / 100
+                        : safeN(co.discountValue);
                     const afterDiscount = subtotal - discountAmt;
                     const gst = (afterDiscount * 18) / 100;
                     const total = afterDiscount + gst;
@@ -508,12 +569,17 @@ export default function Estimate() {
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-1">
                               <p className="font-semibold">{co.title}</p>
-                              <span className={`text-xs px-2 py-1 rounded ${
-                                co.status === "approved" ? "bg-green-500 text-white" :
-                                co.status === "sent" ? "bg-blue-500 text-white" :
-                                co.status === "rejected" ? "bg-red-500 text-white" :
-                                "bg-gray-500 text-white"
-                              }`}>
+                              <span
+                                className={`text-xs px-2 py-1 rounded ${
+                                  co.status === "approved"
+                                    ? "bg-green-500 text-white"
+                                    : co.status === "sent"
+                                      ? "bg-blue-500 text-white"
+                                      : co.status === "rejected"
+                                        ? "bg-red-500 text-white"
+                                        : "bg-gray-500 text-white"
+                                }`}
+                              >
                                 {co.status}
                               </span>
                             </div>
@@ -543,8 +609,8 @@ export default function Estimate() {
               <p className="text-sm text-blue-800 dark:text-blue-200">
                 <strong>Quote Approved — Locked</strong>
                 <br />
-                This quote has been approved and is locked to preserve the snapshot used in the agreement. 
-                No further edits are allowed.
+                This quote has been approved and is locked to preserve the snapshot used in the
+                agreement. No further edits are allowed.
               </p>
             </div>
           )}
@@ -590,14 +656,20 @@ export default function Estimate() {
                   </div>
                   <div>
                     <div className="text-muted-foreground mb-1">Contract Amount</div>
-                    <div className="font-semibold">{formatINR(parseFloat(project.contractAmount || "0"))}</div>
+                    <div className="font-semibold">
+                      {formatINR(parseFloat(project.contractAmount || "0"))}
+                    </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground mb-1">Current Status</div>
                     <div className="flex items-center gap-2">
-                      <TrendingUp className={`h-4 w-4 ${parseFloat(project.profitLoss || "0") >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-                      <span className={`font-semibold ${parseFloat(project.profitLoss || "0") >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {parseFloat(project.profitLoss || "0") >= 0 ? 'Profitable' : 'Loss'}
+                      <TrendingUp
+                        className={`h-4 w-4 ${parseFloat(project.profitLoss || "0") >= 0 ? "text-green-600" : "text-red-600"}`}
+                      />
+                      <span
+                        className={`font-semibold ${parseFloat(project.profitLoss || "0") >= 0 ? "text-green-600" : "text-red-600"}`}
+                      >
+                        {parseFloat(project.profitLoss || "0") >= 0 ? "Profitable" : "Loss"}
                       </span>
                     </div>
                   </div>
@@ -618,7 +690,7 @@ export default function Estimate() {
                 <Download className="mr-2 h-4 w-4" />
                 {exportZip.isPending ? "Exporting..." : "Export ZIP"}
               </Button>
-              
+
               {quotation?.status !== "approved" && (
                 <Button
                   onClick={() => saveSnapshot.mutate()}
@@ -656,15 +728,15 @@ export default function Estimate() {
 
           {/* Navigation */}
           <div className="flex gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => navigate(`/quotation/${quotationId}/scope`)}
               data-testid="button-back-to-scope"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Scope
             </Button>
-            <Button 
+            <Button
               variant="outline"
               onClick={() => navigate(`/quotation/${quotationId}/agreement`)}
               data-testid="button-view-agreement"
@@ -672,7 +744,7 @@ export default function Estimate() {
               <FileText className="mr-2 h-4 w-4" />
               Agreement Pack
             </Button>
-            <Button 
+            <Button
               onClick={() => navigate(`/quotation/${quotationId}/print`)}
               data-testid="button-continue-print"
             >

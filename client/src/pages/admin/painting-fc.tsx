@@ -37,7 +37,12 @@ import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { Plus, ArrowLeft, Trash2, Copy } from "lucide-react";
 import { useLocation } from "wouter";
-import type { PaintingPackRow, NewPaintingPackRow, FCCatalogRow, NewFCCatalogRow } from "@shared/schema";
+import type {
+  PaintingPackRow,
+  NewPaintingPackRow,
+  FCCatalogRow,
+  NewFCCatalogRow,
+} from "@shared/schema";
 import {
   getPaintingPacks,
   createPaintingPack,
@@ -69,7 +74,7 @@ export default function AdminPaintingFcPage() {
     basePriceLsum: 35000,
     bulletsJson: [],
     bhkFactorBase: 3,
-    perBedroomDelta: 0.10,
+    perBedroomDelta: 0.1,
     showInQuote: true,
     isActive: true,
   });
@@ -122,7 +127,7 @@ export default function AdminPaintingFcPage() {
 
   // Filter painting packs
   const filteredPacks = useMemo(() => {
-    return paintingPacks.filter(pack => {
+    return paintingPacks.filter((pack) => {
       if (!searchQuery) return true;
       return pack.name.toLowerCase().includes(searchQuery.toLowerCase());
     });
@@ -130,10 +135,12 @@ export default function AdminPaintingFcPage() {
 
   // Filter FC catalog
   const filteredFCCatalog = useMemo(() => {
-    return fcCatalog.filter(item => {
+    return fcCatalog.filter((item) => {
       if (!searchQuery) return true;
-      return item.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
-             item.displayName.toLowerCase().includes(searchQuery.toLowerCase());
+      return (
+        item.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.displayName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     });
   }, [fcCatalog, searchQuery]);
 
@@ -147,7 +154,11 @@ export default function AdminPaintingFcPage() {
       resetPaintingDialog();
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to create painting pack", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create painting pack",
+        variant: "destructive",
+      });
     },
   });
 
@@ -158,18 +169,27 @@ export default function AdminPaintingFcPage() {
       setEditingPaintingValues({});
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to update painting pack", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update painting pack",
+        variant: "destructive",
+      });
     },
   });
 
   const togglePackActiveMutation = useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => togglePaintingPackActive(id, isActive),
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      togglePaintingPackActive(id, isActive),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/painting-packs"] });
       toast({ title: "Success", description: "Painting pack status updated" });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to update status", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update status",
+        variant: "destructive",
+      });
     },
   });
 
@@ -180,7 +200,11 @@ export default function AdminPaintingFcPage() {
       toast({ title: "Success", description: "Painting pack deleted" });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to delete", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete",
+        variant: "destructive",
+      });
     },
   });
 
@@ -194,7 +218,11 @@ export default function AdminPaintingFcPage() {
       resetFCDialog();
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to create FC item", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create FC item",
+        variant: "destructive",
+      });
     },
   });
 
@@ -205,18 +233,27 @@ export default function AdminPaintingFcPage() {
       setEditingFCValues({});
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to update FC item", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update FC item",
+        variant: "destructive",
+      });
     },
   });
 
   const toggleFCActiveMutation = useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => toggleFCCatalogItemActive(id, isActive),
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      toggleFCCatalogItemActive(id, isActive),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/fc-catalog"] });
       toast({ title: "Success", description: "FC item status updated" });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to update status", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update status",
+        variant: "destructive",
+      });
     },
   });
 
@@ -227,7 +264,11 @@ export default function AdminPaintingFcPage() {
       toast({ title: "Success", description: "FC item deleted" });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to delete", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete",
+        variant: "destructive",
+      });
     },
   });
 
@@ -256,7 +297,7 @@ export default function AdminPaintingFcPage() {
       basePriceLsum: 35000,
       bulletsJson: [],
       bhkFactorBase: 3,
-      perBedroomDelta: 0.10,
+      perBedroomDelta: 0.1,
       showInQuote: true,
       isActive: true,
     });
@@ -307,9 +348,9 @@ export default function AdminPaintingFcPage() {
 
   const handlePaintingDialogSubmit = () => {
     if (editingPackId) {
-      updatePackMutation.mutate({ 
-        id: editingPackId, 
-        data: newPack 
+      updatePackMutation.mutate({
+        id: editingPackId,
+        data: newPack,
       });
       setIsPaintingDialogOpen(false);
       resetPaintingDialog();
@@ -320,9 +361,9 @@ export default function AdminPaintingFcPage() {
 
   const handleFCDialogSubmit = () => {
     if (editingFCId) {
-      updateFCMutation.mutate({ 
-        id: editingFCId, 
-        data: newFCItem 
+      updateFCMutation.mutate({
+        id: editingFCId,
+        data: newFCItem,
       });
       setIsFCDialogOpen(false);
       resetFCDialog();
@@ -332,13 +373,18 @@ export default function AdminPaintingFcPage() {
   };
 
   // Calculate BHK price preview
-  const calculateBHKPrice = (basePrice: number, bhkFactorBase: number, perBedroomDelta: number, targetBHK: number) => {
+  const calculateBHKPrice = (
+    basePrice: number,
+    bhkFactorBase: number,
+    perBedroomDelta: number,
+    targetBHK: number,
+  ) => {
     const delta = targetBHK - bhkFactorBase;
-    return basePrice * (1 + (delta * perBedroomDelta));
+    return basePrice * (1 + delta * perBedroomDelta);
   };
 
   const handleInlinePaintingEdit = (id: string, field: string, value: any) => {
-    setEditingPaintingValues(prev => ({
+    setEditingPaintingValues((prev) => ({
       ...prev,
       [id]: {
         ...(prev[id] || {}),
@@ -348,7 +394,7 @@ export default function AdminPaintingFcPage() {
   };
 
   const handleInlineFCEdit = (id: string, field: string, value: any) => {
-    setEditingFCValues(prev => ({
+    setEditingFCValues((prev) => ({
       ...prev,
       [id]: {
         ...(prev[id] || {}),
@@ -360,7 +406,7 @@ export default function AdminPaintingFcPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <AppHeader />
-      
+
       <main className="flex-1 container-trecasa py-6 lg:py-8">
         <div className="flex items-center gap-4 mb-6">
           <Button
@@ -416,27 +462,39 @@ export default function AdminPaintingFcPage() {
                 filteredPacks.map((pack) => {
                   const bullets = JSON.parse(pack.bulletsJson);
                   const currentValues = editingPaintingValues[pack.id] || {};
-                  
+
                   return (
-                    <Card key={pack.id} className="p-6 space-y-4" data-testid={`card-pack-${pack.id}`}>
+                    <Card
+                      key={pack.id}
+                      className="p-6 space-y-4"
+                      data-testid={`card-pack-${pack.id}`}
+                    >
                       <div className="flex flex-col sm:flex-row justify-between gap-4">
                         <div className="flex-1 space-y-3">
                           <div>
                             <Label>Name</Label>
                             <Input
                               value={currentValues.name ?? pack.name}
-                              onChange={(e) => handleInlinePaintingEdit(pack.id, "name", e.target.value)}
+                              onChange={(e) =>
+                                handleInlinePaintingEdit(pack.id, "name", e.target.value)
+                              }
                               data-testid={`input-pack-name-${pack.id}`}
                             />
                           </div>
-                          
+
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
                               <Label>Base Price (₹)</Label>
                               <Input
                                 type="number"
                                 value={currentValues.basePriceLsum ?? pack.basePriceLsum}
-                                onChange={(e) => handleInlinePaintingEdit(pack.id, "basePriceLsum", parseInt(e.target.value))}
+                                onChange={(e) =>
+                                  handleInlinePaintingEdit(
+                                    pack.id,
+                                    "basePriceLsum",
+                                    parseInt(e.target.value),
+                                  )
+                                }
                                 data-testid={`input-pack-price-${pack.id}`}
                               />
                             </div>
@@ -445,7 +503,13 @@ export default function AdminPaintingFcPage() {
                               <Input
                                 type="number"
                                 value={currentValues.bhkFactorBase ?? pack.bhkFactorBase}
-                                onChange={(e) => handleInlinePaintingEdit(pack.id, "bhkFactorBase", parseInt(e.target.value))}
+                                onChange={(e) =>
+                                  handleInlinePaintingEdit(
+                                    pack.id,
+                                    "bhkFactorBase",
+                                    parseInt(e.target.value),
+                                  )
+                                }
                                 data-testid={`input-pack-bhk-base-${pack.id}`}
                               />
                             </div>
@@ -457,7 +521,13 @@ export default function AdminPaintingFcPage() {
                                 min="0"
                                 max="0.25"
                                 value={currentValues.perBedroomDelta ?? pack.perBedroomDelta}
-                                onChange={(e) => handleInlinePaintingEdit(pack.id, "perBedroomDelta", parseFloat(e.target.value))}
+                                onChange={(e) =>
+                                  handleInlinePaintingEdit(
+                                    pack.id,
+                                    "perBedroomDelta",
+                                    parseFloat(e.target.value),
+                                  )
+                                }
                                 data-testid={`input-pack-delta-${pack.id}`}
                               />
                             </div>
@@ -476,16 +546,21 @@ export default function AdminPaintingFcPage() {
                           </div>
 
                           <div className="border-t pt-3">
-                            <Label className="text-xs text-muted-foreground">Price Preview by BHK:</Label>
+                            <Label className="text-xs text-muted-foreground">
+                              Price Preview by BHK:
+                            </Label>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
-                              {[1, 2, 3, 4].map(bhk => (
+                              {[1, 2, 3, 4].map((bhk) => (
                                 <Badge key={bhk} variant="outline">
-                                  {bhk} BHK: ₹{Math.round(calculateBHKPrice(
-                                    currentValues.basePriceLsum ?? pack.basePriceLsum,
-                                    currentValues.bhkFactorBase ?? pack.bhkFactorBase,
-                                    currentValues.perBedroomDelta ?? Number(pack.perBedroomDelta),
-                                    bhk
-                                  )).toLocaleString('en-IN')}
+                                  {bhk} BHK: ₹
+                                  {Math.round(
+                                    calculateBHKPrice(
+                                      currentValues.basePriceLsum ?? pack.basePriceLsum,
+                                      currentValues.bhkFactorBase ?? pack.bhkFactorBase,
+                                      currentValues.perBedroomDelta ?? Number(pack.perBedroomDelta),
+                                      bhk,
+                                    ),
+                                  ).toLocaleString("en-IN")}
                                 </Badge>
                               ))}
                             </div>
@@ -497,7 +572,9 @@ export default function AdminPaintingFcPage() {
                             <Label className="text-sm">Show in Quote</Label>
                             <Switch
                               checked={currentValues.showInQuote ?? pack.showInQuote}
-                              onCheckedChange={(checked) => handleInlinePaintingEdit(pack.id, "showInQuote", checked)}
+                              onCheckedChange={(checked) =>
+                                handleInlinePaintingEdit(pack.id, "showInQuote", checked)
+                              }
                               data-testid={`switch-pack-show-${pack.id}`}
                             />
                           </div>
@@ -505,7 +582,9 @@ export default function AdminPaintingFcPage() {
                             <Label className="text-sm">Active</Label>
                             <Switch
                               checked={pack.isActive}
-                              onCheckedChange={(checked) => togglePackActiveMutation.mutate({ id: pack.id, isActive: checked })}
+                              onCheckedChange={(checked) =>
+                                togglePackActiveMutation.mutate({ id: pack.id, isActive: checked })
+                              }
                               data-testid={`switch-pack-active-${pack.id}`}
                             />
                           </div>
@@ -594,8 +673,18 @@ export default function AdminPaintingFcPage() {
                   ) : (
                     filteredFCCatalog.map((item) => {
                       const currentValues = editingFCValues[item.id] || {};
-                      const isReservedKey = ['fc_paint', 'fc_lights', 'fc_fan_hook', 'fc_cove_led'].includes(item.key);
-                      const unitLocked = item.key === 'fc_paint' ? 'LSUM' : (isReservedKey ? 'COUNT' : currentValues.unit ?? item.unit);
+                      const isReservedKey = [
+                        "fc_paint",
+                        "fc_lights",
+                        "fc_fan_hook",
+                        "fc_cove_led",
+                      ].includes(item.key);
+                      const unitLocked =
+                        item.key === "fc_paint"
+                          ? "LSUM"
+                          : isReservedKey
+                            ? "COUNT"
+                            : (currentValues.unit ?? item.unit);
 
                       return (
                         <TableRow key={item.id} data-testid={`row-fc-${item.id}`}>
@@ -603,7 +692,9 @@ export default function AdminPaintingFcPage() {
                           <TableCell>
                             <Input
                               value={currentValues.displayName ?? item.displayName}
-                              onChange={(e) => handleInlineFCEdit(item.id, "displayName", e.target.value)}
+                              onChange={(e) =>
+                                handleInlineFCEdit(item.id, "displayName", e.target.value)
+                              }
                               data-testid={`input-fc-name-${item.id}`}
                             />
                           </TableCell>
@@ -613,7 +704,9 @@ export default function AdminPaintingFcPage() {
                             ) : (
                               <Select
                                 value={unitLocked}
-                                onValueChange={(value) => handleInlineFCEdit(item.id, "unit", value)}
+                                onValueChange={(value) =>
+                                  handleInlineFCEdit(item.id, "unit", value)
+                                }
                               >
                                 <SelectTrigger data-testid={`select-fc-unit-${item.id}`}>
                                   <SelectValue />
@@ -629,7 +722,13 @@ export default function AdminPaintingFcPage() {
                             <Input
                               type="number"
                               value={currentValues.defaultValue ?? item.defaultValue}
-                              onChange={(e) => handleInlineFCEdit(item.id, "defaultValue", parseInt(e.target.value))}
+                              onChange={(e) =>
+                                handleInlineFCEdit(
+                                  item.id,
+                                  "defaultValue",
+                                  parseInt(e.target.value),
+                                )
+                              }
                               data-testid={`input-fc-default-${item.id}`}
                             />
                           </TableCell>
@@ -637,15 +736,19 @@ export default function AdminPaintingFcPage() {
                             <Input
                               type="number"
                               value={currentValues.ratePerUnit ?? item.ratePerUnit}
-                              onChange={(e) => handleInlineFCEdit(item.id, "ratePerUnit", parseInt(e.target.value))}
-                              disabled={item.unit === 'LSUM'}
+                              onChange={(e) =>
+                                handleInlineFCEdit(item.id, "ratePerUnit", parseInt(e.target.value))
+                              }
+                              disabled={item.unit === "LSUM"}
                               data-testid={`input-fc-rate-${item.id}`}
                             />
                           </TableCell>
                           <TableCell>
                             <Switch
                               checked={item.isActive}
-                              onCheckedChange={(checked) => toggleFCActiveMutation.mutate({ id: item.id, isActive: checked })}
+                              onCheckedChange={(checked) =>
+                                toggleFCActiveMutation.mutate({ id: item.id, isActive: checked })
+                              }
                               data-testid={`switch-fc-active-${item.id}`}
                             />
                           </TableCell>
@@ -677,11 +780,9 @@ export default function AdminPaintingFcPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingPackId ? "Edit" : "Add"} Painting Pack</DialogTitle>
-            <DialogDescription>
-              Configure painting package details and pricing
-            </DialogDescription>
+            <DialogDescription>Configure painting package details and pricing</DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <Label>Name</Label>
@@ -699,7 +800,9 @@ export default function AdminPaintingFcPage() {
                 <Input
                   type="number"
                   value={newPack.basePriceLsum}
-                  onChange={(e) => setNewPack({ ...newPack, basePriceLsum: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setNewPack({ ...newPack, basePriceLsum: parseInt(e.target.value) })
+                  }
                   data-testid="dialog-input-pack-price"
                 />
               </div>
@@ -708,7 +811,9 @@ export default function AdminPaintingFcPage() {
                 <Input
                   type="number"
                   value={newPack.bhkFactorBase}
-                  onChange={(e) => setNewPack({ ...newPack, bhkFactorBase: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setNewPack({ ...newPack, bhkFactorBase: parseInt(e.target.value) })
+                  }
                   data-testid="dialog-input-pack-bhk-base"
                 />
               </div>
@@ -720,7 +825,9 @@ export default function AdminPaintingFcPage() {
                   min="0"
                   max="0.25"
                   value={newPack.perBedroomDelta}
-                  onChange={(e) => setNewPack({ ...newPack, perBedroomDelta: parseFloat(e.target.value) })}
+                  onChange={(e) =>
+                    setNewPack({ ...newPack, perBedroomDelta: parseFloat(e.target.value) })
+                  }
                   data-testid="dialog-input-pack-delta"
                 />
               </div>
@@ -729,8 +836,13 @@ export default function AdminPaintingFcPage() {
             <div>
               <Label>Bullet Points (one per line)</Label>
               <Textarea
-                value={newPack.bulletsJson?.join('\n') || ''}
-                onChange={(e) => setNewPack({ ...newPack, bulletsJson: e.target.value.split('\n').filter(l => l.trim()) })}
+                value={newPack.bulletsJson?.join("\n") || ""}
+                onChange={(e) =>
+                  setNewPack({
+                    ...newPack,
+                    bulletsJson: e.target.value.split("\n").filter((l) => l.trim()),
+                  })
+                }
                 rows={6}
                 placeholder="Enter each bullet point on a new line..."
                 data-testid="dialog-textarea-bullets"
@@ -773,11 +885,9 @@ export default function AdminPaintingFcPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingFCId ? "Edit" : "Add"} FC Catalog Item</DialogTitle>
-            <DialogDescription>
-              Configure FC catalog item details
-            </DialogDescription>
+            <DialogDescription>Configure FC catalog item details</DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <Label>Key</Label>
@@ -822,7 +932,9 @@ export default function AdminPaintingFcPage() {
                 <Input
                   type="number"
                   value={newFCItem.defaultValue}
-                  onChange={(e) => setNewFCItem({ ...newFCItem, defaultValue: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setNewFCItem({ ...newFCItem, defaultValue: parseInt(e.target.value) })
+                  }
                   data-testid="dialog-input-fc-default"
                 />
               </div>
@@ -831,8 +943,10 @@ export default function AdminPaintingFcPage() {
                 <Input
                   type="number"
                   value={newFCItem.ratePerUnit}
-                  onChange={(e) => setNewFCItem({ ...newFCItem, ratePerUnit: parseInt(e.target.value) })}
-                  disabled={newFCItem.unit === 'LSUM'}
+                  onChange={(e) =>
+                    setNewFCItem({ ...newFCItem, ratePerUnit: parseInt(e.target.value) })
+                  }
+                  disabled={newFCItem.unit === "LSUM"}
                   data-testid="dialog-input-fc-rate"
                 />
               </div>

@@ -1,17 +1,21 @@
-import puppeteer from 'puppeteer';
-import type { Page } from 'puppeteer';
-import type { Quotation } from '@shared/schema';
-import { generateRenderToken } from './render-token';
-import { PDFDocument, rgb } from 'pdf-lib';
+import puppeteer from "puppeteer";
+import type { Page } from "puppeteer";
+import type { Quotation } from "@shared/schema";
+import { generateRenderToken } from "./render-token";
+import { PDFDocument, rgb } from "pdf-lib";
 
 /**
  * Generate PDF with universal header/footer templates
  * Uses Puppeteer's native displayHeaderFooter with branded templates
  */
-export async function emitPdf(page: Page, titleText: string, includePageNumbers: boolean = true): Promise<Buffer> {
+export async function emitPdf(
+  page: Page,
+  titleText: string,
+  includePageNumbers: boolean = true,
+): Promise<Buffer> {
   // TODO: Load and embed logo as base64
-  const logoBase64 = ''; // Placeholder - will embed actual logo
-  
+  const logoBase64 = ""; // Placeholder - will embed actual logo
+
   const footerTemplate = includePageNumbers
     ? `
       <style>
@@ -34,12 +38,12 @@ export async function emitPdf(page: Page, titleText: string, includePageNumbers:
         <div>© 2025 Trecasa Design Studio<span class="sep">•</span>www.trecasadesignstudio.com<span class="sep">•</span>@trecasa.designstudio</div>
       </div>
     `;
-  
+
   const pdfBytes = await page.pdf({
-    format: 'A4',
+    format: "A4",
     printBackground: true,
     displayHeaderFooter: true,
-    margin: { top: '80px', bottom: '60px', left: '18mm', right: '18mm' },
+    margin: { top: "80px", bottom: "60px", left: "18mm", right: "18mm" },
     headerTemplate: `
       <style>
         *{font-family:Montserrat,Arial,sans-serif;font-size:10px;margin:0;padding:0}
@@ -53,7 +57,7 @@ export async function emitPdf(page: Page, titleText: string, includePageNumbers:
       <div class="bar"></div>
       <div class="wrap">
         <div class="title">
-          ${logoBase64 ? `<img class="logo" src="data:image/svg+xml;base64,${logoBase64}" />` : ''}
+          ${logoBase64 ? `<img class="logo" src="data:image/svg+xml;base64,${logoBase64}" />` : ""}
           TRECASA DESIGN STUDIO — ${titleText}
         </div>
         <div class="muted">Generated: <span class="date"></span><span class="dot"></span></div>
@@ -61,7 +65,7 @@ export async function emitPdf(page: Page, titleText: string, includePageNumbers:
     `,
     footerTemplate,
   });
-  
+
   // Convert Uint8Array to Buffer
   return Buffer.from(pdfBytes);
 }
@@ -76,26 +80,26 @@ export async function emitPdf(page: Page, titleText: string, includePageNumbers:
  */
 export async function generateQuotationPDF(
   quotation: Quotation,
-  type: 'interiors' | 'false-ceiling' | 'agreement',
+  type: "interiors" | "false-ceiling" | "agreement",
   baseUrl: string,
-  includePageNumbers: boolean = true
+  includePageNumbers: boolean = true,
 ): Promise<Buffer> {
   let browser;
-  
+
   try {
     // Launch browser with minimal options
     browser = await puppeteer.launch({
       headless: true,
       args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
       ],
     });
 
     const page = await browser.newPage();
-    
+
     // Set viewport for consistent rendering
     await page.setViewport({
       width: 1200,
@@ -105,39 +109,39 @@ export async function generateQuotationPDF(
 
     // Generate render token for authentication
     const token = generateRenderToken(quotation.id);
-    
+
     // Navigate to the appropriate render page with section parameter
     let url: string;
-    if (type === 'agreement') {
+    if (type === "agreement") {
       url = `${baseUrl}/render/quotation/${quotation.id}/agreement?token=${encodeURIComponent(token)}`;
     } else {
       // Pass section parameter for interiors or false-ceiling
-      const section = type === 'interiors' ? 'interiors' : 'false-ceiling';
+      const section = type === "interiors" ? "interiors" : "false-ceiling";
       url = `${baseUrl}/render/quotation/${quotation.id}/print?section=${section}&token=${encodeURIComponent(token)}`;
     }
-    
+
     console.log(`[PDF Generator] Navigating to ${url}`);
     await page.goto(url, {
-      waitUntil: 'networkidle0',
+      waitUntil: "networkidle0",
       timeout: 30000,
     });
 
     // Wait for content to be fully rendered
-    await page.waitForSelector('[data-pdf-ready]', { timeout: 5000 }).catch(() => {
-      console.log('[PDF Generator] Warning: PDF ready marker not found, proceeding anyway');
+    await page.waitForSelector("[data-pdf-ready]", { timeout: 5000 }).catch(() => {
+      console.log("[PDF Generator] Warning: PDF ready marker not found, proceeding anyway");
     });
 
     // Additional wait to ensure everything is loaded
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Select the appropriate element to print based on type
     let selector: string;
-    if (type === 'interiors') {
-      selector = '#print-interiors-root';
-    } else if (type === 'false-ceiling') {
-      selector = '#print-fc-root';
+    if (type === "interiors") {
+      selector = "#print-interiors-root";
+    } else if (type === "false-ceiling") {
+      selector = "#print-fc-root";
     } else {
-      selector = '#print-agreement-root';
+      selector = "#print-agreement-root";
     }
 
     // Check if element exists
@@ -495,28 +499,31 @@ export async function generateQuotationPDF(
             color: rgba(255, 255, 255, 0.7);
           }
         }
-      `
+      `,
     });
 
     // Determine title text for header
     let titleText: string;
-    if (type === 'interiors') {
-      titleText = 'Interiors Quotation';
-    } else if (type === 'false-ceiling') {
-      titleText = 'False Ceiling Quotation';
+    if (type === "interiors") {
+      titleText = "Interiors Quotation";
+    } else if (type === "false-ceiling") {
+      titleText = "False Ceiling Quotation";
     } else {
-      titleText = 'Service Agreement & Annexures';
+      titleText = "Service Agreement & Annexures";
     }
-    
+
     // Generate PDF using new emitPdf with displayHeaderFooter
-    console.log(`[PDF Generator] Generating PDF for ${type} with title: ${titleText}, includePageNumbers: ${includePageNumbers}`);
+    console.log(
+      `[PDF Generator] Generating PDF for ${type} with title: ${titleText}, includePageNumbers: ${includePageNumbers}`,
+    );
     const pdfBuffer = await emitPdf(page, titleText, includePageNumbers);
     console.log(`[PDF Generator] PDF generated successfully, size: ${pdfBuffer.length} bytes`);
     return pdfBuffer;
-    
   } catch (error) {
     console.error(`[PDF Generator] Error generating ${type} PDF:`, error);
-    throw new Error(`Failed to generate ${type} PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to generate ${type} PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   } finally {
     if (browser) {
       await browser.close();
@@ -532,27 +539,27 @@ export async function generateQuotationPDF(
  */
 export async function generateAllQuotationPDFs(
   quotation: Quotation,
-  baseUrl: string
+  baseUrl: string,
 ): Promise<{
   interiors: Buffer;
   falseCeiling: Buffer;
   agreement: Buffer;
 }> {
   console.log(`[PDF Generator] Generating all PDFs for quotation ${quotation.quoteId}`);
-  
+
   try {
     // Generate all three PDFs sequentially to avoid resource issues
-    const interiors = await generateQuotationPDF(quotation, 'interiors', baseUrl);
-    const falseCeiling = await generateQuotationPDF(quotation, 'false-ceiling', baseUrl);
-    const agreement = await generateQuotationPDF(quotation, 'agreement', baseUrl);
-    
+    const interiors = await generateQuotationPDF(quotation, "interiors", baseUrl);
+    const falseCeiling = await generateQuotationPDF(quotation, "false-ceiling", baseUrl);
+    const agreement = await generateQuotationPDF(quotation, "agreement", baseUrl);
+
     return {
       interiors,
       falseCeiling,
       agreement,
     };
   } catch (error) {
-    console.error('[PDF Generator] Error generating all PDFs:', error);
+    console.error("[PDF Generator] Error generating all PDFs:", error);
     throw error;
   }
 }
@@ -565,17 +572,17 @@ export async function generateAllQuotationPDFs(
 export async function addContinuousPageNumbers(pdfDoc: PDFDocument): Promise<PDFDocument> {
   const pages = pdfDoc.getPages();
   const totalPages = pages.length;
-  
+
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
     const { width, height } = page.getSize();
     const pageNumber = i + 1;
-    
+
     // Draw page number in footer area (right side, matching Puppeteer footer style)
     const fontSize = 10;
     const text = `Page ${pageNumber} of ${totalPages}`;
     const textWidth = text.length * (fontSize * 0.5); // Approximate width
-    
+
     page.drawText(text, {
       x: width - textWidth - 51, // 18mm right margin = ~51pt
       y: 30, // Bottom margin area
@@ -583,6 +590,6 @@ export async function addContinuousPageNumbers(pdfDoc: PDFDocument): Promise<PDF
       color: rgb(0.27, 0.27, 0.27), // #444 in RGB
     });
   }
-  
+
   return pdfDoc;
 }

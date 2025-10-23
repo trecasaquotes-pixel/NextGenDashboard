@@ -55,60 +55,59 @@ export function ApplyTemplateModal({
 
   // Fetch active templates
   const { data: templates = [], isLoading: isLoadingTemplates } = useQuery<TemplateSummary[]>({
-    queryKey: ['/api/admin/templates?active=1'],
+    queryKey: ["/api/admin/templates?active=1"],
     enabled: open,
   });
 
   // Apply template mutation
   const applyTemplateMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest(
-        "POST",
-        `/api/quotations/${quotationId}/apply-template`,
-        { templateId, mode }
-      );
+      const response = await apiRequest("POST", `/api/quotations/${quotationId}/apply-template`, {
+        templateId,
+        mode,
+      });
       const data: ApplyTemplateResponse = await response.json();
-      
+
       // If FC defaults checkbox is checked, also apply FC defaults
       if (applyFcDefaults) {
-        await apiRequest(
-          "POST",
-          `/api/quotations/${quotationId}/apply-fc-defaults`,
-          {}
-        );
+        await apiRequest("POST", `/api/quotations/${quotationId}/apply-fc-defaults`, {});
       }
-      
+
       return data;
     },
     onSuccess: async (data) => {
       // Invalidate all quotation-related queries to ensure all pages refresh
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/interior-items`] }),
-        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`] }),
+        queryClient.invalidateQueries({
+          queryKey: [`/api/quotations/${quotationId}/interior-items`],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`],
+        }),
         queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/other-items`] }),
         queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] }),
       ]);
-      
+
       // Force refetch for all pages by invalidating with refetch
-      await queryClient.refetchQueries({ 
+      await queryClient.refetchQueries({
         predicate: (query) => {
-          const key = query.queryKey[0]?.toString() || '';
+          const key = query.queryKey[0]?.toString() || "";
           return key.includes(`/api/quotations/${quotationId}`);
-        }
+        },
       });
-      
+
       const itemsText = data.applied.itemsAdded === 1 ? "item" : "items";
       let message = `Template applied — ${data.applied.itemsAdded} ${itemsText} added`;
-      
+
       if (data.skipped && data.skipped.length > 0) {
         message += `. ${data.skipped.length} items skipped (inactive rates)`;
       }
-      
+
       toast({
         title: "Success",
         description: message,
       });
-      
+
       onOpenChange(false);
       resetForm();
       onSuccess?.();
@@ -147,9 +146,7 @@ export function ApplyTemplateModal({
         <DialogContent data-testid="dialog-apply-template">
           <DialogHeader>
             <DialogTitle>Apply Template</DialogTitle>
-            <DialogDescription>
-              Auto-populate rooms and items from a template
-            </DialogDescription>
+            <DialogDescription>Auto-populate rooms and items from a template</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -161,9 +158,13 @@ export function ApplyTemplateModal({
                 </SelectTrigger>
                 <SelectContent>
                   {isLoadingTemplates ? (
-                    <SelectItem value="loading" disabled>Loading templates...</SelectItem>
+                    <SelectItem value="loading" disabled>
+                      Loading templates...
+                    </SelectItem>
                   ) : templates.length === 0 ? (
-                    <SelectItem value="empty" disabled>No templates available</SelectItem>
+                    <SelectItem value="empty" disabled>
+                      No templates available
+                    </SelectItem>
                   ) : (
                     templates.map((template) => (
                       <SelectItem key={template.id} value={template.id}>
@@ -187,8 +188,8 @@ export function ApplyTemplateModal({
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {mode === "merge" 
-                  ? "Adds template items without removing existing ones" 
+                {mode === "merge"
+                  ? "Adds template items without removing existing ones"
                   : "Removes all existing items and adds template items"}
               </p>
             </div>
@@ -234,7 +235,7 @@ export function ApplyTemplateModal({
           <AlertDialogHeader>
             <AlertDialogTitle>Reset to Template?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove all existing interior items and replace them with the template items. 
+              This will remove all existing interior items and replace them with the template items.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

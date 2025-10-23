@@ -3,8 +3,8 @@
  * Centralized formatters for currency, dates, and numbers
  */
 
-import { format, parse } from 'date-fns';
-import { CURRENCY, DATE_FORMATS } from './constants';
+import { format, parse } from "date-fns";
+import { CURRENCY, DATE_FORMATS } from "./constants";
 
 // ============================================================================
 // CURRENCY FORMATTING (Indian Numbering System)
@@ -30,11 +30,11 @@ export function formatINR(value: number | null | undefined): string {
 
   // Convert to string with 2 decimal places
   const numStr = absValue.toFixed(2);
-  const [integerPart, decimalPart] = numStr.split('.');
+  const [integerPart, decimalPart] = numStr.split(".");
 
   // Apply Indian numbering system
   let formattedInteger: string;
-  
+
   if (integerPart.length <= 3) {
     // Numbers up to 999
     formattedInteger = integerPart;
@@ -42,7 +42,7 @@ export function formatINR(value: number | null | undefined): string {
     // Separate last 3 digits
     const lastThree = integerPart.slice(-3);
     const remaining = integerPart.slice(0, -3);
-    
+
     // Add commas every 2 digits for the remaining part
     const groups: string[] = [];
     let temp = remaining;
@@ -55,12 +55,12 @@ export function formatINR(value: number | null | undefined): string {
         temp = temp.slice(0, -2);
       }
     }
-    
-    formattedInteger = groups.join(',') + ',' + lastThree;
+
+    formattedInteger = groups.join(",") + "," + lastThree;
   }
 
   const formatted = `${formattedInteger}.${decimalPart}`;
-  return `${isNegative ? '-' : ''}${CURRENCY.symbol}${formatted}`;
+  return `${isNegative ? "-" : ""}${CURRENCY.symbol}${formatted}`;
 }
 
 /**
@@ -73,9 +73,9 @@ export function formatINRWhole(value: number | null | undefined): string {
 
   const rounded = Math.round(value);
   const formatted = formatINR(rounded);
-  
+
   // Remove .00 from the end
-  return formatted.replace('.00', '');
+  return formatted.replace(".00", "");
 }
 
 /**
@@ -83,7 +83,7 @@ export function formatINRWhole(value: number | null | undefined): string {
  */
 export function formatIndianNumber(value: number | null | undefined): string {
   const formatted = formatINR(value);
-  return formatted.replace(CURRENCY.symbol, '');
+  return formatted.replace(CURRENCY.symbol, "");
 }
 
 // ============================================================================
@@ -95,16 +95,16 @@ export function formatIndianNumber(value: number | null | undefined): string {
  * @param date - Date object, ISO string, or date string
  */
 export function formatDisplayDate(date: Date | string | null | undefined): string {
-  if (!date) return '';
-  
+  if (!date) return "";
+
   try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+
     // Format: 1 November 2025
-    return format(dateObj, 'd MMMM yyyy');
+    return format(dateObj, "d MMMM yyyy");
   } catch (error) {
-    console.error('Error formatting date:', error);
-    return '';
+    console.error("Error formatting date:", error);
+    return "";
   }
 }
 
@@ -119,14 +119,14 @@ export function formatPDFDate(date: Date | string | null | undefined): string {
  * Format date as DD/MM/YYYY (short format)
  */
 export function formatShortDate(date: Date | string | null | undefined): string {
-  if (!date) return '';
-  
+  if (!date) return "";
+
   try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return format(dateObj, 'dd/MM/yyyy');
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+    return format(dateObj, "dd/MM/yyyy");
   } catch (error) {
-    console.error('Error formatting date:', error);
-    return '';
+    console.error("Error formatting date:", error);
+    return "";
   }
 }
 
@@ -134,7 +134,7 @@ export function formatShortDate(date: Date | string | null | undefined): string 
  * Calculate validity date (30 days from given date)
  */
 export function calculateValidityDate(fromDate: Date | string): Date {
-  const baseDate = typeof fromDate === 'string' ? new Date(fromDate) : fromDate;
+  const baseDate = typeof fromDate === "string" ? new Date(fromDate) : fromDate;
   const validityDate = new Date(baseDate);
   validityDate.setDate(validityDate.getDate() + 30);
   return validityDate;
@@ -158,9 +158,9 @@ export function formatValidityDateString(issueDate: Date | string): string {
  */
 export function formatPercentage(value: number | null | undefined): string {
   if (value === null || value === undefined || isNaN(value)) {
-    return '0%';
+    return "0%";
   }
-  
+
   return `${value}%`;
 }
 
@@ -174,12 +174,12 @@ export function formatPercentage(value: number | null | undefined): string {
 export function formatDimensions(
   length: number | null | undefined,
   height: number | null | undefined,
-  width: number | null | undefined
+  width: number | null | undefined,
 ): string {
   const l = length ?? 0;
   const h = height ?? 0;
   const w = width ?? 0;
-  
+
   return `${l}×${h}×${w}`;
 }
 
@@ -192,9 +192,9 @@ export function formatDimensions(
  */
 export function formatArea(sqft: number | null | undefined): string {
   if (sqft === null || sqft === undefined || isNaN(sqft)) {
-    return '0 sqft';
+    return "0 sqft";
   }
-  
+
   return `${sqft.toFixed(2)} sqft`;
 }
 
@@ -203,8 +203,8 @@ export function formatArea(sqft: number | null | undefined): string {
  */
 export function formatAreaNumber(sqft: number | null | undefined): string {
   if (sqft === null || sqft === undefined || isNaN(sqft)) {
-    return '0';
+    return "0";
   }
-  
+
   return sqft.toFixed(2);
 }

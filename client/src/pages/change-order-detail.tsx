@@ -8,7 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
@@ -28,7 +34,7 @@ export default function ChangeOrderDetail() {
   const [, navigate] = useLocation();
   const [match, params] = useRoute("/change-orders/:id");
   const [, quotationParams] = useRoute("/quotation/:quotationId/change-orders/new");
-  
+
   const isNewChangeOrder = !match;
   const changeOrderId = params?.id;
   const quotationId = quotationParams?.quotationId;
@@ -218,9 +224,8 @@ export default function ChangeOrderDetail() {
 
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
-    const discountAmount = discountType === "percent" 
-      ? (subtotal * safeN(discountValue)) / 100
-      : safeN(discountValue);
+    const discountAmount =
+      discountType === "percent" ? (subtotal * safeN(discountValue)) / 100 : safeN(discountValue);
     const afterDiscount = subtotal - discountAmount;
     const gstAmount = (afterDiscount * 18) / 100;
     return afterDiscount + gstAmount;
@@ -251,200 +256,204 @@ export default function ChangeOrderDetail() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
-      
+
       <main className="flex-1 container-trecasa py-6 lg:py-8 space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/change-orders")}
-                data-testid="button-back"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold text-foreground" data-testid="heading-change-order">
-                  {isNewChangeOrder ? "New Change Order" : changeOrder?.changeOrderId}
-                </h1>
-                <p className="text-muted-foreground">
-                  {isNewChangeOrder ? "Create a new change order" : "Edit change order details"}
-                </p>
-              </div>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/change-orders")}
+              data-testid="button-back"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground" data-testid="heading-change-order">
+                {isNewChangeOrder ? "New Change Order" : changeOrder?.changeOrderId}
+              </h1>
+              <p className="text-muted-foreground">
+                {isNewChangeOrder ? "Create a new change order" : "Edit change order details"}
+              </p>
             </div>
-            {!isNewChangeOrder && getStatusBadge(status)}
           </div>
+          {!isNewChangeOrder && getStatusBadge(status)}
+        </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Change Order Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {isNewChangeOrder && (
-                  <div className="space-y-2">
-                    <Label htmlFor="quotation">Select Quotation</Label>
-                    <Select value={selectedQuotationId} onValueChange={setSelectedQuotationId}>
-                      <SelectTrigger id="quotation" data-testid="select-quotation">
-                        <SelectValue placeholder="Select a quotation" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {quotations?.map((q) => (
-                          <SelectItem key={q.id} value={q.id}>
-                            {q.quoteId} - {q.projectName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-                
+        <Card>
+          <CardHeader>
+            <CardTitle>Change Order Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {isNewChangeOrder && (
                 <div className="space-y-2">
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g., Additional Kitchen Cabinets"
-                    data-testid="input-title"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger id="status" data-testid="select-status">
-                      <SelectValue />
+                  <Label htmlFor="quotation">Select Quotation</Label>
+                  <Select value={selectedQuotationId} onValueChange={setSelectedQuotationId}>
+                    <SelectTrigger id="quotation" data-testid="select-quotation">
+                      <SelectValue placeholder="Select a quotation" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="sent">Sent</SelectItem>
-                      <SelectItem value="approved">Approved</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
+                      {quotations?.map((q) => (
+                        <SelectItem key={q.id} value={q.id}>
+                          {q.quoteId} - {q.projectName}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
+              )}
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe the changes in detail..."
-                  rows={3}
-                  data-testid="textarea-description"
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., Additional Kitchen Cabinets"
+                  data-testid="input-title"
                 />
               </div>
 
-              <div className="flex gap-4">
-                <Button
-                  onClick={handleSave}
-                  disabled={createMutation.isPending || updateMutation.isPending}
-                  data-testid="button-save"
-                >
-                  {isNewChangeOrder ? "Create Change Order" : "Save Changes"}
-                </Button>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={status} onValueChange={setStatus}>
+                  <SelectTrigger id="status" data-testid="select-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="sent">Sent</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {!isNewChangeOrder && (
-            <>
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Change Order Items</CardTitle>
-                    <Button onClick={addNewItem} size="sm" data-testid="button-add-item">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Item
-                    </Button>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe the changes in detail..."
+                rows={3}
+                data-testid="textarea-description"
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <Button
+                onClick={handleSave}
+                disabled={createMutation.isPending || updateMutation.isPending}
+                data-testid="button-save"
+              >
+                {isNewChangeOrder ? "Create Change Order" : "Save Changes"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {!isNewChangeOrder && (
+          <>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Change Order Items</CardTitle>
+                  <Button onClick={addNewItem} size="sm" data-testid="button-add-item">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Item
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {items.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="w-12 h-12 mx-auto mb-4" />
+                    <p>No items added yet. Click "Add Item" to get started.</p>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {items.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <FileText className="w-12 h-12 mx-auto mb-4" />
-                      <p>No items added yet. Click "Add Item" to get started.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {items.map((item) => (
-                        <div
-                          key={item.id || item.tempId}
-                          className="flex items-center justify-between p-4 border rounded-lg hover-elevate"
-                          data-testid={`item-${item.id}`}
-                        >
-                          <div>
-                            <p className="font-semibold">{item.description || "Untitled Item"}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {item.roomType} • {item.changeType === "addition" ? "Addition" : "Credit"}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <p className="font-semibold">{formatINR(safeN(item.totalPrice))}</p>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => deleteItem(item.id!)}
-                              data-testid={`button-delete-item-${item.id}`}
-                            >
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
-                          </div>
+                ) : (
+                  <div className="space-y-2">
+                    {items.map((item) => (
+                      <div
+                        key={item.id || item.tempId}
+                        className="flex items-center justify-between p-4 border rounded-lg hover-elevate"
+                        data-testid={`item-${item.id}`}
+                      >
+                        <div>
+                          <p className="font-semibold">{item.description || "Untitled Item"}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {item.roomType} •{" "}
+                            {item.changeType === "addition" ? "Addition" : "Credit"}
+                          </p>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Financial Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span className="font-semibold" data-testid="text-subtotal">
-                      {formatINR(calculateSubtotal())}
-                    </span>
+                        <div className="flex items-center gap-4">
+                          <p className="font-semibold">{formatINR(safeN(item.totalPrice))}</p>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteItem(item.id!)}
+                            data-testid={`button-delete-item-${item.id}`}
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
+                )}
+              </CardContent>
+            </Card>
 
-                  <div className="flex items-center gap-4">
-                    <Label>Discount:</Label>
-                    <Select value={discountType} onValueChange={setDiscountType}>
-                      <SelectTrigger className="w-32" data-testid="select-discount-type">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="percent">Percent</SelectItem>
-                        <SelectItem value="amount">Amount</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      type="number"
-                      value={discountValue}
-                      onChange={(e) => setDiscountValue(e.target.value)}
-                      className="w-32"
-                      data-testid="input-discount-value"
-                    />
-                    <Button onClick={handleSave} size="sm" variant="outline" data-testid="button-apply-discount">
-                      Apply
-                    </Button>
-                  </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Financial Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span className="font-semibold" data-testid="text-subtotal">
+                    {formatINR(calculateSubtotal())}
+                  </span>
+                </div>
 
-                  <div className="flex justify-between text-lg font-bold border-t pt-4">
-                    <span>Total (incl. 18% GST):</span>
-                    <span data-testid="text-total">
-                      {formatINR(calculateTotal())}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
+                <div className="flex items-center gap-4">
+                  <Label>Discount:</Label>
+                  <Select value={discountType} onValueChange={setDiscountType}>
+                    <SelectTrigger className="w-32" data-testid="select-discount-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percent">Percent</SelectItem>
+                      <SelectItem value="amount">Amount</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="number"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(e.target.value)}
+                    className="w-32"
+                    data-testid="input-discount-value"
+                  />
+                  <Button
+                    onClick={handleSave}
+                    size="sm"
+                    variant="outline"
+                    data-testid="button-apply-discount"
+                  >
+                    Apply
+                  </Button>
+                </div>
+
+                <div className="flex justify-between text-lg font-bold border-t pt-4">
+                  <span>Total (incl. 18% GST):</span>
+                  <span data-testid="text-total">{formatINR(calculateTotal())}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </main>
 
       <AppFooter />

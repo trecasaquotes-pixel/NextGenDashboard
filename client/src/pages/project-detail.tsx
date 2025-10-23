@@ -4,15 +4,43 @@ import { useRoute, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Edit, Trash2, TrendingUp, TrendingDown, DollarSign, ArrowLeft, Calendar } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  ArrowLeft,
+  Calendar,
+} from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -169,7 +197,7 @@ export default function ProjectDetail() {
       amount: expense.amount,
       vendorName: expense.vendorName || "",
       paymentMode: (expense.paymentMode as any) || undefined,
-      paymentDate: expense.paymentDate ? format(new Date(expense.paymentDate), 'yyyy-MM-dd') : "",
+      paymentDate: expense.paymentDate ? format(new Date(expense.paymentDate), "yyyy-MM-dd") : "",
       receiptNumber: expense.receiptNumber || "",
       notes: expense.notes || "",
     });
@@ -185,17 +213,22 @@ export default function ProjectDetail() {
   };
 
   const formatCurrency = (amount: string | number) => {
-    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    const num = typeof amount === "string" ? parseFloat(amount) : amount;
+    return `₹${num.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500/10 text-green-600 border-green-500/20';
-      case 'completed': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
-      case 'on-hold': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
-      case 'cancelled': return 'bg-red-500/10 text-red-600 border-red-500/20';
-      default: return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+      case "active":
+        return "bg-green-500/10 text-green-600 border-green-500/20";
+      case "completed":
+        return "bg-blue-500/10 text-blue-600 border-blue-500/20";
+      case "on-hold":
+        return "bg-yellow-500/10 text-yellow-600 border-yellow-500/20";
+      case "cancelled":
+        return "bg-red-500/10 text-red-600 border-red-500/20";
+      default:
+        return "bg-gray-500/10 text-gray-600 border-gray-500/20";
     }
   };
 
@@ -289,12 +322,14 @@ export default function ProjectDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${isProfitable ? 'text-green-600' : 'text-red-600'}`} data-testid="text-profit-loss">
-              {isProfitable ? '+' : ''}{formatCurrency(profitLoss)}
+            <div
+              className={`text-2xl font-bold ${isProfitable ? "text-green-600" : "text-red-600"}`}
+              data-testid="text-profit-loss"
+            >
+              {isProfitable ? "+" : ""}
+              {formatCurrency(profitLoss)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {isProfitable ? 'Profit' : 'Loss'}
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">{isProfitable ? "Profit" : "Loss"}</p>
           </CardContent>
         </Card>
       </div>
@@ -321,7 +356,7 @@ export default function ProjectDetail() {
                 <span className="text-muted-foreground">Start Date:</span>
                 <p className="mt-1 flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  {format(new Date(project.startDate), 'MMM dd, yyyy')}
+                  {format(new Date(project.startDate), "MMM dd, yyyy")}
                 </p>
               </div>
             )}
@@ -356,18 +391,12 @@ export default function ProjectDetail() {
                         <span className="font-semibold">{expense.description}</span>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-muted-foreground">
-                        {expense.vendorName && (
-                          <div>Vendor: {expense.vendorName}</div>
-                        )}
-                        {expense.paymentMode && (
-                          <div>Payment: {expense.paymentMode}</div>
-                        )}
+                        {expense.vendorName && <div>Vendor: {expense.vendorName}</div>}
+                        {expense.paymentMode && <div>Payment: {expense.paymentMode}</div>}
                         {expense.paymentDate && (
-                          <div>Date: {format(new Date(expense.paymentDate), 'MMM dd, yyyy')}</div>
+                          <div>Date: {format(new Date(expense.paymentDate), "MMM dd, yyyy")}</div>
                         )}
-                        {expense.receiptNumber && (
-                          <div>Receipt: {expense.receiptNumber}</div>
-                        )}
+                        {expense.receiptNumber && <div>Receipt: {expense.receiptNumber}</div>}
                       </div>
                       {expense.notes && (
                         <p className="text-sm text-muted-foreground mt-2">{expense.notes}</p>
@@ -375,7 +404,10 @@ export default function ProjectDetail() {
                     </div>
                     <div className="flex items-center gap-3 ml-4">
                       <div className="text-right">
-                        <div className="text-lg font-semibold text-red-600" data-testid={`text-expense-amount-${expense.id}`}>
+                        <div
+                          className="text-lg font-semibold text-red-600"
+                          data-testid={`text-expense-amount-${expense.id}`}
+                        >
                           {formatCurrency(expense.amount)}
                         </div>
                       </div>
@@ -392,7 +424,7 @@ export default function ProjectDetail() {
                           variant="ghost"
                           size="icon"
                           onClick={() => {
-                            if (confirm('Are you sure you want to delete this expense?')) {
+                            if (confirm("Are you sure you want to delete this expense?")) {
                               deleteExpenseMutation.mutate(expense.id);
                             }
                           }}
@@ -414,7 +446,7 @@ export default function ProjectDetail() {
       <Dialog open={showExpenseDialog} onOpenChange={setShowExpenseDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editingExpense ? 'Edit Expense' : 'Add New Expense'}</DialogTitle>
+            <DialogTitle>{editingExpense ? "Edit Expense" : "Add New Expense"}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -433,7 +465,9 @@ export default function ProjectDetail() {
                         </FormControl>
                         <SelectContent>
                           {expenseCategories.map((cat) => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -464,7 +498,11 @@ export default function ProjectDetail() {
                   <FormItem>
                     <FormLabel>Description *</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Brief description of the expense" data-testid="input-description" />
+                      <Input
+                        {...field}
+                        placeholder="Brief description of the expense"
+                        data-testid="input-description"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -479,7 +517,11 @@ export default function ProjectDetail() {
                     <FormItem>
                       <FormLabel>Vendor Name</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Vendor/supplier name" data-testid="input-vendor" />
+                        <Input
+                          {...field}
+                          placeholder="Vendor/supplier name"
+                          data-testid="input-vendor"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -500,7 +542,9 @@ export default function ProjectDetail() {
                         </FormControl>
                         <SelectContent>
                           {paymentModes.map((mode) => (
-                            <SelectItem key={mode} value={mode}>{mode}</SelectItem>
+                            <SelectItem key={mode} value={mode}>
+                              {mode}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -532,7 +576,11 @@ export default function ProjectDetail() {
                     <FormItem>
                       <FormLabel>Receipt/Invoice Number</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Receipt or invoice number" data-testid="input-receipt" />
+                        <Input
+                          {...field}
+                          placeholder="Receipt or invoice number"
+                          data-testid="input-receipt"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -547,7 +595,12 @@ export default function ProjectDetail() {
                   <FormItem>
                     <FormLabel>Notes</FormLabel>
                     <FormControl>
-                      <Textarea {...field} placeholder="Additional notes" rows={3} data-testid="input-notes" />
+                      <Textarea
+                        {...field}
+                        placeholder="Additional notes"
+                        rows={3}
+                        data-testid="input-notes"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -559,7 +612,7 @@ export default function ProjectDetail() {
                   Cancel
                 </Button>
                 <Button type="submit" data-testid="button-submit-expense">
-                  {editingExpense ? 'Update Expense' : 'Add Expense'}
+                  {editingExpense ? "Update Expense" : "Add Expense"}
                 </Button>
               </DialogFooter>
             </form>

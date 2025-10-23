@@ -18,8 +18,8 @@ export function LockStatusBanner({ isLockedByOthers, lockedByName }: LockStatusB
         <div className="flex items-center gap-2">
           <Lock className="h-4 w-4" />
           <span data-testid="text-locked-by-message">
-            This quotation is currently being edited by <strong>{lockedByName || 'another user'}</strong>. 
-            Your changes may be overwritten.
+            This quotation is currently being edited by{" "}
+            <strong>{lockedByName || "another user"}</strong>. Your changes may be overwritten.
           </span>
         </div>
       </AlertDescription>

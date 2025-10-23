@@ -6,7 +6,31 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MoreVertical, FileText, Layers, Calculator, Printer, LogOut, Archive, Download, Settings, LayoutTemplate, Tag, Paintbrush, Sliders, History, Trash2, TrendingUp, Briefcase, Building2, Copy, AlertCircle, Clock, BarChart3 } from "lucide-react";
+import {
+  Plus,
+  MoreVertical,
+  FileText,
+  Layers,
+  Calculator,
+  Printer,
+  LogOut,
+  Archive,
+  Download,
+  Settings,
+  LayoutTemplate,
+  Tag,
+  Paintbrush,
+  Sliders,
+  History,
+  Trash2,
+  TrendingUp,
+  Briefcase,
+  Building2,
+  Copy,
+  AlertCircle,
+  Clock,
+  BarChart3,
+} from "lucide-react";
 import { useLocation } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -160,26 +184,36 @@ export default function QuotesList() {
     return Math.floor(diffMs / (1000 * 60 * 60 * 24));
   };
 
-  const getFollowUpStatus = (quotation: Quotation): { needsFollowUp: boolean; message: string; urgency: 'low' | 'medium' | 'high' } => {
+  const getFollowUpStatus = (
+    quotation: Quotation,
+  ): { needsFollowUp: boolean; message: string; urgency: "low" | "medium" | "high" } => {
     const daysSinceUpdated = getDaysSince(quotation.updatedAt!);
     const daysSinceCreated = getDaysSince(quotation.createdAt!);
-    
+
     // For sent quotations, use updatedAt as proxy for when it was sent
     if (quotation.status === "sent") {
       if (daysSinceUpdated >= 7) {
-        return { needsFollowUp: true, message: `${daysSinceUpdated}d awaiting response`, urgency: 'high' };
+        return {
+          needsFollowUp: true,
+          message: `${daysSinceUpdated}d awaiting response`,
+          urgency: "high",
+        };
       } else if (daysSinceUpdated >= 3) {
-        return { needsFollowUp: true, message: `${daysSinceUpdated}d awaiting response`, urgency: 'medium' };
+        return {
+          needsFollowUp: true,
+          message: `${daysSinceUpdated}d awaiting response`,
+          urgency: "medium",
+        };
       } else {
-        return { needsFollowUp: false, message: `${daysSinceUpdated}d ago`, urgency: 'low' };
+        return { needsFollowUp: false, message: `${daysSinceUpdated}d ago`, urgency: "low" };
       }
     }
-    
+
     if (quotation.status === "draft" && daysSinceCreated >= 14) {
-      return { needsFollowUp: true, message: `Draft ${daysSinceCreated}d old`, urgency: 'medium' };
+      return { needsFollowUp: true, message: `Draft ${daysSinceCreated}d old`, urgency: "medium" };
     }
-    
-    return { needsFollowUp: false, message: '', urgency: 'low' };
+
+    return { needsFollowUp: false, message: "", urgency: "low" };
   };
 
   const getUserInitials = () => {
@@ -205,9 +239,16 @@ export default function QuotesList() {
         <div className="container-trecasa py-3 flex items-center justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="button-user-menu">
+              <Button
+                variant="ghost"
+                className="relative h-9 w-9 rounded-full"
+                data-testid="button-user-menu"
+              >
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={user?.profileImageUrl || undefined} alt={user?.email || "User"} />
+                  <AvatarImage
+                    src={user?.profileImageUrl || undefined}
+                    alt={user?.email || "User"}
+                  />
                   <AvatarFallback>{getUserInitials()}</AvatarFallback>
                 </Avatar>
               </Button>
@@ -216,13 +257,18 @@ export default function QuotesList() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : "User"}
+                    {user?.firstName && user?.lastName
+                      ? `${user.firstName} ${user.lastName}`
+                      : "User"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/change-orders")} data-testid="button-change-orders">
+              <DropdownMenuItem
+                onClick={() => navigate("/change-orders")}
+                data-testid="button-change-orders"
+              >
                 <FileText className="mr-2 h-4 w-4" />
                 <span>Change Orders</span>
               </DropdownMenuItem>
@@ -230,36 +276,60 @@ export default function QuotesList() {
                 <Briefcase className="mr-2 h-4 w-4" />
                 <span>Projects & Expenses</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/business-expenses")} data-testid="button-business-expenses">
+              <DropdownMenuItem
+                onClick={() => navigate("/business-expenses")}
+                data-testid="button-business-expenses"
+              >
                 <Building2 className="mr-2 h-4 w-4" />
                 <span>Business Expenses</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/analytics")} data-testid="button-analytics">
+              <DropdownMenuItem
+                onClick={() => navigate("/analytics")}
+                data-testid="button-analytics"
+              >
                 <BarChart3 className="mr-2 h-4 w-4" />
                 <span>Business Insights</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/admin/rates")} data-testid="button-admin-rates">
+              <DropdownMenuItem
+                onClick={() => navigate("/admin/rates")}
+                data-testid="button-admin-rates"
+              >
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Admin - Rates</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/admin/templates")} data-testid="button-admin-templates">
+              <DropdownMenuItem
+                onClick={() => navigate("/admin/templates")}
+                data-testid="button-admin-templates"
+              >
                 <LayoutTemplate className="mr-2 h-4 w-4" />
                 <span>Admin - Templates</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/admin/brands")} data-testid="button-admin-brands">
+              <DropdownMenuItem
+                onClick={() => navigate("/admin/brands")}
+                data-testid="button-admin-brands"
+              >
                 <Tag className="mr-2 h-4 w-4" />
                 <span>Admin - Brands & Add-ons</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/admin/painting-fc")} data-testid="button-admin-painting-fc">
+              <DropdownMenuItem
+                onClick={() => navigate("/admin/painting-fc")}
+                data-testid="button-admin-painting-fc"
+              >
                 <Paintbrush className="mr-2 h-4 w-4" />
                 <span>Admin - Painting & FC</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/admin/global-rules")} data-testid="button-admin-global-rules">
+              <DropdownMenuItem
+                onClick={() => navigate("/admin/global-rules")}
+                data-testid="button-admin-global-rules"
+              >
                 <Sliders className="mr-2 h-4 w-4" />
                 <span>Admin - Global Rules</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/admin/audit")} data-testid="button-admin-audit">
+              <DropdownMenuItem
+                onClick={() => navigate("/admin/audit")}
+                data-testid="button-admin-audit"
+              >
                 <History className="mr-2 h-4 w-4" />
                 <span>Admin - Audit Log</span>
               </DropdownMenuItem>
@@ -287,7 +357,7 @@ export default function QuotesList() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  window.location.href = '/api/backup/all-data';
+                  window.location.href = "/api/backup/all-data";
                 }}
                 data-testid="button-download-all-data"
               >
@@ -332,10 +402,16 @@ export default function QuotesList() {
                 <TableBody>
                   {quotations.map((quotation) => (
                     <TableRow key={quotation.id} data-testid={`quote-row-${quotation.id}`}>
-                      <TableCell className="font-mono text-sm" data-testid={`quote-id-${quotation.id}`}>
+                      <TableCell
+                        className="font-mono text-sm"
+                        data-testid={`quote-id-${quotation.id}`}
+                      >
                         {quotation.quoteId}
                       </TableCell>
-                      <TableCell className="font-medium" data-testid={`text-project-name-${quotation.id}`}>
+                      <TableCell
+                        className="font-medium"
+                        data-testid={`text-project-name-${quotation.id}`}
+                      >
                         {quotation.projectName}
                       </TableCell>
                       <TableCell data-testid={`text-client-name-${quotation.id}`}>
@@ -346,7 +422,11 @@ export default function QuotesList() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className={getStatusColor(quotation.status)} data-testid={`status-${quotation.id}`}>
+                          <Badge
+                            variant="outline"
+                            className={getStatusColor(quotation.status)}
+                            data-testid={`status-${quotation.id}`}
+                          >
                             {quotation.status}
                           </Badge>
                           {(() => {
@@ -354,12 +434,20 @@ export default function QuotesList() {
                             if (followUp.needsFollowUp) {
                               return (
                                 <div className="flex items-center gap-1" title={followUp.message}>
-                                  {followUp.urgency === 'high' ? (
-                                    <AlertCircle className="h-4 w-4 text-destructive" data-testid={`alert-high-${quotation.id}`} />
+                                  {followUp.urgency === "high" ? (
+                                    <AlertCircle
+                                      className="h-4 w-4 text-destructive"
+                                      data-testid={`alert-high-${quotation.id}`}
+                                    />
                                   ) : (
-                                    <Clock className="h-4 w-4 text-orange-500" data-testid={`alert-medium-${quotation.id}`} />
+                                    <Clock
+                                      className="h-4 w-4 text-orange-500"
+                                      data-testid={`alert-medium-${quotation.id}`}
+                                    />
                                   )}
-                                  <span className="text-xs text-muted-foreground">{followUp.message}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {followUp.message}
+                                  </span>
                                 </div>
                               );
                             }
@@ -367,16 +455,22 @@ export default function QuotesList() {
                           })()}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-mono font-semibold" data-testid={`total-${quotation.id}`}>
+                      <TableCell
+                        className="text-right font-mono font-semibold"
+                        data-testid={`total-${quotation.id}`}
+                      >
                         {getQuoteTotal(quotation)}
                       </TableCell>
-                      <TableCell className="text-muted-foreground" data-testid={`text-created-${quotation.id}`}>
+                      <TableCell
+                        className="text-muted-foreground"
+                        data-testid={`text-created-${quotation.id}`}
+                      >
                         {new Date(quotation.createdAt!).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="icon"
                             onClick={() => duplicateMutation.mutate(quotation.id)}
                             disabled={duplicateMutation.isPending}
@@ -387,84 +481,93 @@ export default function QuotesList() {
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" data-testid={`button-actions-${quotation.id}`}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                data-testid={`button-actions-${quotation.id}`}
+                              >
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => navigate(`/quotation/${quotation.id}/info`)}
-                              data-testid={`action-edit-${quotation.id}`}
-                            >
-                              <FileText className="mr-2 h-4 w-4" />
-                              View/Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => navigate(`/quotation/${quotation.id}/scope`)}
-                              data-testid={`action-scope-${quotation.id}`}
-                            >
-                              <Layers className="mr-2 h-4 w-4" />
-                              Scope
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => navigate(`/quotation/${quotation.id}/estimate`)}
-                              data-testid={`action-estimate-${quotation.id}`}
-                            >
-                              <Calculator className="mr-2 h-4 w-4" />
-                              Estimate
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => navigate(`/quotation/${quotation.id}/print`)}
-                              data-testid={`action-print-${quotation.id}`}
-                            >
-                              <Printer className="mr-2 h-4 w-4" />
-                              Print
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => {
-                                window.location.href = `/api/quotations/${quotation.id}/backup/download`;
-                              }}
-                              data-testid={`action-backup-${quotation.id}`}
-                            >
-                              <Archive className="mr-2 h-4 w-4" />
-                              Download Backup ZIP
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem 
-                                  onSelect={(e) => e.preventDefault()}
-                                  className="text-destructive focus:text-destructive"
-                                  data-testid={`action-delete-${quotation.id}`}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Quotation</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete quotation "{quotation.quoteId}"? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel data-testid={`cancel-delete-${quotation.id}`}>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => deleteMutation.mutate(quotation.id)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    data-testid={`confirm-delete-${quotation.id}`}
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => navigate(`/quotation/${quotation.id}/info`)}
+                                data-testid={`action-edit-${quotation.id}`}
+                              >
+                                <FileText className="mr-2 h-4 w-4" />
+                                View/Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => navigate(`/quotation/${quotation.id}/scope`)}
+                                data-testid={`action-scope-${quotation.id}`}
+                              >
+                                <Layers className="mr-2 h-4 w-4" />
+                                Scope
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => navigate(`/quotation/${quotation.id}/estimate`)}
+                                data-testid={`action-estimate-${quotation.id}`}
+                              >
+                                <Calculator className="mr-2 h-4 w-4" />
+                                Estimate
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => navigate(`/quotation/${quotation.id}/print`)}
+                                data-testid={`action-print-${quotation.id}`}
+                              >
+                                <Printer className="mr-2 h-4 w-4" />
+                                Print
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  window.location.href = `/api/quotations/${quotation.id}/backup/download`;
+                                }}
+                                data-testid={`action-backup-${quotation.id}`}
+                              >
+                                <Archive className="mr-2 h-4 w-4" />
+                                Download Backup ZIP
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem
+                                    onSelect={(e) => e.preventDefault()}
+                                    className="text-destructive focus:text-destructive"
+                                    data-testid={`action-delete-${quotation.id}`}
                                   >
+                                    <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Quotation</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete quotation "{quotation.quoteId}
+                                      "? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel
+                                      data-testid={`cancel-delete-${quotation.id}`}
+                                    >
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteMutation.mutate(quotation.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      data-testid={`confirm-delete-${quotation.id}`}
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -479,7 +582,9 @@ export default function QuotesList() {
                   <Plus className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">No quotations yet</h3>
-                <p className="text-muted-foreground mb-6">Get started by creating your first quotation</p>
+                <p className="text-muted-foreground mb-6">
+                  Get started by creating your first quotation
+                </p>
                 <Button
                   onClick={() => setShowNewQuotationDialog(true)}
                   data-testid="button-create-first"

@@ -65,7 +65,7 @@ export default function ChangeOrdersList() {
   const [, navigate] = useLocation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedChangeOrderId, setSelectedChangeOrderId] = useState<string | null>(null);
-  
+
   // Create dialog state
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedQuotationId, setSelectedQuotationId] = useState<string>("");
@@ -101,7 +101,7 @@ export default function ChangeOrdersList() {
       if (!selectedQuotationId || !title.trim()) {
         throw new Error("Please select a quotation and enter a title");
       }
-      
+
       const response = await apiRequest("POST", "/api/change-orders", {
         quotationId: selectedQuotationId,
         title: title.trim(),
@@ -191,16 +191,20 @@ export default function ChangeOrdersList() {
       rejected: { label: "Rejected", className: "bg-red-500" },
     };
     const config = statusMap[status as keyof typeof statusMap] || statusMap.draft;
-    return <Badge className={config.className} data-testid={`badge-status-${status}`}>{config.label}</Badge>;
+    return (
+      <Badge className={config.className} data-testid={`badge-status-${status}`}>
+        {config.label}
+      </Badge>
+    );
   };
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-IN", { 
-      year: "numeric", 
-      month: "short", 
-      day: "numeric" 
+    return date.toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -208,18 +212,18 @@ export default function ChangeOrdersList() {
     const subtotal = safeN(co.totals?.grandSubtotal);
     const discountType = co.discountType || "percent";
     const discountValue = safeN(co.discountValue);
-    
+
     let discountAmount = 0;
     if (discountType === "percent") {
       discountAmount = (subtotal * discountValue) / 100;
     } else {
       discountAmount = discountValue;
     }
-    
+
     const afterDiscount = subtotal - discountAmount;
     const gstAmount = (afterDiscount * 18) / 100;
     const total = afterDiscount + gstAmount;
-    
+
     return total;
   };
 
@@ -237,119 +241,124 @@ export default function ChangeOrdersList() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
-      
-      <main className="flex-1 container-trecasa py-6 lg:py-8 space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground" data-testid="heading-change-orders">Change Orders</h1>
-              <p className="text-muted-foreground">Manage project modifications and additions</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleCreateClick}
-                data-testid="button-create-change-order"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                New Change Order
-              </Button>
-              <Button
-                onClick={() => navigate("/quotes")}
-                variant="outline"
-                data-testid="button-back-to-quotes"
-              >
-                Back to Quotes
-              </Button>
-            </div>
-          </div>
 
-          <Card>
-            <CardContent className="p-0">
-              {!changeOrders || changeOrders.length === 0 ? (
-                <div className="p-12 text-center">
-                  <FileText className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Change Orders</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Create change orders from your quotations to track project modifications
-                  </p>
-                  <Button onClick={handleCreateClick} data-testid="button-create-first-change-order">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Change Order
-                  </Button>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>CO ID</TableHead>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Quote ID</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {changeOrders.map((co) => (
-                      <TableRow 
-                        key={co.id}
-                        className="cursor-pointer hover-elevate"
-                        onClick={() => navigate(`/change-orders/${co.id}`)}
-                        data-testid={`row-change-order-${co.id}`}
+      <main className="flex-1 container-trecasa py-6 lg:py-8 space-y-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground" data-testid="heading-change-orders">
+              Change Orders
+            </h1>
+            <p className="text-muted-foreground">Manage project modifications and additions</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleCreateClick} data-testid="button-create-change-order">
+              <Plus className="w-4 h-4 mr-2" />
+              New Change Order
+            </Button>
+            <Button
+              onClick={() => navigate("/quotes")}
+              variant="outline"
+              data-testid="button-back-to-quotes"
+            >
+              Back to Quotes
+            </Button>
+          </div>
+        </div>
+
+        <Card>
+          <CardContent className="p-0">
+            {!changeOrders || changeOrders.length === 0 ? (
+              <div className="p-12 text-center">
+                <FileText className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Change Orders</h3>
+                <p className="text-muted-foreground mb-6">
+                  Create change orders from your quotations to track project modifications
+                </p>
+                <Button onClick={handleCreateClick} data-testid="button-create-first-change-order">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Change Order
+                </Button>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>CO ID</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Quote ID</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {changeOrders.map((co) => (
+                    <TableRow
+                      key={co.id}
+                      className="cursor-pointer hover-elevate"
+                      onClick={() => navigate(`/change-orders/${co.id}`)}
+                      data-testid={`row-change-order-${co.id}`}
+                    >
+                      <TableCell className="font-mono text-sm" data-testid={`text-co-id-${co.id}`}>
+                        {co.changeOrderId}
+                      </TableCell>
+                      <TableCell data-testid={`text-title-${co.id}`}>{co.title}</TableCell>
+                      <TableCell
+                        className="font-mono text-sm"
+                        data-testid={`text-quote-id-${co.id}`}
                       >
-                        <TableCell className="font-mono text-sm" data-testid={`text-co-id-${co.id}`}>
-                          {co.changeOrderId}
-                        </TableCell>
-                        <TableCell data-testid={`text-title-${co.id}`}>
-                          {co.title}
-                        </TableCell>
-                        <TableCell className="font-mono text-sm" data-testid={`text-quote-id-${co.id}`}>
-                          {co.quotation?.quoteId || "-"}
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(co.status)}
-                        </TableCell>
-                        <TableCell data-testid={`text-created-${co.id}`}>
-                          {formatDate(co.createdAt?.toString())}
-                        </TableCell>
-                        <TableCell className="text-right font-semibold" data-testid={`text-amount-${co.id}`}>
-                          {formatINR(calculateTotal(co))}
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" data-testid={`button-menu-${co.id}`}>
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => navigate(`/change-orders/${co.id}`)}
-                                data-testid={`menu-edit-${co.id}`}
-                              >
-                                <FileText className="w-4 h-4 mr-2" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(co.id)}
-                                className="text-destructive"
-                                data-testid={`menu-delete-${co.id}`}
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+                        {co.quotation?.quoteId || "-"}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(co.status)}</TableCell>
+                      <TableCell data-testid={`text-created-${co.id}`}>
+                        {formatDate(co.createdAt?.toString())}
+                      </TableCell>
+                      <TableCell
+                        className="text-right font-semibold"
+                        data-testid={`text-amount-${co.id}`}
+                      >
+                        {formatINR(calculateTotal(co))}
+                      </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              data-testid={`button-menu-${co.id}`}
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => navigate(`/change-orders/${co.id}`)}
+                              data-testid={`menu-edit-${co.id}`}
+                            >
+                              <FileText className="w-4 h-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(co.id)}
+                              className="text-destructive"
+                              data-testid={`menu-delete-${co.id}`}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       </main>
 
       <AppFooter />
@@ -363,7 +372,7 @@ export default function ChangeOrdersList() {
               Add a change order to track modifications to an existing quotation
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="quotation">Select Quotation</Label>
@@ -373,8 +382,8 @@ export default function ChangeOrdersList() {
                 </SelectTrigger>
                 <SelectContent>
                   {quotations?.map((quote) => (
-                    <SelectItem 
-                      key={quote.id} 
+                    <SelectItem
+                      key={quote.id}
                       value={quote.id}
                       data-testid={`option-quotation-${quote.id}`}
                     >
@@ -434,7 +443,8 @@ export default function ChangeOrdersList() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Change Order?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the change order and all its items.
+              This action cannot be undone. This will permanently delete the change order and all
+              its items.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -4,7 +4,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, FileText, Trash2, LogOut } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -162,9 +169,16 @@ export default function Dashboard() {
         <div className="container-trecasa py-3 flex items-center justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="button-user-menu">
+              <Button
+                variant="ghost"
+                className="relative h-9 w-9 rounded-full"
+                data-testid="button-user-menu"
+              >
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={user?.profileImageUrl || undefined} alt={user?.email || "User"} />
+                  <AvatarImage
+                    src={user?.profileImageUrl || undefined}
+                    alt={user?.email || "User"}
+                  />
                   <AvatarFallback>{getUserInitials()}</AvatarFallback>
                 </Avatar>
               </Button>
@@ -173,13 +187,18 @@ export default function Dashboard() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : "User"}
+                    {user?.firstName && user?.lastName
+                      ? `${user.firstName} ${user.lastName}`
+                      : "User"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => window.location.href = '/api/logout'} data-testid="button-logout">
+              <DropdownMenuItem
+                onClick={() => (window.location.href = "/api/logout")}
+                data-testid="button-logout"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
@@ -190,110 +209,117 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="container-trecasa py-6 lg:py-8 flex-1">
-          {/* Page Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold text-foreground">Quotations</h2>
-              <p className="text-muted-foreground mt-1">Manage your interior design quotations</p>
-            </div>
-            <Button 
-              onClick={() => createMutation.mutate()} 
-              disabled={createMutation.isPending}
-              data-testid="button-new-quotation"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              New Quotation
-            </Button>
+        {/* Page Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-foreground">Quotations</h2>
+            <p className="text-muted-foreground mt-1">Manage your interior design quotations</p>
           </div>
+          <Button
+            onClick={() => createMutation.mutate()}
+            disabled={createMutation.isPending}
+            data-testid="button-new-quotation"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Quotation
+          </Button>
+        </div>
 
-          {/* Quotations Grid */}
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardHeader className="space-y-2">
-                    <div className="h-6 bg-muted rounded w-3/4"></div>
-                    <div className="h-4 bg-muted rounded w-1/2"></div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-4 bg-muted rounded w-full mb-2"></div>
-                    <div className="h-4 bg-muted rounded w-2/3"></div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : quotations && quotations.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {quotations.map((quotation) => (
-                <Card key={quotation.id} className="hover-elevate transition-shadow" data-testid={`card-quotation-${quotation.id}`}>
-                  <CardHeader className="space-y-0 pb-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-xl">{quotation.projectName}</CardTitle>
-                      <Badge className={`${getStatusColor(quotation.status)} text-xs`} data-testid={`badge-status-${quotation.id}`}>
-                        {quotation.status.replace('_', ' ')}
-                      </Badge>
-                    </div>
-                    <CardDescription className="text-sm">{quotation.clientName}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pb-4">
-                    <div className="space-y-2 text-sm">
-                      {quotation.clientEmail && (
-                        <p className="text-muted-foreground">{quotation.clientEmail}</p>
-                      )}
-                      {quotation.clientPhone && (
-                        <p className="text-muted-foreground">{quotation.clientPhone}</p>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        Created {new Date(quotation.createdAt!).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex gap-2 pt-4 border-t border-card-border">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1" 
-                      asChild
-                      data-testid={`button-view-${quotation.id}`}
+        {/* Quotations Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader className="space-y-2">
+                  <div className="h-6 bg-muted rounded w-3/4"></div>
+                  <div className="h-4 bg-muted rounded w-1/2"></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-4 bg-muted rounded w-full mb-2"></div>
+                  <div className="h-4 bg-muted rounded w-2/3"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : quotations && quotations.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {quotations.map((quotation) => (
+              <Card
+                key={quotation.id}
+                className="hover-elevate transition-shadow"
+                data-testid={`card-quotation-${quotation.id}`}
+              >
+                <CardHeader className="space-y-0 pb-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-xl">{quotation.projectName}</CardTitle>
+                    <Badge
+                      className={`${getStatusColor(quotation.status)} text-xs`}
+                      data-testid={`badge-status-${quotation.id}`}
                     >
-                      <Link href={`/quotation/${quotation.id}/info`}>
-                        <FileText className="mr-2 h-4 w-4" />
-                        View
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        setQuotationToDelete(quotation.id);
-                        setDeleteDialogOpen(true);
-                      }}
-                      data-testid={`button-delete-${quotation.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+                      {quotation.status.replace("_", " ")}
+                    </Badge>
+                  </div>
+                  <CardDescription className="text-sm">{quotation.clientName}</CardDescription>
+                </CardHeader>
+                <CardContent className="pb-4">
+                  <div className="space-y-2 text-sm">
+                    {quotation.clientEmail && (
+                      <p className="text-muted-foreground">{quotation.clientEmail}</p>
+                    )}
+                    {quotation.clientPhone && (
+                      <p className="text-muted-foreground">{quotation.clientPhone}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Created {new Date(quotation.createdAt!).toLocaleDateString()}
+                    </p>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex gap-2 pt-4 border-t border-card-border">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    asChild
+                    data-testid={`button-view-${quotation.id}`}
+                  >
+                    <Link href={`/quotation/${quotation.id}/info`}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      View
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      setQuotationToDelete(quotation.id);
+                      setDeleteDialogOpen(true);
+                    }}
+                    data-testid={`button-delete-${quotation.id}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="p-12">
+            <div className="text-center">
+              <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2 text-foreground">No quotations yet</h3>
+              <p className="text-muted-foreground mb-6">
+                Create your first quotation to get started
+              </p>
+              <Button
+                onClick={() => createMutation.mutate()}
+                disabled={createMutation.isPending}
+                data-testid="button-create-first"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create First Quotation
+              </Button>
             </div>
-          ) : (
-            <Card className="p-12">
-              <div className="text-center">
-                <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2 text-foreground">No quotations yet</h3>
-                <p className="text-muted-foreground mb-6">
-                  Create your first quotation to get started
-                </p>
-                <Button 
-                  onClick={() => createMutation.mutate()}
-                  disabled={createMutation.isPending}
-                  data-testid="button-create-first"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create First Quotation
-                </Button>
-              </div>
-            </Card>
-          )}
+          </Card>
+        )}
       </main>
 
       <AppFooter />
@@ -304,7 +330,8 @@ export default function Dashboard() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the quotation and all associated data.
+              This action cannot be undone. This will permanently delete the quotation and all
+              associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

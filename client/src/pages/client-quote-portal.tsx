@@ -25,8 +25,12 @@ export default function ClientQuotePortal() {
   const [isAccepting, setIsAccepting] = useState(false);
 
   // Fetch quote info using token
-  const { data: quoteInfo, isLoading, error } = useQuery({
-    queryKey: ['/api/client-quote', quoteId, 'info'],
+  const {
+    data: quoteInfo,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["/api/client-quote", quoteId, "info"],
     queryFn: async () => {
       const response = await fetch(`/api/client-quote/${quoteId}/info?token=${token}`, {
         credentials: "include",
@@ -62,7 +66,7 @@ export default function ClientQuotePortal() {
       });
       // Download agreement PDF
       if (data.agreementUrl) {
-        window.open(data.agreementUrl, '_blank');
+        window.open(data.agreementUrl, "_blank");
       }
     },
     onError: (error: any) => {
@@ -105,14 +109,12 @@ export default function ClientQuotePortal() {
               <AlertCircle className="h-5 w-5 text-destructive" />
               Access Denied
             </CardTitle>
-            <CardDescription>
-              {error?.message || "Unable to load quotation"}
-            </CardDescription>
+            <CardDescription>{error?.message || "Unable to load quotation"}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              The link may be invalid, expired, or the quote may no longer be available.
-              Please contact TRECASA Design Studio for assistance.
+              The link may be invalid, expired, or the quote may no longer be available. Please
+              contact TRECASA Design Studio for assistance.
             </p>
           </CardContent>
         </Card>
@@ -130,7 +132,9 @@ export default function ClientQuotePortal() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">TRECASA DESIGN STUDIO</h1>
-              <p className="text-sm text-muted-foreground">Luxury Interiors | Architecture | Build</p>
+              <p className="text-sm text-muted-foreground">
+                Luxury Interiors | Architecture | Build
+              </p>
             </div>
             {status === "approved" && (
               <div className="flex items-center gap-2 text-green-600">
@@ -207,7 +211,8 @@ export default function ClientQuotePortal() {
                 <Separator />
                 <div className="flex justify-between items-center">
                   <span className="font-medium">
-                    Discount {totals.discount.type === "percent" ? `(${totals.discount.value}%)` : ""}
+                    Discount{" "}
+                    {totals.discount.type === "percent" ? `(${totals.discount.value}%)` : ""}
                   </span>
                   <span className="font-mono text-green-600">
                     -{formatINR(totals.discount.amount)}
@@ -245,15 +250,13 @@ export default function ClientQuotePortal() {
         <Card className="mb-6" data-testid="card-pdfs">
           <CardHeader>
             <CardTitle>Download Documents</CardTitle>
-            <CardDescription>
-              Download detailed quotations for review
-            </CardDescription>
+            <CardDescription>Download detailed quotations for review</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button
               variant="outline"
               className="w-full justify-start"
-              onClick={() => window.open(pdfUrls.interiors, '_blank')}
+              onClick={() => window.open(pdfUrls.interiors, "_blank")}
               data-testid="button-download-interiors"
             >
               <FileText className="mr-2 h-4 w-4" />
@@ -263,7 +266,7 @@ export default function ClientQuotePortal() {
               <Button
                 variant="outline"
                 className="w-full justify-start"
-                onClick={() => window.open(pdfUrls.fc, '_blank')}
+                onClick={() => window.open(pdfUrls.fc, "_blank")}
                 data-testid="button-download-fc"
               >
                 <FileText className="mr-2 h-4 w-4" />
@@ -308,7 +311,8 @@ export default function ClientQuotePortal() {
           <Alert>
             <CheckCircle2 className="h-4 w-4" />
             <AlertDescription>
-              This quotation has been approved. You can download the agreement PDF from the documents section above.
+              This quotation has been approved. You can download the agreement PDF from the
+              documents section above.
             </AlertDescription>
           </Alert>
         )}

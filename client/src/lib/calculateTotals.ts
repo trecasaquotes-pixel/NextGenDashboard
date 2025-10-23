@@ -28,7 +28,7 @@ export interface QuoteTotals {
 export function calculateQuoteTotals(
   interiorItems: InteriorItem[],
   falseCeilingItems: FalseCeilingItem[],
-  otherItems: OtherItem[]
+  otherItems: OtherItem[],
 ): QuoteTotals {
   // Interiors subtotal = sum of all interior item amounts
   const interiorsSubtotal = interiorItems.reduce((sum, item) => {
@@ -39,11 +39,11 @@ export function calculateQuoteTotals(
   const fcRoomSubtotal = falseCeilingItems.reduce((sum, item) => {
     return sum + safeN(item.totalPrice);
   }, 0);
-  
+
   const fcOthersSubtotal = otherItems.reduce((sum, item) => {
     return sum + safeN(item.totalPrice);
   }, 0);
-  
+
   const fcSubtotal = fcRoomSubtotal + fcOthersSubtotal;
 
   // Grand subtotal = interiors + FC

@@ -3,10 +3,29 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
@@ -77,11 +96,11 @@ export default function BusinessExpenses() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const { data: expenses = [], isLoading } = useQuery<BusinessExpense[]>({
-    queryKey: ['/api/business-expenses'],
+    queryKey: ["/api/business-expenses"],
   });
 
   const { data: stats } = useQuery<ExpenseStats>({
-    queryKey: ['/api/business-expenses/stats'],
+    queryKey: ["/api/business-expenses/stats"],
   });
 
   const form = useForm<ExpenseFormValues>({
@@ -107,8 +126,8 @@ export default function BusinessExpenses() {
       return apiRequest("POST", "/api/business-expenses", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/business-expenses'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/business-expenses/stats'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/business-expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/business-expenses/stats"] });
       toast({ title: "Business expense added successfully" });
       setShowExpenseDialog(false);
       form.reset();
@@ -124,8 +143,8 @@ export default function BusinessExpenses() {
       return apiRequest("PATCH", `/api/business-expenses/${id}`, body);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/business-expenses'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/business-expenses/stats'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/business-expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/business-expenses/stats"] });
       toast({ title: "Expense updated successfully" });
       setShowExpenseDialog(false);
       setEditingExpense(null);
@@ -141,8 +160,8 @@ export default function BusinessExpenses() {
       return apiRequest("DELETE", `/api/business-expenses/${expenseId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/business-expenses'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/business-expenses/stats'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/business-expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/business-expenses/stats"] });
       toast({ title: "Expense deleted successfully" });
     },
     onError: () => {
@@ -175,7 +194,7 @@ export default function BusinessExpenses() {
       amount: expense.amount,
       vendorName: expense.vendorName || "",
       paymentMode: (expense.paymentMode as any) || undefined,
-      paymentDate: expense.paymentDate ? format(new Date(expense.paymentDate), 'yyyy-MM-dd') : "",
+      paymentDate: expense.paymentDate ? format(new Date(expense.paymentDate), "yyyy-MM-dd") : "",
       receiptNumber: expense.receiptNumber || "",
       isRecurring: expense.isRecurring || false,
       recurringFrequency: (expense.recurringFrequency as any) || undefined,
@@ -198,11 +217,15 @@ export default function BusinessExpenses() {
     }
   };
 
-  const filteredExpenses = selectedCategory === "all" 
-    ? expenses 
-    : expenses.filter(exp => exp.category === selectedCategory);
+  const filteredExpenses =
+    selectedCategory === "all"
+      ? expenses
+      : expenses.filter((exp) => exp.category === selectedCategory);
 
-  const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount || "0"), 0);
+  const totalExpenses = filteredExpenses.reduce(
+    (sum, exp) => sum + parseFloat(exp.amount || "0"),
+    0,
+  );
 
   if (isLoading) {
     return (
@@ -238,11 +261,9 @@ export default function BusinessExpenses() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" data-testid="text-total-expenses">
-              ₹{stats?.totalExpenses.toLocaleString('en-IN') || '0'}
+              ₹{stats?.totalExpenses.toLocaleString("en-IN") || "0"}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {stats?.count || 0} expenses recorded
-            </p>
+            <p className="text-xs text-muted-foreground">{stats?.count || 0} expenses recorded</p>
           </CardContent>
         </Card>
 
@@ -255,12 +276,14 @@ export default function BusinessExpenses() {
             <div className="text-2xl font-bold">
               {stats && Object.keys(stats.byCategory).length > 0
                 ? Object.entries(stats.byCategory).sort((a, b) => b[1] - a[1])[0][0]
-                : 'N/A'}
+                : "N/A"}
             </div>
             <p className="text-xs text-muted-foreground">
               {stats && Object.keys(stats.byCategory).length > 0
-                ? `₹${Object.entries(stats.byCategory).sort((a, b) => b[1] - a[1])[0][1].toLocaleString('en-IN')}`
-                : 'No expenses'}
+                ? `₹${Object.entries(stats.byCategory)
+                    .sort((a, b) => b[1] - a[1])[0][1]
+                    .toLocaleString("en-IN")}`
+                : "No expenses"}
             </p>
           </CardContent>
         </Card>
@@ -272,11 +295,12 @@ export default function BusinessExpenses() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ₹{stats?.monthlyTotals[stats.monthlyTotals.length - 1]?.total.toLocaleString('en-IN') || '0'}
+              ₹
+              {stats?.monthlyTotals[stats.monthlyTotals.length - 1]?.total.toLocaleString(
+                "en-IN",
+              ) || "0"}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Current month expenses
-            </p>
+            <p className="text-xs text-muted-foreground">Current month expenses</p>
           </CardContent>
         </Card>
       </div>
@@ -299,7 +323,7 @@ export default function BusinessExpenses() {
               variant={selectedCategory === cat ? "default" : "outline"}
               className="cursor-pointer hover-elevate"
               onClick={() => setSelectedCategory(cat)}
-              data-testid={`filter-${cat.toLowerCase().replace(/\s+/g, '-')}`}
+              data-testid={`filter-${cat.toLowerCase().replace(/\s+/g, "-")}`}
             >
               {cat}
             </Badge>
@@ -352,12 +376,15 @@ export default function BusinessExpenses() {
                       )}
                       {expense.paymentDate && (
                         <span data-testid={`text-payment-date-${expense.id}`}>
-                          {format(new Date(expense.paymentDate), 'MMM dd, yyyy')}
+                          {format(new Date(expense.paymentDate), "MMM dd, yyyy")}
                         </span>
                       )}
                     </div>
                     {expense.notes && (
-                      <p className="text-sm text-muted-foreground mt-1" data-testid={`text-notes-${expense.id}`}>
+                      <p
+                        className="text-sm text-muted-foreground mt-1"
+                        data-testid={`text-notes-${expense.id}`}
+                      >
                         {expense.notes}
                       </p>
                     )}
@@ -365,7 +392,7 @@ export default function BusinessExpenses() {
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-2xl font-bold" data-testid={`text-amount-${expense.id}`}>
-                        ₹{parseFloat(expense.amount).toLocaleString('en-IN')}
+                        ₹{parseFloat(expense.amount).toLocaleString("en-IN")}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -398,9 +425,7 @@ export default function BusinessExpenses() {
       <Dialog open={showExpenseDialog} onOpenChange={setShowExpenseDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {editingExpense ? "Edit Expense" : "Add New Expense"}
-            </DialogTitle>
+            <DialogTitle>{editingExpense ? "Edit Expense" : "Add New Expense"}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -437,11 +462,7 @@ export default function BusinessExpenses() {
                     <FormItem>
                       <FormLabel>Amount (₹) *</FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="0.00"
-                          data-testid="input-amount"
-                        />
+                        <Input {...field} placeholder="0.00" data-testid="input-amount" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -520,11 +541,7 @@ export default function BusinessExpenses() {
                     <FormItem>
                       <FormLabel>Payment Date</FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          type="date"
-                          data-testid="input-payment-date"
-                        />
+                        <Input {...field} type="date" data-testid="input-payment-date" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -564,9 +581,7 @@ export default function BusinessExpenses() {
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          This is a recurring expense
-                        </FormLabel>
+                        <FormLabel>This is a recurring expense</FormLabel>
                         <p className="text-sm text-muted-foreground">
                           Mark if this expense occurs regularly
                         </p>

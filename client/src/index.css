@@ -6,35 +6,35 @@
 
 /* LIGHT MODE */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
+  --button-outline: rgba(0, 0, 0, 0.1);
+  --badge-outline: rgba(0, 0, 0, 0.05);
 
   /* Automatic computation of border around primary / danger buttons */
   --opaque-button-border-intensity: -8; /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
+  --elevate-1: rgba(0, 0, 0, 0.03);
+  --elevate-2: rgba(0, 0, 0, 0.08);
 
   /* Trecasa Brand Colors */
-  --trecasa-green: 144 51% 19%;       /* Brand Green #18492d */
-  --trecasa-gold: 46 54% 53%;         /* Gold #C7A948 */
-  --trecasa-red: 0 65% 43%;           /* Red Accent #b52626 */
-  --trecasa-offwhite: 60 33% 98%;     /* Off-white #FAFAF8 */
-  --trecasa-gray: 0 0% 23%;           /* Warm Gray #3B3B3B */
+  --trecasa-green: 144 51% 19%; /* Brand Green #18492d */
+  --trecasa-gold: 46 54% 53%; /* Gold #C7A948 */
+  --trecasa-red: 0 65% 43%; /* Red Accent #b52626 */
+  --trecasa-offwhite: 60 33% 98%; /* Off-white #FAFAF8 */
+  --trecasa-gray: 0 0% 23%; /* Warm Gray #3B3B3B */
 
   /* Page Width Variables */
-  --page-max: 1440px;      /* Desktop max width */
-  --page-wide: 1536px;     /* Ultra-wide for XL+ screens */
+  --page-max: 1440px; /* Desktop max width */
+  --page-wide: 1536px; /* Ultra-wide for XL+ screens */
   --page-padding-sm: 16px; /* Mobile gutters */
   --page-padding-md: 24px; /* Tablet gutters */
   --page-padding-lg: 32px; /* Desktop gutters */
 
-  --background: 60 33% 98%;            /* Off-white background */
+  --background: 60 33% 98%; /* Off-white background */
 
-  --foreground: 0 0% 23%;              /* Warm Gray text */
+  --foreground: 0 0% 23%; /* Warm Gray text */
 
-  --border: 144 20% 85%;               /* Light green tint */
+  --border: 144 20% 85%; /* Light green tint */
 
   --card: 0 0% 100%;
 
@@ -48,11 +48,11 @@
 
   --sidebar-border: 144 15% 88%;
 
-  --sidebar-primary: 144 51% 19%;       /* Trecasa Green */
+  --sidebar-primary: 144 51% 19%; /* Trecasa Green */
 
   --sidebar-primary-foreground: 0 0% 100%;
 
-  --sidebar-accent: 42 30% 92%;         /* Light gold tint */
+  --sidebar-accent: 42 30% 92%; /* Light gold tint */
 
   --sidebar-accent-foreground: 144 51% 19%;
 
@@ -64,23 +64,23 @@
 
   --popover-border: 144 20% 85%;
 
-  --primary: 144 51% 19%;               /* Trecasa Green */
+  --primary: 144 51% 19%; /* Trecasa Green */
 
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 46 54% 53%;              /* Trecasa Gold */
+  --secondary: 46 54% 53%; /* Trecasa Gold */
 
-  --secondary-foreground: 144 51% 19%;  /* Green text on gold */
+  --secondary-foreground: 144 51% 19%; /* Green text on gold */
 
   --muted: 144 20% 90%;
 
   --muted-foreground: 0 0% 45%;
 
-  --accent: 46 54% 53%;                 /* Trecasa Gold */
+  --accent: 46 54% 53%; /* Trecasa Gold */
 
   --accent-foreground: 144 51% 19%;
 
-  --destructive: 0 65% 43%;             /* Trecasa Red */
+  --destructive: 0 65% 43%; /* Trecasa Red */
 
   --destructive-foreground: 0 0% 100%;
 
@@ -92,17 +92,18 @@
   --chart-4: 0 0% 23%;
   --chart-5: 142 50% 50%;
 
-  --font-sans: 'Montserrat', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-mono: 'Montserrat', system-ui, -apple-system, sans-serif;
-  --radius: .5rem;
+  --font-sans: "Montserrat", system-ui, -apple-system, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: "Montserrat", system-ui, -apple-system, sans-serif;
+  --radius: 0.5rem;
   --shadow-2xs: 0px 1px 2px 0px hsl(220 15% 15% / 0.05);
   --shadow-xs: 0px 1px 3px 0px hsl(220 15% 15% / 0.1);
   --shadow-sm: 0px 1px 2px 0px hsl(220 15% 15% / 0.05), 0px 2px 4px -1px hsl(220 15% 15% / 0.06);
   --shadow: 0px 2px 4px -1px hsl(220 15% 15% / 0.06), 0px 4px 6px -1px hsl(220 15% 15% / 0.1);
   --shadow-md: 0px 4px 6px -1px hsl(220 15% 15% / 0.1), 0px 10px 15px -3px hsl(220 15% 15% / 0.1);
   --shadow-lg: 0px 10px 15px -3px hsl(220 15% 15% / 0.1), 0px 20px 25px -5px hsl(220 15% 15% / 0.1);
-  --shadow-xl: 0px 20px 25px -5px hsl(220 15% 15% / 0.1), 0px 25px 50px -12px hsl(220 15% 15% / 0.25);
+  --shadow-xl:
+    0px 20px 25px -5px hsl(220 15% 15% / 0.1), 0px 25px 50px -12px hsl(220 15% 15% / 0.25);
   --shadow-2xl: 0px 25px 50px -12px hsl(220 15% 15% / 0.25);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
@@ -111,44 +112,58 @@
 
   /* Fallback for older browsers */
   --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --sidebar-primary-border: hsl(
+    from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 
   /* Fallback for older browsers */
   --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --sidebar-accent-border: hsl(
+    from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 
   /* Fallback for older browsers */
   --primary-border: hsl(var(--primary));
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --primary-border: hsl(
+    from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 
   /* Fallback for older browsers */
   --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --secondary-border: hsl(
+    from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 
   /* Fallback for older browsers */
   --muted-border: hsl(var(--muted));
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --muted-border: hsl(
+    from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 
   /* Fallback for older browsers */
   --accent-border: hsl(var(--accent));
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --accent-border: hsl(
+    from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 
   /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --destructive-border: hsl(
+    from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 }
 
 .dark {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
+  --button-outline: rgba(255, 255, 255, 0.1);
+  --badge-outline: rgba(255, 255, 255, 0.05);
 
-  --opaque-button-border-intensity: 9;  /* In terms of percentages */
+  --opaque-button-border-intensity: 9; /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
+  --elevate-1: rgba(255, 255, 255, 0.04);
+  --elevate-2: rgba(255, 255, 255, 0.09);
 
-  --background: 144 30% 8%;             /* Dark green tint */
+  --background: 144 30% 8%; /* Dark green tint */
 
   --foreground: 0 0% 95%;
 
@@ -166,13 +181,13 @@
 
   --sidebar-border: 144 20% 18%;
 
-  --sidebar-primary: 144 51% 28%;       /* Lighter green for dark mode */
+  --sidebar-primary: 144 51% 28%; /* Lighter green for dark mode */
 
   --sidebar-primary-foreground: 0 0% 100%;
 
   --sidebar-accent: 144 20% 16%;
 
-  --sidebar-accent-foreground: 46 54% 70%;  /* Lighter gold */
+  --sidebar-accent-foreground: 46 54% 70%; /* Lighter gold */
 
   --sidebar-ring: 144 51% 28%;
 
@@ -182,11 +197,11 @@
 
   --popover-border: 144 20% 18%;
 
-  --primary: 144 51% 28%;               /* Lighter green for dark mode */
+  --primary: 144 51% 28%; /* Lighter green for dark mode */
 
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 46 54% 70%;              /* Lighter gold for dark mode */
+  --secondary: 46 54% 70%; /* Lighter gold for dark mode */
 
   --secondary-foreground: 144 51% 19%;
 
@@ -194,11 +209,11 @@
 
   --muted-foreground: 0 0% 65%;
 
-  --accent: 46 54% 70%;                 /* Lighter gold for dark mode */
+  --accent: 46 54% 70%; /* Lighter gold for dark mode */
 
   --accent-foreground: 144 51% 19%;
 
-  --destructive: 0 65% 55%;             /* Lighter red for dark mode */
+  --destructive: 0 65% 55%; /* Lighter red for dark mode */
 
   --destructive-foreground: 0 0% 100%;
 
@@ -218,7 +233,6 @@
   --shadow-lg: 0px 10px 15px -3px hsl(0 0% 0% / 0.2), 0px 20px 25px -5px hsl(0 0% 0% / 0.2);
   --shadow-xl: 0px 20px 25px -5px hsl(0 0% 0% / 0.2), 0px 25px 50px -12px hsl(0 0% 0% / 0.35);
   --shadow-2xl: 0px 25px 50px -12px hsl(0 0% 0% / 0.35);
-
 }
 
 @layer base {
@@ -252,7 +266,6 @@
  * need to be distinguished from eachother visually.
  */
 @layer utilities {
-
   /* Hide ugly search cancel button in Chrome until we can style it properly */
   input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;
@@ -269,27 +282,27 @@
   .tc-green {
     color: hsl(var(--trecasa-green));
   }
-  
+
   .bg-tc-green {
     background-color: hsl(var(--trecasa-green));
   }
-  
+
   .tc-gold {
     color: hsl(var(--trecasa-gold));
   }
-  
+
   .bg-tc-gold {
     background-color: hsl(var(--trecasa-gold));
   }
-  
+
   .border-tc-gold {
     border-color: hsl(var(--trecasa-gold));
   }
-  
+
   .tc-red {
     color: hsl(var(--trecasa-red));
   }
-  
+
   .bg-soft {
     background-color: hsl(var(--trecasa-offwhite));
   }
@@ -302,10 +315,11 @@
   /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of
    * buttons/badges can remove the automatic brightness adjustment on interactions
    * and program their own. */
-  .no-default-hover-elevate {}
+  .no-default-hover-elevate {
+  }
 
-  .no-default-active-elevate {}
-
+  .no-default-active-elevate {
+  }
 
   /**
    * Toggleable backgrounds go behind the content. Hoverable/active goes on top.
@@ -384,13 +398,13 @@
   }
 
   @media (min-width: 768px) {
-    .container-trecasa { 
+    .container-trecasa {
       width: min(94vw, 1800px);
     }
   }
 
   @media (min-width: 1024px) {
-    .container-trecasa { 
+    .container-trecasa {
       width: min(96vw, 1800px);
     }
   }
@@ -412,7 +426,7 @@
   margin: 0;
 }
 
-.dimInput[type=number] {
+.dimInput[type="number"] {
   -moz-appearance: textfield;
 }
 
@@ -445,7 +459,11 @@
   /* Print page box with optimized padding */
   .print-page {
     padding: 6mm 4mm;
-    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+    font-family:
+      "Montserrat",
+      system-ui,
+      -apple-system,
+      sans-serif;
   }
 
   /* Hide screen-only elements */
@@ -478,12 +496,12 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     z-index: 9999;
-    font-family: 'Montserrat', Arial, sans-serif !important;
+    font-family: "Montserrat", Arial, sans-serif !important;
     line-height: 1.3 !important;
   }
-  
+
   .pdf-header h1 {
-    font-family: 'Montserrat', Arial, sans-serif !important;
+    font-family: "Montserrat", Arial, sans-serif !important;
     font-size: 15pt !important;
     font-weight: 600 !important;
     text-transform: uppercase !important;
@@ -499,7 +517,7 @@
     right: 0;
     height: 40px;
     background: white;
-    border-top: 1px solid #C7A948;
+    border-top: 1px solid #c7a948;
     padding: 10px 0;
     display: flex;
     justify-content: center;
@@ -507,7 +525,7 @@
     font-size: 8pt;
     color: #666666;
     z-index: 9999;
-    font-family: 'Montserrat', Arial, sans-serif !important;
+    font-family: "Montserrat", Arial, sans-serif !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -606,7 +624,7 @@
   .pdf-header .header-meta div {
     line-height: 1.3 !important;
   }
-  
+
   /* Show cover page in print/PDF context (for Puppeteer server-side generation) */
   .cover-page {
     display: flex !important;

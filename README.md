@@ -29,7 +29,7 @@ A comprehensive web application designed for interior designers to efficiently c
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - PostgreSQL database
 - Replit environment (or configure manually)
 
@@ -94,6 +94,7 @@ For convenience, manually add these scripts to your `package.json`:
 ```
 
 Then use:
+
 ```bash
 npm run format
 npm run lint
@@ -103,6 +104,7 @@ npm run lint:fix
 ### IDE Setup (VS Code)
 
 A `.vscode/settings.json` file is included for automatic formatting on save. Install these extensions:
+
 - **ESLint** (`dbaeumer.vscode-eslint`)
 - **Prettier - Code formatter** (`esbenp.prettier-vscode`)
 

@@ -36,13 +36,17 @@ function Router() {
     <Switch>
       {/* Public routes */}
       <Route path="/client/:quoteId" component={ClientQuotePortal} />
-      
+
       {/* Protected routes - always registered, handle auth internally */}
-      <Route path="/" component={() => {
-        if (isLoading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-        if (!isAuthenticated) return <Landing />;
-        return <Redirect to="/quotes" />;
-      }} />
+      <Route
+        path="/"
+        component={() => {
+          if (isLoading)
+            return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+          if (!isAuthenticated) return <Landing />;
+          return <Redirect to="/quotes" />;
+        }}
+      />
       <Route path="/dashboard" component={() => <Redirect to="/quotes" />} />
       <Route path="/quotations" component={() => <Redirect to="/quotes" />} />
       <Route path="/quotes" component={QuotesList} />

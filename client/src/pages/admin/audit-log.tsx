@@ -1,13 +1,31 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { listAuditLogs, getAuditLog, type AuditLogFilters, type AuditLogEntry } from "@/api/adminAudit";
+import {
+  listAuditLogs,
+  getAuditLog,
+  type AuditLogFilters,
+  type AuditLogEntry,
+} from "@/api/adminAudit";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -17,18 +35,18 @@ import { format } from "date-fns";
 export default function AuditLogPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  
+
   // Filters state
   const [searchQuery, setSearchQuery] = useState("");
   const [section, setSection] = useState<string>("all");
   const [action, setAction] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
-  
+
   // Diff modal state
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  
+
   // Build filters for API
   const filters: AuditLogFilters = {
     page,
@@ -37,20 +55,20 @@ export default function AuditLogPage() {
     ...(section !== "all" && { section: section as any }),
     ...(action !== "all" && { action: action as any }),
   };
-  
+
   // Fetch audit logs
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["/api/admin/audit", filters],
     queryFn: () => listAuditLogs(filters),
   });
-  
+
   // Fetch selected entry for diff modal
   const { data: selectedEntry, isLoading: isLoadingEntry } = useQuery({
     queryKey: ["/api/admin/audit", selectedEntryId],
-    queryFn: () => selectedEntryId ? getAuditLog(selectedEntryId) : null,
+    queryFn: () => (selectedEntryId ? getAuditLog(selectedEntryId) : null),
     enabled: !!selectedEntryId,
   });
-  
+
   const handleCopyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
     setCopiedField(field);
@@ -60,13 +78,13 @@ export default function AuditLogPage() {
       description: `${field} JSON copied successfully`,
     });
   };
-  
+
   const renderDiffModal = () => {
     if (!selectedEntry) return null;
-    
+
     const beforeJson = selectedEntry.beforeJson ? JSON.parse(selectedEntry.beforeJson) : null;
     const afterJson = selectedEntry.afterJson ? JSON.parse(selectedEntry.afterJson) : null;
-    
+
     return (
       <Dialog open={!!selectedEntryId} onOpenChange={(open) => !open && setSelectedEntryId(null)}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -91,7 +109,7 @@ export default function AuditLogPage() {
               </p>
             </div>
           </DialogHeader>
-          
+
           <div className="grid grid-cols-2 gap-4 flex-1 overflow-hidden">
             {/* Before JSON */}
             <div className="flex flex-col overflow-hidden">
@@ -101,7 +119,9 @@ export default function AuditLogPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleCopyToClipboard(JSON.stringify(beforeJson, null, 2), "Before")}
+                    onClick={() =>
+                      handleCopyToClipboard(JSON.stringify(beforeJson, null, 2), "Before")
+                    }
                     data-testid="button-copy-before"
                   >
                     {copiedField === "Before" ? (
@@ -122,7 +142,7 @@ export default function AuditLogPage() {
                 )}
               </div>
             </div>
-            
+
             {/* After JSON */}
             <div className="flex flex-col overflow-hidden">
               <div className="flex items-center justify-between mb-2">
@@ -131,7 +151,9 @@ export default function AuditLogPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleCopyToClipboard(JSON.stringify(afterJson, null, 2), "After")}
+                    onClick={() =>
+                      handleCopyToClipboard(JSON.stringify(afterJson, null, 2), "After")
+                    }
                     data-testid="button-copy-after"
                   >
                     {copiedField === "After" ? (
@@ -157,7 +179,7 @@ export default function AuditLogPage() {
       </Dialog>
     );
   };
-  
+
   const getActionBadgeVariant = (actionType: string) => {
     switch (actionType) {
       case "CREATE":
@@ -170,7 +192,7 @@ export default function AuditLogPage() {
         return "outline";
     }
   };
-  
+
   return (
     <div className="container-trecasa py-6 lg:py-8">
       <div className="mb-6">
@@ -183,7 +205,7 @@ export default function AuditLogPage() {
           <ChevronLeft className="h-4 w-4 mr-2" />
           Back to Quotes
         </Button>
-        
+
         <div>
           <h1 className="text-3xl font-bold mb-2">Audit Log</h1>
           <p className="text-muted-foreground">
@@ -191,7 +213,7 @@ export default function AuditLogPage() {
           </p>
         </div>
       </div>
-      
+
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Filters</CardTitle>
@@ -213,7 +235,7 @@ export default function AuditLogPage() {
                 data-testid="input-search"
               />
             </div>
-            
+
             {/* Section filter */}
             <Select
               value={section}
@@ -234,7 +256,7 @@ export default function AuditLogPage() {
                 <SelectItem value="GlobalRules">Global Rules</SelectItem>
               </SelectContent>
             </Select>
-            
+
             {/* Action filter */}
             <Select
               value={action}
@@ -253,7 +275,7 @@ export default function AuditLogPage() {
                 <SelectItem value="DELETE">DELETE</SelectItem>
               </SelectContent>
             </Select>
-            
+
             {/* Page size */}
             <Select
               value={pageSize.toString()}
@@ -274,7 +296,7 @@ export default function AuditLogPage() {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -340,7 +362,7 @@ export default function AuditLogPage() {
                   </TableBody>
                 </Table>
               </div>
-              
+
               {/* Pagination */}
               <div className="flex items-center justify-between mt-4">
                 <p className="text-sm text-muted-foreground">
@@ -378,7 +400,7 @@ export default function AuditLogPage() {
           )}
         </CardContent>
       </Card>
-      
+
       {/* Diff Modal */}
       {renderDiffModal()}
     </div>

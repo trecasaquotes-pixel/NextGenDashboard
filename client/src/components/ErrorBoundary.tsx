@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from 'react';
+import { Component, type ReactNode } from "react";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -20,7 +20,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    console.error("Error caught by boundary:", error, errorInfo);
   }
 
   render() {
@@ -28,9 +28,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
           <div className="max-w-md w-full bg-card border border-border rounded-lg p-6 text-center">
-            <h1 className="text-2xl font-semibold text-foreground mb-4">
-              Something went wrong
-            </h1>
+            <h1 className="text-2xl font-semibold text-foreground mb-4">Something went wrong</h1>
             <p className="text-muted-foreground mb-6">
               An unexpected error occurred. Please refresh the page to continue.
             </p>

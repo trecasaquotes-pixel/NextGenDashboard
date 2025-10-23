@@ -17,7 +17,7 @@ export async function seedPaintingFc() {
         bulletsJson: JSON.stringify([
           "Touchup with Putti for walls.",
           "Two coats painting for complete walls.",
-          "Door paintings are not included."
+          "Door paintings are not included.",
         ]),
         bhkFactorBase: 3,
         perBedroomDelta: "0.10",
@@ -30,7 +30,7 @@ export async function seedPaintingFc() {
         bulletsJson: JSON.stringify([
           "One coat Acrylic putty for all walls.",
           "Two coats painting for complete walls.",
-          "Washroom doors and main door painting is included."
+          "Washroom doors and main door painting is included.",
         ]),
         bhkFactorBase: 3,
         perBedroomDelta: "0.10",
@@ -44,7 +44,7 @@ export async function seedPaintingFc() {
           "2 coats Acrylic putty for complete walls.",
           "1 base coat for all walls.",
           "3 coats paint for all walls.",
-          "Included for washroom walls, balcony and polish for main door."
+          "Included for washroom walls, balcony and polish for main door.",
         ]),
         bhkFactorBase: 3,
         perBedroomDelta: "0.10",
@@ -58,7 +58,7 @@ export async function seedPaintingFc() {
           "2 coats Acrylic putty for complete walls.",
           "1 base coat for all walls.",
           "3 coats paint for all walls.",
-          "Included for washroom walls, balcony and polish for main door."
+          "Included for washroom walls, balcony and polish for main door.",
         ]),
         bhkFactorBase: 3,
         perBedroomDelta: "0.10",
@@ -72,7 +72,7 @@ export async function seedPaintingFc() {
           "2 coats Acrylic putty for complete walls.",
           "1 base coat for all walls.",
           "3 coats paint for all walls.",
-          "Included for washroom walls, balcony and PU polish for main door."
+          "Included for washroom walls, balcony and PU polish for main door.",
         ]),
         bhkFactorBase: 3,
         perBedroomDelta: "0.10",

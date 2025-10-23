@@ -1,4 +1,4 @@
-import type { IStorage } from '../storage';
+import type { IStorage } from "../storage";
 
 /**
  * Calculate totalPrice for a false ceiling item from its canonical dimensions
@@ -9,12 +9,12 @@ function calculateFCItemTotal(item: {
   width?: string | null;
   unitPrice?: string | null;
 }): number {
-  const length = parseFloat(item.length || '0');
-  const width = parseFloat(item.width || '0');
-  const unitPrice = parseFloat(item.unitPrice || '0');
-  
+  const length = parseFloat(item.length || "0");
+  const width = parseFloat(item.width || "0");
+  const unitPrice = parseFloat(item.unitPrice || "0");
+
   if (length <= 0 || width <= 0) return 0;
-  
+
   const area = length * width;
   return area * unitPrice;
 }
@@ -33,20 +33,20 @@ export function normalizeFCItemData(data: {
   totalPrice: string;
   [key: string]: any;
 } {
-  const length = parseFloat(data.length || '0');
-  const width = parseFloat(data.width || '0');
-  const unitPrice = parseFloat(data.unitPrice || '0');
-  
+  const length = parseFloat(data.length || "0");
+  const width = parseFloat(data.width || "0");
+  const unitPrice = parseFloat(data.unitPrice || "0");
+
   // Calculate area
-  const area = (length > 0 && width > 0) ? (length * width).toFixed(2) : '0.00';
-  
+  const area = length > 0 && width > 0 ? (length * width).toFixed(2) : "0.00";
+
   // Calculate total price
   const areaNum = parseFloat(area);
   const totalPrice = (areaNum * unitPrice).toFixed(2);
-  
+
   // Return data with server-calculated values, discarding any client-sent area/totalPrice
   const { area: _discardedArea, totalPrice: _discardedTotal, ...rest } = data;
-  
+
   return {
     ...rest,
     area,
@@ -67,9 +67,9 @@ function roundCurrency(value: number): number {
 export function calculateDiscountAmount(
   grandSubtotal: number,
   discountType: string,
-  discountValue: number
+  discountValue: number,
 ): number {
-  if (discountType === 'percent') {
+  if (discountType === "percent") {
     return roundCurrency((grandSubtotal * discountValue) / 100);
   }
   return roundCurrency(discountValue); // Fixed amount - ensure proper rounding
@@ -91,33 +91,37 @@ export async function recalculateQuotationTotals(quotationId: string, storage: I
   const interiorItems = await storage.getInteriorItems(quotationId);
   const fcItems = await storage.getFalseCeilingItems(quotationId);
   const quotation = await storage.getQuotation(quotationId);
-  
+
   if (!quotation) {
-    throw new Error('Quotation not found');
+    throw new Error("Quotation not found");
   }
-  
+
   // Calculate interiors subtotal (sum of all interior item totals)
-  const interiorsSubtotal = roundCurrency(interiorItems.reduce((sum, item) => {
-    const total = parseFloat(item.totalPrice || "0");
-    return sum + (isNaN(total) ? 0 : total);
-  }, 0));
-  
+  const interiorsSubtotal = roundCurrency(
+    interiorItems.reduce((sum, item) => {
+      const total = parseFloat(item.totalPrice || "0");
+      return sum + (isNaN(total) ? 0 : total);
+    }, 0),
+  );
+
   // Calculate false ceiling subtotal - recompute from canonical dimensions
-  const fcSubtotal = roundCurrency(fcItems.reduce((sum, item) => {
-    return sum + calculateFCItemTotal(item);
-  }, 0));
-  
+  const fcSubtotal = roundCurrency(
+    fcItems.reduce((sum, item) => {
+      return sum + calculateFCItemTotal(item);
+    }, 0),
+  );
+
   // Calculate grand subtotal
   const grandSubtotal = roundCurrency(interiorsSubtotal + fcSubtotal);
-  
+
   // Calculate discount and GST for validation purposes
-  const discountType = quotation.discountType || 'percent';
-  const discountValue = parseFloat(quotation.discountValue || '0');
+  const discountType = quotation.discountType || "percent";
+  const discountValue = parseFloat(quotation.discountValue || "0");
   const discountAmount = calculateDiscountAmount(grandSubtotal, discountType, discountValue);
   const afterDiscount = Math.max(0, roundCurrency(grandSubtotal - discountAmount));
   const gstAmount = calculateGSTAmount(afterDiscount);
   const finalTotal = roundCurrency(afterDiscount + gstAmount);
-  
+
   // Update quotation with new totals
   await storage.updateQuotation(quotationId, {
     totals: {
@@ -131,7 +135,7 @@ export async function recalculateQuotationTotals(quotationId: string, storage: I
       finalTotal,
     },
   });
-  
+
   return {
     interiorsSubtotal,
     fcSubtotal,

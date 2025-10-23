@@ -18,32 +18,32 @@ interface TermsEditorProps {
 export function TermsEditor({ quotation }: TermsEditorProps) {
   const [activeTab, setActiveTab] = useState<"interiors" | "false-ceiling">("interiors");
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Interiors state
   const [interiorsUseDefault, setInteriorsUseDefault] = useState(
-    quotation.terms?.interiors?.useDefault ?? true
+    quotation.terms?.interiors?.useDefault ?? true,
   );
   const [interiorsVars, setInteriorsVars] = useState({
     validDays: quotation.terms?.interiors?.vars?.validDays ?? 15,
     warrantyMonths: quotation.terms?.interiors?.vars?.warrantyMonths ?? 12,
-    paymentSchedule: quotation.terms?.interiors?.vars?.paymentSchedule ?? "50% booking, 40% mid, 10% handover"
+    paymentSchedule:
+      quotation.terms?.interiors?.vars?.paymentSchedule ?? "50% booking, 40% mid, 10% handover",
   });
   const [interiorsCustom, setInteriorsCustom] = useState(
-    quotation.terms?.interiors?.customText ?? ""
+    quotation.terms?.interiors?.customText ?? "",
   );
-  
+
   // False Ceiling state
   const [fcUseDefault, setFcUseDefault] = useState(
-    quotation.terms?.falseCeiling?.useDefault ?? true
+    quotation.terms?.falseCeiling?.useDefault ?? true,
   );
   const [fcVars, setFcVars] = useState({
     validDays: quotation.terms?.falseCeiling?.vars?.validDays ?? 15,
     warrantyMonths: quotation.terms?.falseCeiling?.vars?.warrantyMonths ?? 12,
-    paymentSchedule: quotation.terms?.falseCeiling?.vars?.paymentSchedule ?? "50% booking, 40% mid, 10% handover"
+    paymentSchedule:
+      quotation.terms?.falseCeiling?.vars?.paymentSchedule ?? "50% booking, 40% mid, 10% handover",
   });
-  const [fcCustom, setFcCustom] = useState(
-    quotation.terms?.falseCeiling?.customText ?? ""
-  );
+  const [fcCustom, setFcCustom] = useState(quotation.terms?.falseCeiling?.customText ?? "");
 
   // Render preview for interiors
   const interiorsPreview = interiorsUseDefault
@@ -51,9 +51,9 @@ export function TermsEditor({ quotation }: TermsEditorProps) {
         clientName: quotation.clientName,
         projectName: quotation.projectName,
         quoteId: quotation.quoteId,
-        ...interiorsVars
+        ...interiorsVars,
       })
-    : interiorsCustom.split('\n').filter(line => line.trim());
+    : interiorsCustom.split("\n").filter((line) => line.trim());
 
   // Render preview for false ceiling
   const fcPreview = fcUseDefault
@@ -61,9 +61,9 @@ export function TermsEditor({ quotation }: TermsEditorProps) {
         clientName: quotation.clientName,
         projectName: quotation.projectName,
         quoteId: quotation.quoteId,
-        ...fcVars
+        ...fcVars,
       })
-    : fcCustom.split('\n').filter(line => line.trim());
+    : fcCustom.split("\n").filter((line) => line.trim());
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -73,14 +73,14 @@ export function TermsEditor({ quotation }: TermsEditorProps) {
           useDefault: interiorsUseDefault,
           templateId: "default_interiors",
           customText: interiorsCustom,
-          vars: interiorsVars
+          vars: interiorsVars,
         },
         falseCeiling: {
           useDefault: fcUseDefault,
           templateId: "default_false_ceiling",
           customText: fcCustom,
-          vars: fcVars
-        }
+          vars: fcVars,
+        },
       };
 
       await apiRequest("PATCH", `/api/quotations/${quotation.id}`, { terms: updatedTerms });
@@ -90,14 +90,14 @@ export function TermsEditor({ quotation }: TermsEditorProps) {
 
       toast({
         title: "Terms updated",
-        description: "Terms & Conditions have been saved successfully."
+        description: "Terms & Conditions have been saved successfully.",
       });
     } catch (error) {
       console.error("Error saving terms:", error);
       toast({
         title: "Error",
         description: "Failed to save Terms & Conditions.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsSaving(false);
@@ -109,11 +109,7 @@ export function TermsEditor({ quotation }: TermsEditorProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Terms & Conditions</CardTitle>
-          <Button 
-            onClick={handleSave} 
-            disabled={isSaving}
-            data-testid="button-save-terms"
-          >
+          <Button onClick={handleSave} disabled={isSaving} data-testid="button-save-terms">
             {isSaving ? "Saving..." : "Save Terms"}
           </Button>
         </div>
@@ -121,8 +117,12 @@ export function TermsEditor({ quotation }: TermsEditorProps) {
       <CardContent>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="interiors" data-testid="tab-interiors-terms">Interiors Terms</TabsTrigger>
-            <TabsTrigger value="false-ceiling" data-testid="tab-fc-terms">False Ceiling Terms</TabsTrigger>
+            <TabsTrigger value="interiors" data-testid="tab-interiors-terms">
+              Interiors Terms
+            </TabsTrigger>
+            <TabsTrigger value="false-ceiling" data-testid="tab-fc-terms">
+              False Ceiling Terms
+            </TabsTrigger>
           </TabsList>
 
           {/* Interiors Terms Tab */}
@@ -146,7 +146,12 @@ export function TermsEditor({ quotation }: TermsEditorProps) {
                       id="interiors-valid-days"
                       type="number"
                       value={interiorsVars.validDays}
-                      onChange={(e) => setInteriorsVars({ ...interiorsVars, validDays: parseInt(e.target.value) || 15 })}
+                      onChange={(e) =>
+                        setInteriorsVars({
+                          ...interiorsVars,
+                          validDays: parseInt(e.target.value) || 15,
+                        })
+                      }
                       data-testid="input-interiors-valid-days"
                     />
                   </div>
@@ -156,7 +161,12 @@ export function TermsEditor({ quotation }: TermsEditorProps) {
                       id="interiors-warranty"
                       type="number"
                       value={interiorsVars.warrantyMonths}
-                      onChange={(e) => setInteriorsVars({ ...interiorsVars, warrantyMonths: parseInt(e.target.value) || 12 })}
+                      onChange={(e) =>
+                        setInteriorsVars({
+                          ...interiorsVars,
+                          warrantyMonths: parseInt(e.target.value) || 12,
+                        })
+                      }
                       data-testid="input-interiors-warranty"
                     />
                   </div>
@@ -165,7 +175,9 @@ export function TermsEditor({ quotation }: TermsEditorProps) {
                     <Input
                       id="interiors-payment"
                       value={interiorsVars.paymentSchedule}
-                      onChange={(e) => setInteriorsVars({ ...interiorsVars, paymentSchedule: e.target.value })}
+                      onChange={(e) =>
+                        setInteriorsVars({ ...interiorsVars, paymentSchedule: e.target.value })
+                      }
                       data-testid="input-interiors-payment"
                     />
                   </div>
@@ -218,7 +230,9 @@ export function TermsEditor({ quotation }: TermsEditorProps) {
                       id="fc-valid-days"
                       type="number"
                       value={fcVars.validDays}
-                      onChange={(e) => setFcVars({ ...fcVars, validDays: parseInt(e.target.value) || 15 })}
+                      onChange={(e) =>
+                        setFcVars({ ...fcVars, validDays: parseInt(e.target.value) || 15 })
+                      }
                       data-testid="input-fc-valid-days"
                     />
                   </div>
@@ -228,7 +242,9 @@ export function TermsEditor({ quotation }: TermsEditorProps) {
                       id="fc-warranty"
                       type="number"
                       value={fcVars.warrantyMonths}
-                      onChange={(e) => setFcVars({ ...fcVars, warrantyMonths: parseInt(e.target.value) || 12 })}
+                      onChange={(e) =>
+                        setFcVars({ ...fcVars, warrantyMonths: parseInt(e.target.value) || 12 })
+                      }
                       data-testid="input-fc-warranty"
                     />
                   </div>

@@ -36,7 +36,15 @@ import { AppFooter } from "@/components/app-footer";
 import { Plus, MoreVertical, Trash2, ArrowLeft, Check } from "lucide-react";
 import { useLocation } from "wouter";
 import type { BrandRow, NewBrandRow, BrandType } from "@shared/schema";
-import { getBrands, createBrand, updateBrand, setDefaultBrand, toggleBrandActive, deleteBrand, type BrandsFilters } from "@/api/adminBrands";
+import {
+  getBrands,
+  createBrand,
+  updateBrand,
+  setDefaultBrand,
+  toggleBrandActive,
+  deleteBrand,
+  type BrandsFilters,
+} from "@/api/adminBrands";
 import { queryClient } from "@/lib/queryClient";
 import { useDebounce } from "@/hooks/useDebounce";
 
@@ -58,7 +66,12 @@ export default function AdminBrandsPage() {
     isActive: true,
   });
 
-  const [editingValues, setEditingValues] = useState<Record<string, { name?: string; adderPerSft?: number; warrantyMonths?: number; warrantySummary?: string }>>({});
+  const [editingValues, setEditingValues] = useState<
+    Record<
+      string,
+      { name?: string; adderPerSft?: number; warrantyMonths?: number; warrantySummary?: string }
+    >
+  >({});
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -74,7 +87,7 @@ export default function AdminBrandsPage() {
 
   // Sync new brand type with active tab
   useEffect(() => {
-    setNewBrand(prev => ({ ...prev, type: activeTab }));
+    setNewBrand((prev) => ({ ...prev, type: activeTab }));
   }, [activeTab]);
 
   const { data: allBrands = [], isLoading } = useQuery<BrandRow[]>({
@@ -86,8 +99,8 @@ export default function AdminBrandsPage() {
   // Filter brands by active tab and search query
   const filteredBrands = useMemo(() => {
     return allBrands
-      .filter(brand => brand.type === activeTab)
-      .filter(brand => {
+      .filter((brand) => brand.type === activeTab)
+      .filter((brand) => {
         if (!searchQuery) return true;
         return brand.name.toLowerCase().includes(searchQuery.toLowerCase());
       });
@@ -114,8 +127,13 @@ export default function AdminBrandsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Omit<BrandRow, 'id' | 'type' | 'createdAt' | 'updatedAt'>> }) =>
-      updateBrand(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<Omit<BrandRow, "id" | "type" | "createdAt" | "updatedAt">>;
+    }) => updateBrand(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/brands"] });
       setEditingValues({});
@@ -208,8 +226,12 @@ export default function AdminBrandsPage() {
     createMutation.mutate(newBrand as NewBrandRow);
   };
 
-  const handleInlineEdit = (brandId: string, field: 'name' | 'adderPerSft' | 'warrantyMonths' | 'warrantySummary', value: string | number) => {
-    setEditingValues(prev => ({
+  const handleInlineEdit = (
+    brandId: string,
+    field: "name" | "adderPerSft" | "warrantyMonths" | "warrantySummary",
+    value: string | number,
+  ) => {
+    setEditingValues((prev) => ({
       ...prev,
       [brandId]: {
         ...prev[brandId],
@@ -228,11 +250,14 @@ export default function AdminBrandsPage() {
     });
   }, [debouncedEditingValues]);
 
-  const getBrandValue = (brand: BrandRow, field: 'name' | 'adderPerSft' | 'warrantyMonths' | 'warrantySummary') => {
+  const getBrandValue = (
+    brand: BrandRow,
+    field: "name" | "adderPerSft" | "warrantyMonths" | "warrantySummary",
+  ) => {
     const value = editingValues[brand.id]?.[field] ?? brand[field];
     // Handle nullable warranty fields
-    if (field === 'warrantyMonths' && value === null) return 12;
-    if (field === 'warrantySummary' && value === null) return '';
+    if (field === "warrantyMonths" && value === null) return 12;
+    if (field === "warrantySummary" && value === null) return "";
     return value;
   };
 
@@ -243,7 +268,7 @@ export default function AdminBrandsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <AppHeader />
-      
+
       <main className="flex-1 container-trecasa py-6 lg:py-8">
         <div className="flex items-center gap-4 mb-6">
           <Button
@@ -254,7 +279,9 @@ export default function AdminBrandsPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Brands & Add-ons</h1>
+          <h1 className="text-3xl font-bold" data-testid="text-page-title">
+            Brands & Add-ons
+          </h1>
         </div>
 
         <Card className="p-6">
@@ -276,9 +303,15 @@ export default function AdminBrandsPage() {
 
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as BrandType)}>
             <TabsList className="mb-6">
-              <TabsTrigger value="core" data-testid="tab-core">Core</TabsTrigger>
-              <TabsTrigger value="finish" data-testid="tab-finish">Finish</TabsTrigger>
-              <TabsTrigger value="hardware" data-testid="tab-hardware">Hardware</TabsTrigger>
+              <TabsTrigger value="core" data-testid="tab-core">
+                Core
+              </TabsTrigger>
+              <TabsTrigger value="finish" data-testid="tab-finish">
+                Finish
+              </TabsTrigger>
+              <TabsTrigger value="hardware" data-testid="tab-hardware">
+                Hardware
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value={activeTab}>
@@ -306,24 +339,31 @@ export default function AdminBrandsPage() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Input
-                              value={getBrandValue(brand, 'name') as string}
-                              onChange={(e) => handleInlineEdit(brand.id, 'name', e.target.value)}
+                              value={getBrandValue(brand, "name") as string}
+                              onChange={(e) => handleInlineEdit(brand.id, "name", e.target.value)}
                               className="max-w-md"
                               data-testid={`input-brand-name-${brand.id}`}
                             />
-                            {brand.type === 'finish' && brand.name.toLowerCase().includes('acrylic') && (
-                              <Badge variant="secondary" className="whitespace-nowrap">
-                                +₹200/sft (special)
-                              </Badge>
-                            )}
+                            {brand.type === "finish" &&
+                              brand.name.toLowerCase().includes("acrylic") && (
+                                <Badge variant="secondary" className="whitespace-nowrap">
+                                  +₹200/sft (special)
+                                </Badge>
+                              )}
                           </div>
                         </TableCell>
                         <TableCell>
                           <Input
                             type="number"
                             min="0"
-                            value={getBrandValue(brand, 'adderPerSft') as number}
-                            onChange={(e) => handleInlineEdit(brand.id, 'adderPerSft', parseInt(e.target.value) || 0)}
+                            value={getBrandValue(brand, "adderPerSft") as number}
+                            onChange={(e) =>
+                              handleInlineEdit(
+                                brand.id,
+                                "adderPerSft",
+                                parseInt(e.target.value) || 0,
+                              )
+                            }
                             className="max-w-[120px]"
                             data-testid={`input-brand-adder-${brand.id}`}
                           />
@@ -333,8 +373,14 @@ export default function AdminBrandsPage() {
                             type="number"
                             min="0"
                             max="120"
-                            value={getBrandValue(brand, 'warrantyMonths') as number}
-                            onChange={(e) => handleInlineEdit(brand.id, 'warrantyMonths', parseInt(e.target.value) || 12)}
+                            value={getBrandValue(brand, "warrantyMonths") as number}
+                            onChange={(e) =>
+                              handleInlineEdit(
+                                brand.id,
+                                "warrantyMonths",
+                                parseInt(e.target.value) || 12,
+                              )
+                            }
                             className="max-w-[100px]"
                             data-testid={`input-brand-warranty-${brand.id}`}
                           />
@@ -354,14 +400,20 @@ export default function AdminBrandsPage() {
                         <TableCell>
                           <Switch
                             checked={brand.isActive}
-                            onCheckedChange={(checked) => toggleActiveMutation.mutate({ id: brand.id, isActive: checked })}
+                            onCheckedChange={(checked) =>
+                              toggleActiveMutation.mutate({ id: brand.id, isActive: checked })
+                            }
                             data-testid={`switch-active-${brand.id}`}
                           />
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" data-testid={`button-actions-${brand.id}`}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                data-testid={`button-actions-${brand.id}`}
+                              >
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -419,7 +471,9 @@ export default function AdminBrandsPage() {
                 type="number"
                 min="0"
                 value={newBrand.adderPerSft}
-                onChange={(e) => setNewBrand({ ...newBrand, adderPerSft: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setNewBrand({ ...newBrand, adderPerSft: parseInt(e.target.value) || 0 })
+                }
                 data-testid="input-new-brand-adder"
               />
             </div>
@@ -432,7 +486,9 @@ export default function AdminBrandsPage() {
                 min="0"
                 max="120"
                 value={newBrand.warrantyMonths}
-                onChange={(e) => setNewBrand({ ...newBrand, warrantyMonths: parseInt(e.target.value) || 12 })}
+                onChange={(e) =>
+                  setNewBrand({ ...newBrand, warrantyMonths: parseInt(e.target.value) || 12 })
+                }
                 data-testid="input-new-brand-warranty"
               />
             </div>
@@ -441,7 +497,7 @@ export default function AdminBrandsPage() {
               <Label htmlFor="brand-warranty-summary">Warranty Summary (optional)</Label>
               <Input
                 id="brand-warranty-summary"
-                value={newBrand.warrantySummary || ''}
+                value={newBrand.warrantySummary || ""}
                 onChange={(e) => setNewBrand({ ...newBrand, warrantySummary: e.target.value })}
                 placeholder="e.g., 24 months warranty against manufacturing defects"
                 data-testid="input-new-brand-warranty-summary"
@@ -460,7 +516,11 @@ export default function AdminBrandsPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} data-testid="button-cancel">
+            <Button
+              variant="outline"
+              onClick={() => setIsAddDialogOpen(false)}
+              data-testid="button-cancel"
+            >
               Cancel
             </Button>
             <Button onClick={handleCreate} data-testid="button-save">

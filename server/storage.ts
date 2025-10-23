@@ -47,7 +47,10 @@ export interface IStorage {
   // False ceiling items operations
   getFalseCeilingItems(quotationId: string): Promise<FalseCeilingItem[]>;
   createFalseCeilingItem(item: InsertFalseCeilingItem): Promise<FalseCeilingItem>;
-  updateFalseCeilingItem(id: string, data: Partial<InsertFalseCeilingItem>): Promise<FalseCeilingItem>;
+  updateFalseCeilingItem(
+    id: string,
+    data: Partial<InsertFalseCeilingItem>,
+  ): Promise<FalseCeilingItem>;
   deleteFalseCeilingItem(id: string): Promise<void>;
 
   // Other items operations
@@ -68,11 +71,19 @@ export interface IStorage {
   getLatestVersionNumber(quotationId: string): Promise<number>;
 
   // Quotation locking operations
-  verifyLockOwnership(quotationId: string, userId: string): Promise<{ hasLock: boolean; lockedByName?: string }>;
-  acquireLock(quotationId: string, userId: string): Promise<{ success: boolean; lockedBy?: string; lockedByName?: string }>;
+  verifyLockOwnership(
+    quotationId: string,
+    userId: string,
+  ): Promise<{ hasLock: boolean; lockedByName?: string }>;
+  acquireLock(
+    quotationId: string,
+    userId: string,
+  ): Promise<{ success: boolean; lockedBy?: string; lockedByName?: string }>;
   releaseLock(quotationId: string, userId: string): Promise<{ success: boolean }>;
   updateLockHeartbeat(quotationId: string, userId: string): Promise<{ success: boolean }>;
-  checkLockStatus(quotationId: string): Promise<{ isLocked: boolean; lockedBy?: string; lockedByName?: string; lockedAt?: number }>;
+  checkLockStatus(
+    quotationId: string,
+  ): Promise<{ isLocked: boolean; lockedBy?: string; lockedByName?: string; lockedAt?: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -90,7 +101,7 @@ export class DatabaseStorage implements IStorage {
         .from(users)
         .where(eq(users.email, userData.email))
         .limit(1);
-      
+
       if (existingByEmail.length > 0) {
         // Update existing user (use the existing user's ID)
         const [user] = await db
@@ -105,7 +116,7 @@ export class DatabaseStorage implements IStorage {
         return user;
       }
     }
-    
+
     // Insert new user or update if ID conflicts
     const [user] = await db
       .insert(users)
@@ -137,7 +148,10 @@ export class DatabaseStorage implements IStorage {
 
   async createQuotation(quotation: InsertQuotation): Promise<Quotation> {
     const quoteId = generateQuoteId();
-    const [newQuotation] = await db.insert(quotations).values({ ...quotation, quoteId } as any).returning();
+    const [newQuotation] = await db
+      .insert(quotations)
+      .values({ ...quotation, quoteId } as any)
+      .returning();
     return newQuotation;
   }
 
@@ -195,7 +209,10 @@ export class DatabaseStorage implements IStorage {
     return newItem;
   }
 
-  async updateFalseCeilingItem(id: string, data: Partial<InsertFalseCeilingItem>): Promise<FalseCeilingItem> {
+  async updateFalseCeilingItem(
+    id: string,
+    data: Partial<InsertFalseCeilingItem>,
+  ): Promise<FalseCeilingItem> {
     const [updated] = await db
       .update(falseCeilingItems)
       .set(data)
@@ -250,7 +267,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAgreement(agreement: InsertAgreement): Promise<Agreement> {
-    const [newAgreement] = await db.insert(agreements).values(agreement as any).returning();
+    const [newAgreement] = await db
+      .insert(agreements)
+      .values(agreement as any)
+      .returning();
     return newAgreement;
   }
 
@@ -287,25 +307,25 @@ export class DatabaseStorage implements IStorage {
       .where(eq(quotationVersions.quotationId, quotationId))
       .orderBy(desc(quotationVersions.versionNumber))
       .limit(1);
-    
+
     return versions.length > 0 ? versions[0].versionNumber : 0;
   }
 
   // Quotation locking operations
   private LOCK_TIMEOUT_MS = 30000; // 30 seconds
 
-  async verifyLockOwnership(quotationId: string, userId: string): Promise<{ hasLock: boolean; lockedByName?: string }> {
+  async verifyLockOwnership(
+    quotationId: string,
+    userId: string,
+  ): Promise<{ hasLock: boolean; lockedByName?: string }> {
     const now = Date.now();
     const expireThreshold = now - this.LOCK_TIMEOUT_MS;
 
-    const [quotation] = await db
-      .select()
-      .from(quotations)
-      .where(eq(quotations.id, quotationId));
+    const [quotation] = await db.select().from(quotations).where(eq(quotations.id, quotationId));
 
     // Quotation doesn't exist - deny operation
     if (!quotation) {
-      return { hasLock: false, lockedByName: 'Quotation not found' };
+      return { hasLock: false, lockedByName: "Quotation not found" };
     }
 
     // No lock exists - allow operation
@@ -324,9 +344,9 @@ export class DatabaseStorage implements IStorage {
           lockHeartbeat: null,
         })
         .where(eq(quotations.id, quotationId));
-      
+
       // Force client to reacquire lock after expiry
-      return { hasLock: false, lockedByName: 'Lock expired - please refresh the page' };
+      return { hasLock: false, lockedByName: "Lock expired - please refresh the page" };
     }
 
     // Lock exists and is active
@@ -335,26 +355,27 @@ export class DatabaseStorage implements IStorage {
     }
 
     // Locked by someone else
-    const [lockHolder] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, quotation.lockedBy));
+    const [lockHolder] = await db.select().from(users).where(eq(users.id, quotation.lockedBy));
 
     return {
       hasLock: false,
-      lockedByName: lockHolder ? `${lockHolder.firstName || ''} ${lockHolder.lastName || ''}`.trim() || lockHolder.email || 'Unknown User' : 'Unknown User',
+      lockedByName: lockHolder
+        ? `${lockHolder.firstName || ""} ${lockHolder.lastName || ""}`.trim() ||
+          lockHolder.email ||
+          "Unknown User"
+        : "Unknown User",
     };
   }
 
-  async acquireLock(quotationId: string, userId: string): Promise<{ success: boolean; lockedBy?: string; lockedByName?: string }> {
+  async acquireLock(
+    quotationId: string,
+    userId: string,
+  ): Promise<{ success: boolean; lockedBy?: string; lockedByName?: string }> {
     const now = Date.now();
     const expireThreshold = now - this.LOCK_TIMEOUT_MS;
 
     // Get current lock status
-    const [quotation] = await db
-      .select()
-      .from(quotations)
-      .where(eq(quotations.id, quotationId));
+    const [quotation] = await db.select().from(quotations).where(eq(quotations.id, quotationId));
 
     if (!quotation) {
       return { success: false };
@@ -365,15 +386,16 @@ export class DatabaseStorage implements IStorage {
       // Check if lock is still active (heartbeat within timeout)
       if (quotation.lockHeartbeat && quotation.lockHeartbeat > expireThreshold) {
         // Lock is still active, fetch user name
-        const [lockHolder] = await db
-          .select()
-          .from(users)
-          .where(eq(users.id, quotation.lockedBy));
-        
+        const [lockHolder] = await db.select().from(users).where(eq(users.id, quotation.lockedBy));
+
         return {
           success: false,
           lockedBy: quotation.lockedBy,
-          lockedByName: lockHolder ? `${lockHolder.firstName || ''} ${lockHolder.lastName || ''}`.trim() || lockHolder.email || 'Unknown User' : 'Unknown User',
+          lockedByName: lockHolder
+            ? `${lockHolder.firstName || ""} ${lockHolder.lastName || ""}`.trim() ||
+              lockHolder.email ||
+              "Unknown User"
+            : "Unknown User",
         };
       }
     }
@@ -394,11 +416,8 @@ export class DatabaseStorage implements IStorage {
   async releaseLock(quotationId: string, userId: string): Promise<{ success: boolean }> {
     const now = Date.now();
     const expireThreshold = now - this.LOCK_TIMEOUT_MS;
-    
-    const [quotation] = await db
-      .select()
-      .from(quotations)
-      .where(eq(quotations.id, quotationId));
+
+    const [quotation] = await db.select().from(quotations).where(eq(quotations.id, quotationId));
 
     if (!quotation) {
       return { success: false };
@@ -441,11 +460,8 @@ export class DatabaseStorage implements IStorage {
   async updateLockHeartbeat(quotationId: string, userId: string): Promise<{ success: boolean }> {
     const now = Date.now();
     const expireThreshold = now - this.LOCK_TIMEOUT_MS;
-    
-    const [quotation] = await db
-      .select()
-      .from(quotations)
-      .where(eq(quotations.id, quotationId));
+
+    const [quotation] = await db.select().from(quotations).where(eq(quotations.id, quotationId));
 
     if (!quotation || quotation.lockedBy !== userId) {
       return { success: false };
@@ -462,27 +478,23 @@ export class DatabaseStorage implements IStorage {
           lockHeartbeat: null,
         })
         .where(eq(quotations.id, quotationId));
-      
+
       return { success: false };
     }
 
     // Lock is still active, update heartbeat
-    await db
-      .update(quotations)
-      .set({ lockHeartbeat: now })
-      .where(eq(quotations.id, quotationId));
+    await db.update(quotations).set({ lockHeartbeat: now }).where(eq(quotations.id, quotationId));
 
     return { success: true };
   }
 
-  async checkLockStatus(quotationId: string): Promise<{ isLocked: boolean; lockedBy?: string; lockedByName?: string; lockedAt?: number }> {
+  async checkLockStatus(
+    quotationId: string,
+  ): Promise<{ isLocked: boolean; lockedBy?: string; lockedByName?: string; lockedAt?: number }> {
     const now = Date.now();
     const expireThreshold = now - this.LOCK_TIMEOUT_MS;
 
-    const [quotation] = await db
-      .select()
-      .from(quotations)
-      .where(eq(quotations.id, quotationId));
+    const [quotation] = await db.select().from(quotations).where(eq(quotations.id, quotationId));
 
     if (!quotation || !quotation.lockedBy) {
       return { isLocked: false };
@@ -503,15 +515,16 @@ export class DatabaseStorage implements IStorage {
     }
 
     // Lock is active, get user name
-    const [lockHolder] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, quotation.lockedBy));
+    const [lockHolder] = await db.select().from(users).where(eq(users.id, quotation.lockedBy));
 
     return {
       isLocked: true,
       lockedBy: quotation.lockedBy,
-      lockedByName: lockHolder ? `${lockHolder.firstName || ''} ${lockHolder.lastName || ''}`.trim() || lockHolder.email || 'Unknown User' : 'Unknown User',
+      lockedByName: lockHolder
+        ? `${lockHolder.firstName || ""} ${lockHolder.lastName || ""}`.trim() ||
+          lockHolder.email ||
+          "Unknown User"
+        : "Unknown User",
       lockedAt: quotation.lockedAt || undefined,
     };
   }

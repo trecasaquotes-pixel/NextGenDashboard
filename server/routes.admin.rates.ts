@@ -7,60 +7,59 @@ import { getAdminUser, logAudit, createRateSummary } from "./lib/audit";
 
 // Unit guardrail validation
 function validateUnitForItemKey(itemKey: string, unit: string): { valid: boolean; error?: string } {
-  const lsumOnly = ['termite_treatment', 'floor_matting', 'transportation_handling', 'fc_paint'];
-  const countOnly = ['fc_lights', 'fc_fan_hook', 'fc_cove_led'];
-  
-  if (lsumOnly.includes(itemKey) && unit !== 'LSUM') {
+  const lsumOnly = ["termite_treatment", "floor_matting", "transportation_handling", "fc_paint"];
+  const countOnly = ["fc_lights", "fc_fan_hook", "fc_cove_led"];
+
+  if (lsumOnly.includes(itemKey) && unit !== "LSUM") {
     return { valid: false, error: `Item '${itemKey}' must use LSUM unit` };
   }
-  
-  if (countOnly.includes(itemKey) && unit !== 'COUNT') {
+
+  if (countOnly.includes(itemKey) && unit !== "COUNT") {
     return { valid: false, error: `Item '${itemKey}' must use COUNT unit` };
   }
-  
+
   return { valid: true };
 }
 
 export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
-  
   // GET /api/admin/rates - List rates with optional filters
-  app.get('/api/admin/rates', isAuthenticated, async (req: any, res) => {
+  app.get("/api/admin/rates", isAuthenticated, async (req: any, res) => {
     try {
       const { q, unit, category, active } = req.query;
-      
+
       let conditions = [];
-      
+
       // Search filter
       if (q) {
         const searchTerm = `%${q}%`;
-        conditions.push(
-          or(
-            like(rates.displayName, searchTerm),
-            like(rates.itemKey, searchTerm)
-          )
-        );
+        conditions.push(or(like(rates.displayName, searchTerm), like(rates.itemKey, searchTerm)));
       }
-      
+
       // Unit filter
       if (unit) {
         conditions.push(eq(rates.unit, unit as string));
       }
-      
+
       // Category filter
       if (category) {
         conditions.push(eq(rates.category, category as string));
       }
-      
+
       // Active filter
       if (active !== undefined) {
-        const isActive = active === '1' || active === 'true';
+        const isActive = active === "1" || active === "true";
         conditions.push(eq(rates.isActive, isActive));
       }
-      
-      const result = conditions.length > 0
-        ? await db.select().from(rates).where(and(...conditions)).orderBy(rates.category, rates.displayName)
-        : await db.select().from(rates).orderBy(rates.category, rates.displayName);
-      
+
+      const result =
+        conditions.length > 0
+          ? await db
+              .select()
+              .from(rates)
+              .where(and(...conditions))
+              .orderBy(rates.category, rates.displayName)
+          : await db.select().from(rates).orderBy(rates.category, rates.displayName);
+
       res.json(result);
     } catch (error) {
       console.error("Error fetching rates:", error);
@@ -69,23 +68,24 @@ export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
   });
 
   // POST /api/admin/rates - Create new rate
-  app.post('/api/admin/rates', isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/rates", isAuthenticated, async (req: any, res) => {
     try {
       const validatedData = insertRateSchema.parse(req.body);
-      
+
       // Validate unit guardrails
       const unitValidation = validateUnitForItemKey(validatedData.itemKey, validatedData.unit);
       if (!unitValidation.valid) {
         return res.status(400).json({ message: unitValidation.error });
       }
-      
-      const [newRate] = await db.insert(rates)
+
+      const [newRate] = await db
+        .insert(rates)
         .values({
           ...validatedData,
           isActive: validatedData.isActive ?? true,
         })
         .returning();
-      
+
       // Log audit
       const adminUser = getAdminUser(req);
       await logAudit({
@@ -96,7 +96,7 @@ export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
         summary: createRateSummary("CREATE", null, newRate),
         afterJson: newRate,
       });
-      
+
       res.status(201).json(newRate);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -108,34 +108,38 @@ export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
   });
 
   // PUT /api/admin/rates/:id - Update rate
-  app.put('/api/admin/rates/:id', isAuthenticated, async (req: any, res) => {
+  app.put("/api/admin/rates/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const updateData = z.object({
-        displayName: z.string().min(2).max(80).optional(),
-        unit: z.enum(["SFT", "COUNT", "LSUM"]).optional(),
-        baseRateHandmade: z.number().min(0).optional(),
-        baseRateFactory: z.number().min(0).optional(),
-        category: z.enum([
-          "Kitchen",
-          "Living", 
-          "Dining",
-          "Master Bedroom",
-          "Bedroom 2",
-          "Bedroom 3",
-          "Others",
-          "FC"
-        ]).optional(),
-        isActive: z.boolean().optional(),
-        notes: z.string().optional().nullable(),
-      }).parse(req.body);
-      
+      const updateData = z
+        .object({
+          displayName: z.string().min(2).max(80).optional(),
+          unit: z.enum(["SFT", "COUNT", "LSUM"]).optional(),
+          baseRateHandmade: z.number().min(0).optional(),
+          baseRateFactory: z.number().min(0).optional(),
+          category: z
+            .enum([
+              "Kitchen",
+              "Living",
+              "Dining",
+              "Master Bedroom",
+              "Bedroom 2",
+              "Bedroom 3",
+              "Others",
+              "FC",
+            ])
+            .optional(),
+          isActive: z.boolean().optional(),
+          notes: z.string().optional().nullable(),
+        })
+        .parse(req.body);
+
       // Fetch existing rate for validation and audit
       const [existingRate] = await db.select().from(rates).where(eq(rates.id, id));
       if (!existingRate) {
         return res.status(404).json({ message: "Rate not found" });
       }
-      
+
       // If unit is being updated, validate against itemKey
       if (updateData.unit) {
         const unitValidation = validateUnitForItemKey(existingRate.itemKey, updateData.unit);
@@ -143,19 +147,20 @@ export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
           return res.status(400).json({ message: unitValidation.error });
         }
       }
-      
-      const [updatedRate] = await db.update(rates)
+
+      const [updatedRate] = await db
+        .update(rates)
         .set({
           ...updateData,
           updatedAt: new Date(),
         })
         .where(eq(rates.id, id))
         .returning();
-      
+
       if (!updatedRate) {
         return res.status(404).json({ message: "Rate not found" });
       }
-      
+
       // Log audit
       const adminUser = getAdminUser(req);
       await logAudit({
@@ -167,7 +172,7 @@ export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
         beforeJson: existingRate,
         afterJson: updatedRate,
       });
-      
+
       res.json(updatedRate);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -179,31 +184,34 @@ export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
   });
 
   // PATCH /api/admin/rates/:id/active - Toggle active status
-  app.patch('/api/admin/rates/:id/active', isAuthenticated, async (req: any, res) => {
+  app.patch("/api/admin/rates/:id/active", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const { isActive } = z.object({
-        isActive: z.boolean()
-      }).parse(req.body);
-      
+      const { isActive } = z
+        .object({
+          isActive: z.boolean(),
+        })
+        .parse(req.body);
+
       // Fetch existing rate for audit
       const [existingRate] = await db.select().from(rates).where(eq(rates.id, id));
       if (!existingRate) {
         return res.status(404).json({ message: "Rate not found" });
       }
-      
-      const [updatedRate] = await db.update(rates)
-        .set({ 
+
+      const [updatedRate] = await db
+        .update(rates)
+        .set({
           isActive,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(rates.id, id))
         .returning();
-      
+
       if (!updatedRate) {
         return res.status(404).json({ message: "Rate not found" });
       }
-      
+
       // Log audit
       const adminUser = getAdminUser(req);
       const action = isActive ? "UPDATE" : "DELETE";
@@ -216,7 +224,7 @@ export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
         beforeJson: existingRate,
         afterJson: updatedRate,
       });
-      
+
       res.json(updatedRate);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -228,28 +236,29 @@ export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
   });
 
   // DELETE /api/admin/rates/:id - Soft delete (set isActive = false)
-  app.delete('/api/admin/rates/:id', isAuthenticated, async (req: any, res) => {
+  app.delete("/api/admin/rates/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      
+
       // Fetch existing rate for audit
       const [existingRate] = await db.select().from(rates).where(eq(rates.id, id));
       if (!existingRate) {
         return res.status(404).json({ message: "Rate not found" });
       }
-      
-      const [deletedRate] = await db.update(rates)
-        .set({ 
+
+      const [deletedRate] = await db
+        .update(rates)
+        .set({
           isActive: false,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(rates.id, id))
         .returning();
-      
+
       if (!deletedRate) {
         return res.status(404).json({ message: "Rate not found" });
       }
-      
+
       // Log audit
       const adminUser = getAdminUser(req);
       await logAudit({
@@ -261,7 +270,7 @@ export function registerAdminRatesRoutes(app: Express, isAuthenticated: any) {
         beforeJson: existingRate,
         afterJson: deletedRate,
       });
-      
+
       res.json(deletedRate);
     } catch (error) {
       console.error("Error deleting rate:", error);

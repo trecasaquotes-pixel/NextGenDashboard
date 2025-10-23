@@ -20,11 +20,9 @@ export async function seedGlobalRules() {
         { label: "Booking", percent: 10 },
         { label: "Site Measurement", percent: 50 },
         { label: "On Delivery", percent: 35 },
-        { label: "After Installation", percent: 5 }
+        { label: "After Installation", percent: 5 },
       ]),
-      cityFactorsJson: JSON.stringify([
-        { city: "Hyderabad", factor: 1.00 }
-      ]),
+      cityFactorsJson: JSON.stringify([{ city: "Hyderabad", factor: 1.0 }]),
       footerLine1: "TRECASA Design Studio | Luxury Interiors | Architecture | Build",
       footerLine2: "www.trecasadesignstudio.com | +91-XXXXXXXXXX",
     };

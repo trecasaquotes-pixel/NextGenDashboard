@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
 import {
   index,
   jsonb,
@@ -28,7 +28,9 @@ export const sessions = pgTable(
 
 // User storage table for Replit Auth
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
@@ -42,12 +44,16 @@ export type User = typeof users.$inferSelect;
 
 // Quotations table
 export const quotations = pgTable("quotations", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+
   // Quote ID (e.g., TRE_QT_250113_A1B2)
   quoteId: varchar("quote_id").notNull().unique(),
-  
+
   // Project Info
   projectName: varchar("project_name").notNull(),
   projectType: varchar("project_type"), // 1 BHK, 2 BHK, 3 BHK, 4 BHK, Duplex, Triplex, Villa, Commercial, Other
@@ -55,13 +61,13 @@ export const quotations = pgTable("quotations", {
   clientEmail: varchar("client_email"),
   clientPhone: varchar("client_phone"),
   projectAddress: text("project_address"),
-  
+
   // Build Type (Project-level: determines base pricing for all interior items)
   buildType: varchar("build_type").notNull().default("handmade"), // handmade, factory
-  
+
   // Status
   status: varchar("status").notNull().default("draft"), // draft, sent, accepted, rejected, approved, cancelled
-  
+
   // Approval tracking
   approvedAt: bigint("approved_at", { mode: "number" }), // Unix timestamp of approval
   approvedBy: varchar("approved_by"), // User who approved
@@ -70,7 +76,7 @@ export const quotations = pgTable("quotations", {
     brandsSelected: any;
     ratesByItemKey: Record<string, any>;
   }>(), // Snapshot of rates/brands/rules at approval time
-  
+
   // Totals (calculated subtotals and financial summary)
   totals: jsonb("totals").$type<{
     interiorsSubtotal: number;
@@ -82,11 +88,11 @@ export const quotations = pgTable("quotations", {
     finalTotal?: number;
     updatedAt: number;
   }>(),
-  
+
   // Discount
   discountType: varchar("discount_type").default("percent"), // percent or amount
   discountValue: decimal("discount_value", { precision: 10, scale: 2 }).default("0"),
-  
+
   // Terms & Conditions
   terms: jsonb("terms").$type<{
     interiors: {
@@ -110,7 +116,7 @@ export const quotations = pgTable("quotations", {
       };
     };
   }>(),
-  
+
   // Signature & Acceptance
   signoff: jsonb("signoff").$type<{
     client: {
@@ -127,20 +133,20 @@ export const quotations = pgTable("quotations", {
     accepted: boolean;
     acceptedAt?: number;
   }>(),
-  
+
   // Agreement Pack Settings
   includeAnnexureInteriors: boolean("include_annexure_interiors").default(true),
   includeAnnexureFC: boolean("include_annexure_fc").default(true),
-  
+
   // Client Portal (share link)
   clientToken: text("client_token"), // Random token for share URL
   clientTokenExpiresAt: bigint("client_token_expires_at", { mode: "number" }), // Unix timestamp in ms
-  
+
   // Quotation Locking (to prevent concurrent edits)
   lockedBy: varchar("locked_by"), // User ID who currently holds the lock
   lockedAt: bigint("locked_at", { mode: "number" }), // Unix timestamp when lock was acquired
   lockHeartbeat: bigint("lock_heartbeat", { mode: "number" }), // Last heartbeat timestamp (lock auto-expires after 30s of inactivity)
-  
+
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -159,37 +165,45 @@ export const quotationsRelations = relations(quotations, ({ one, many }) => ({
 
 // Agreements table (generated when quote is approved)
 export const agreements = pgTable("agreements", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
-  
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id")
+    .notNull()
+    .references(() => quotations.id, { onDelete: "cascade" }),
+
   // Project details (snapshot at approval time)
   clientName: varchar("client_name").notNull(),
   projectName: varchar("project_name").notNull(),
   siteAddress: text("site_address").notNull(),
-  
+
   // Financial details
   amountBeforeGst: integer("amount_before_gst").notNull(), // Subtotal in paise
   gstPercent: integer("gst_percent").notNull(), // GST percentage (18 = 18%)
   gstAmount: integer("gst_amount").notNull(), // GST amount in paise
   grandTotal: integer("grand_total").notNull(), // Total amount in paise
-  
+
   // Payment schedule (with computed amounts)
-  paymentScheduleJson: jsonb("payment_schedule_json").$type<Array<{
-    label: string;
-    percent: number;
-    amount: number; // In paise
-  }>>().notNull(),
-  
+  paymentScheduleJson: jsonb("payment_schedule_json")
+    .$type<
+      Array<{
+        label: string;
+        percent: number;
+        amount: number; // In paise
+      }>
+    >()
+    .notNull(),
+
   // Terms & Conditions
   termsJson: jsonb("terms_json").$type<string[]>().notNull(),
-  
+
   // PDF storage
   pdfPath: text("pdf_path").notNull(), // File path on disk
-  
+
   // Signature tracking
   signedByClient: varchar("signed_by_client"), // Client name if signed
   signedAt: bigint("signed_at", { mode: "number" }), // Unix timestamp
-  
+
   // Timestamps
   generatedAt: bigint("generated_at", { mode: "number" }).notNull(), // Unix timestamp
   createdAt: timestamp("created_at").defaultNow(),
@@ -204,38 +218,42 @@ export const agreementsRelations = relations(agreements, ({ one }) => ({
 
 // Interior line items (Kitchen, Living, Bedrooms, etc.)
 export const interiorItems = pgTable("interior_items", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
-  
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id")
+    .notNull()
+    .references(() => quotations.id, { onDelete: "cascade" }),
+
   roomType: varchar("room_type").notNull(), // Kitchen, Living, Bedrooms, Bathrooms, Utility, Puja
   description: text("description"),
-  
+
   // Calculation type (determines how SQFT/area is calculated)
   calc: varchar("calc").notNull().default("SQFT"), // SQFT, COUNT, LSUM
-  
+
   // Dimensions
   length: decimal("length", { precision: 10, scale: 2 }),
   height: decimal("height", { precision: 10, scale: 2 }),
   width: decimal("width", { precision: 10, scale: 2 }),
   sqft: decimal("sqft", { precision: 10, scale: 2 }), // Calculated: L×H or L×W
-  
+
   // Build Type (Work-on-Site = handmade, Factory Finish = factory)
   buildType: varchar("build_type").notNull().default("handmade"), // handmade, factory
-  
+
   // Materials/Finishes/Hardware (with defaults)
   material: varchar("material").notNull().default("Generic Ply"),
   finish: varchar("finish").notNull().default("Generic Laminate"),
   hardware: varchar("hardware").notNull().default("Nimmi"),
-  
+
   // Pricing (brand-based calculation)
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }), // Rate per sqft
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }), // Amount = Rate × Area
-  
+
   // Rate override functionality
   rateAuto: decimal("rate_auto", { precision: 10, scale: 2 }), // Auto-computed rate from buildType + brands
   rateOverride: decimal("rate_override", { precision: 10, scale: 2 }), // User-entered manual rate (nullable)
   isRateOverridden: boolean("is_rate_overridden").default(false), // true when override is active
-  
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -248,26 +266,30 @@ export const interiorItemsRelations = relations(interiorItems, ({ one }) => ({
 
 // False ceiling items (per room, AREA calculation L×W)
 export const falseCeilingItems = pgTable("false_ceiling_items", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
-  
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id")
+    .notNull()
+    .references(() => quotations.id, { onDelete: "cascade" }),
+
   roomType: varchar("room_type").notNull(), // Kitchen, Living, Bedrooms, Bathrooms, Utility, Puja
   description: text("description"),
-  
+
   // Dimensions for AREA (L×W)
   length: decimal("length", { precision: 10, scale: 2 }),
   width: decimal("width", { precision: 10, scale: 2 }),
   area: decimal("area", { precision: 10, scale: 2 }), // Calculated: L×W
-  
+
   // Pricing (optional for future)
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }),
-  
+
   // Rate override functionality
   rateAuto: decimal("rate_auto", { precision: 10, scale: 2 }), // Auto-computed rate from buildType + brands
   rateOverride: decimal("rate_override", { precision: 10, scale: 2 }), // User-entered manual rate (nullable)
   isRateOverridden: boolean("is_rate_overridden").default(false), // true when override is active
-  
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -280,20 +302,24 @@ export const falseCeilingItemsRelations = relations(falseCeilingItems, ({ one })
 
 // Other items (Paint, Lights, Fan Hook Rods)
 export const otherItems = pgTable("other_items", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
-  
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id")
+    .notNull()
+    .references(() => quotations.id, { onDelete: "cascade" }),
+
   itemType: varchar("item_type").notNull(), // Paint, Lights, Fan Hook Rods
   description: text("description"),
-  
+
   // Value type (lumpsum or count)
   valueType: varchar("value_type").notNull(), // lumpsum, count
   value: varchar("value"), // Store as string for flexibility (can be number or lumpsum amount)
-  
+
   // Pricing (optional for future)
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }),
-  
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -333,60 +359,103 @@ export const insertAgreementSchema = createInsertSchema(agreements).omit({
 
 // Enhanced validation schemas with business rules
 export const validatedQuotationSchema = insertQuotationSchema.extend({
-  projectName: z.string().min(3, "Project name must be at least 3 characters").max(100, "Project name too long"),
-  clientName: z.string().min(2, "Client name must be at least 2 characters").max(100, "Client name too long"),
+  projectName: z
+    .string()
+    .min(3, "Project name must be at least 3 characters")
+    .max(100, "Project name too long"),
+  clientName: z
+    .string()
+    .min(2, "Client name must be at least 2 characters")
+    .max(100, "Client name too long"),
   clientEmail: z.string().email("Invalid email address").optional().or(z.literal("")),
-  clientPhone: z.string().regex(/^[\d\s\-\+\(\)]*$/, "Invalid phone number format").optional().or(z.literal("")),
-  buildType: z.enum(["handmade", "factory"], { errorMap: () => ({ message: "Build type must be handmade or factory" }) }),
-  discountValue: z.string().refine(
-    (val) => {
-      const num = parseFloat(val);
-      return !isNaN(num) && num >= 0 && num <= 100;
-    },
-    { message: "Discount must be between 0 and 100" }
-  ).optional(),
+  clientPhone: z
+    .string()
+    .regex(/^[\d\s\-\+\(\)]*$/, "Invalid phone number format")
+    .optional()
+    .or(z.literal("")),
+  buildType: z.enum(["handmade", "factory"], {
+    errorMap: () => ({ message: "Build type must be handmade or factory" }),
+  }),
+  discountValue: z
+    .string()
+    .refine(
+      (val) => {
+        const num = parseFloat(val);
+        return !isNaN(num) && num >= 0 && num <= 100;
+      },
+      { message: "Discount must be between 0 and 100" },
+    )
+    .optional(),
 });
 
 export const validatedInteriorItemSchema = insertInteriorItemSchema.extend({
-  description: z.string().min(2, "Description must be at least 2 characters").max(200, "Description too long"),
-  calc: z.enum(["SQFT", "COUNT", "LSUM"], { errorMap: () => ({ message: "Calculation type must be SQFT, COUNT, or LSUM" }) }),
-  length: z.string().refine(
-    (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 1000),
-    { message: "Length must be between 0 and 1000 feet" }
-  ).optional().nullable(),
-  height: z.string().refine(
-    (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 100),
-    { message: "Height must be between 0 and 100 feet" }
-  ).optional().nullable(),
-  width: z.string().refine(
-    (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 1000),
-    { message: "Width must be between 0 and 1000 feet" }
-  ).optional().nullable(),
-  sqft: z.string().refine(
-    (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 100000),
-    { message: "SQFT/Quantity must be between 0 and 100,000" }
-  ).optional().nullable(),
-  rateOverride: z.string().refine(
-    (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 1000000),
-    { message: "Rate must be between 0 and 1,000,000" }
-  ).optional().nullable(),
+  description: z
+    .string()
+    .min(2, "Description must be at least 2 characters")
+    .max(200, "Description too long"),
+  calc: z.enum(["SQFT", "COUNT", "LSUM"], {
+    errorMap: () => ({ message: "Calculation type must be SQFT, COUNT, or LSUM" }),
+  }),
+  length: z
+    .string()
+    .refine(
+      (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 1000),
+      { message: "Length must be between 0 and 1000 feet" },
+    )
+    .optional()
+    .nullable(),
+  height: z
+    .string()
+    .refine(
+      (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 100),
+      { message: "Height must be between 0 and 100 feet" },
+    )
+    .optional()
+    .nullable(),
+  width: z
+    .string()
+    .refine(
+      (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 1000),
+      { message: "Width must be between 0 and 1000 feet" },
+    )
+    .optional()
+    .nullable(),
+  sqft: z
+    .string()
+    .refine(
+      (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 100000),
+      { message: "SQFT/Quantity must be between 0 and 100,000" },
+    )
+    .optional()
+    .nullable(),
+  rateOverride: z
+    .string()
+    .refine(
+      (val) => val === null || val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 1000000),
+      { message: "Rate must be between 0 and 1,000,000" },
+    )
+    .optional()
+    .nullable(),
 });
 
 export const validatedFalseCeilingItemSchema = insertFalseCeilingItemSchema.extend({
-  description: z.string().min(2, "Description must be at least 2 characters").max(200, "Description too long"),
+  description: z
+    .string()
+    .min(2, "Description must be at least 2 characters")
+    .max(200, "Description too long"),
   area: z.string().refine(
     (val) => {
       const num = parseFloat(val);
       return !isNaN(num) && num >= 0 && num <= 100000;
     },
-    { message: "Area must be between 0 and 100,000 sqft" }
+    { message: "Area must be between 0 and 100,000 sqft" },
   ),
   rate: z.string().refine(
     (val) => {
       const num = parseFloat(val);
       return !isNaN(num) && num >= 0 && num <= 100000;
     },
-    { message: "Rate must be between 0 and 100,000" }
+    { message: "Rate must be between 0 and 100,000" },
   ),
 });
 
@@ -407,12 +476,21 @@ export type InsertAgreement = z.infer<typeof insertAgreementSchema>;
 export type Agreement = typeof agreements.$inferSelect;
 
 // Room types constant
-export const ROOM_TYPES = ["Kitchen", "Living", "Bedrooms", "Bathrooms", "Utility", "Puja"] as const;
+export const ROOM_TYPES = [
+  "Kitchen",
+  "Living",
+  "Bedrooms",
+  "Bathrooms",
+  "Utility",
+  "Puja",
+] as const;
 export const OTHER_ITEM_TYPES = ["Paint", "Lights", "Fan Hook Rods"] as const;
 
 // Rates table for admin-managed pricing
 export const rates = pgTable("rates", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   itemKey: varchar("item_key").notNull().unique(), // lowercase snake_case
   displayName: varchar("display_name", { length: 80 }).notNull(),
   unit: varchar("unit").notNull(), // SFT, COUNT, LSUM
@@ -429,17 +507,19 @@ export const rates = pgTable("rates", {
 export const unitEnum = z.enum(["SFT", "COUNT", "LSUM"]);
 export const categoryEnum = z.enum([
   "Kitchen",
-  "Living", 
+  "Living",
   "Dining",
   "Master Bedroom",
   "Bedroom 2",
   "Bedroom 3",
   "Others",
-  "FC"
+  "FC",
 ]);
 
 export const insertRateSchema = createInsertSchema(rates, {
-  itemKey: z.string().regex(/^[a-z0-9_]+$/, "Must be lowercase letters, numbers, and underscores only"),
+  itemKey: z
+    .string()
+    .regex(/^[a-z0-9_]+$/, "Must be lowercase letters, numbers, and underscores only"),
   displayName: z.string().min(2).max(80),
   unit: unitEnum,
   category: categoryEnum,
@@ -462,11 +542,13 @@ export const templateCategoryEnum = z.enum([
   "Residential 2BHK",
   "Residential 3BHK",
   "Villa",
-  "Commercial"
+  "Commercial",
 ]);
 
 export const templates = pgTable("templates", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 100 }).notNull(),
   category: varchar("category").notNull(),
   isActive: boolean("is_active").notNull().default(true),
@@ -475,8 +557,12 @@ export const templates = pgTable("templates", {
 });
 
 export const templateRooms = pgTable("template_rooms", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  templateId: varchar("template_id").notNull().references(() => templates.id, { onDelete: 'cascade' }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  templateId: varchar("template_id")
+    .notNull()
+    .references(() => templates.id, { onDelete: "cascade" }),
   roomName: varchar("room_name", { length: 60 }).notNull(),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
@@ -484,8 +570,12 @@ export const templateRooms = pgTable("template_rooms", {
 });
 
 export const templateItems = pgTable("template_items", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  templateRoomId: varchar("template_room_id").notNull().references(() => templateRooms.id, { onDelete: 'cascade' }),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  templateRoomId: varchar("template_room_id")
+    .notNull()
+    .references(() => templateRooms.id, { onDelete: "cascade" }),
   itemKey: varchar("item_key").notNull(),
   displayName: varchar("display_name", { length: 80 }).notNull(),
   unit: varchar("unit").notNull().default("SFT"),
@@ -602,7 +692,9 @@ export const brandTypes = ["core", "finish", "hardware"] as const;
 export const brandTypeEnum = z.enum(brandTypes);
 
 export const brands = pgTable("brands", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   type: varchar("type").notNull(),
   name: varchar("name", { length: 60 }).notNull(),
   adderPerSft: integer("adder_per_sft").notNull().default(0),
@@ -635,12 +727,16 @@ export type BrandType = z.infer<typeof brandTypeEnum>;
 
 // Painting Packs table for BHK-scaled LSUM painting packages
 export const paintingPacks = pgTable("painting_packs", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 100 }).notNull(),
   basePriceLsum: integer("base_price_lsum").notNull().default(0),
   bulletsJson: text("bullets_json").notNull().default("[]"),
   bhkFactorBase: integer("bhk_factor_base").notNull().default(3),
-  perBedroomDelta: decimal("per_bedroom_delta", { precision: 5, scale: 3 }).notNull().default("0.10"),
+  perBedroomDelta: decimal("per_bedroom_delta", { precision: 5, scale: 3 })
+    .notNull()
+    .default("0.10"),
   showInQuote: boolean("show_in_quote").notNull().default(true),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
@@ -660,7 +756,7 @@ export const insertPaintingPackSchema = createInsertSchema(paintingPacks, {
     }
   }),
   bhkFactorBase: z.number().int().min(1).max(10).default(3),
-  perBedroomDelta: z.number().min(0).max(0.25).default(0.10),
+  perBedroomDelta: z.number().min(0).max(0.25).default(0.1),
   showInQuote: z.boolean().default(true),
   isActive: z.boolean().default(true),
 }).omit({
@@ -674,7 +770,9 @@ export type NewPaintingPackRow = z.infer<typeof insertPaintingPackSchema>;
 
 // FC Catalog table for admin-configurable FC "Others" items
 export const fcCatalog = pgTable("fc_catalog", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   key: varchar("key", { length: 60 }).notNull().unique(),
   displayName: varchar("display_name", { length: 100 }).notNull(),
   unit: varchar("unit", { length: 10 }).notNull(),
@@ -710,11 +808,17 @@ export const globalRules = pgTable("global_rules", {
   gstPercent: integer("gst_percent").notNull().default(18),
   validityDays: integer("validity_days").notNull().default(15),
   bedroomFactorBase: integer("bedroom_factor_base").notNull().default(3),
-  perBedroomDelta: decimal("per_bedroom_delta", { precision: 5, scale: 3 }).notNull().default("0.10"),
+  perBedroomDelta: decimal("per_bedroom_delta", { precision: 5, scale: 3 })
+    .notNull()
+    .default("0.10"),
   paymentScheduleJson: text("payment_schedule_json").notNull().default("[]"),
   cityFactorsJson: text("city_factors_json").notNull().default("[]"),
-  footerLine1: text("footer_line_1").notNull().default("TRECASA Design Studio | Luxury Interiors | Architecture | Build"),
-  footerLine2: text("footer_line_2").notNull().default("www.trecasadesignstudio.com | +91-XXXXXXXXXX"),
+  footerLine1: text("footer_line_1")
+    .notNull()
+    .default("TRECASA Design Studio | Luxury Interiors | Architecture | Build"),
+  footerLine2: text("footer_line_2")
+    .notNull()
+    .default("www.trecasadesignstudio.com | +91-XXXXXXXXXX"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -726,7 +830,7 @@ export const insertGlobalRulesSchema = createInsertSchema(globalRules, {
   gstPercent: z.number().int().min(0).max(28).default(18),
   validityDays: z.number().int().min(1).max(90).default(15),
   bedroomFactorBase: z.number().int().min(1).max(5).default(3),
-  perBedroomDelta: z.number().min(0).max(0.25).default(0.10),
+  perBedroomDelta: z.number().min(0).max(0.25).default(0.1),
   paymentScheduleJson: z.string().transform((val) => {
     try {
       const parsed = JSON.parse(val);
@@ -758,24 +862,30 @@ export type NewGlobalRulesRow = z.infer<typeof insertGlobalRulesSchema>;
 
 // Change Orders table
 export const changeOrders = pgTable("change_orders", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id")
+    .notNull()
+    .references(() => quotations.id, { onDelete: "cascade" }),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+
   // Change Order ID (e.g., TRE_CO_250115_X1Y2)
   changeOrderId: varchar("change_order_id").notNull().unique(),
-  
+
   // Change Order Info
   title: varchar("title").notNull(), // e.g., "Additional Kitchen Cabinets"
   description: text("description"), // Detailed explanation of changes
-  
+
   // Status workflow
   status: varchar("status").notNull().default("draft"), // draft, sent, approved, rejected
-  
+
   // Approval tracking
   approvedAt: bigint("approved_at", { mode: "number" }), // Unix timestamp
   approvedBy: varchar("approved_by"), // User who approved
-  
+
   // Totals (calculated)
   totals: jsonb("totals").$type<{
     interiorsSubtotal: number; // Total for interior items
@@ -783,14 +893,14 @@ export const changeOrders = pgTable("change_orders", {
     grandSubtotal: number; // Combined subtotal
     updatedAt: number;
   }>(),
-  
+
   // Discount (optional for change orders)
   discountType: varchar("discount_type").default("percent"), // percent or amount
   discountValue: decimal("discount_value", { precision: 10, scale: 2 }).default("0"),
-  
+
   // Revised total (original quote + all approved change orders)
   revisedTotal: decimal("revised_total", { precision: 10, scale: 2 }),
-  
+
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -810,45 +920,49 @@ export const changeOrdersRelations = relations(changeOrders, ({ one, many }) => 
 
 // Change Order Items (similar to interior items but tracks additions/deletions)
 export const changeOrderItems = pgTable("change_order_items", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  changeOrderId: varchar("change_order_id").notNull().references(() => changeOrders.id, { onDelete: 'cascade' }),
-  
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  changeOrderId: varchar("change_order_id")
+    .notNull()
+    .references(() => changeOrders.id, { onDelete: "cascade" }),
+
   // Item type (interior or false ceiling)
   itemType: varchar("item_type").notNull().default("interior"), // interior, falseCeiling, other
-  
+
   // Change type (addition or credit/deletion)
   changeType: varchar("change_type").notNull().default("addition"), // addition, credit
-  
+
   // Room and description
   roomType: varchar("room_type").notNull(), // Kitchen, Living, etc.
   description: text("description"),
-  
+
   // Calculation type
   calc: varchar("calc").notNull().default("SQFT"), // SQFT, COUNT, LSUM
-  
+
   // Dimensions
   length: decimal("length", { precision: 10, scale: 2 }),
   height: decimal("height", { precision: 10, scale: 2 }),
   width: decimal("width", { precision: 10, scale: 2 }),
   sqft: decimal("sqft", { precision: 10, scale: 2 }),
-  
+
   // Build Type
   buildType: varchar("build_type").notNull().default("handmade"),
-  
+
   // Materials/Finishes/Hardware
   material: varchar("material").notNull().default("Generic Ply"),
   finish: varchar("finish").notNull().default("Generic Laminate"),
   hardware: varchar("hardware").notNull().default("Nimmi"),
-  
+
   // Pricing
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }),
-  
+
   // Rate override
   rateAuto: decimal("rate_auto", { precision: 10, scale: 2 }),
   rateOverride: decimal("rate_override", { precision: 10, scale: 2 }),
   isRateOverridden: boolean("is_rate_overridden").default(false),
-  
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -864,7 +978,10 @@ export const insertChangeOrderSchema = createInsertSchema(changeOrders, {
   description: z.string().optional(),
   status: z.enum(["draft", "sent", "approved", "rejected"]).optional(),
   discountType: z.enum(["percent", "amount"]).optional(),
-  discountValue: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
+  discountValue: z
+    .string()
+    .regex(/^\d+(\.\d{1,2})?$/)
+    .optional(),
 }).omit({
   id: true,
   userId: true,
@@ -893,33 +1010,40 @@ export type NewChangeOrderItem = z.infer<typeof insertChangeOrderItemSchema>;
 
 // Projects table (created when quotation is approved)
 export const projects = pgTable("projects", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }).unique(),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id")
+    .notNull()
+    .references(() => quotations.id, { onDelete: "cascade" })
+    .unique(),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+
   // Project ID (e.g., TRE_PRJ_250115_X1Y2)
   projectId: varchar("project_id").notNull().unique(),
-  
+
   // Project Info (snapshot from quotation)
   projectName: varchar("project_name").notNull(),
   clientName: varchar("client_name").notNull(),
   projectAddress: text("project_address"),
-  
+
   // Financial tracking
   contractAmount: decimal("contract_amount", { precision: 12, scale: 2 }).notNull(), // Original quote final total
   totalExpenses: decimal("total_expenses", { precision: 12, scale: 2 }).default("0"), // Sum of all expenses
   profitLoss: decimal("profit_loss", { precision: 12, scale: 2 }).default("0"), // Contract - Expenses
-  
+
   // Status
   status: varchar("status").notNull().default("active"), // active, completed, on-hold, cancelled
-  
+
   // Dates
   startDate: timestamp("start_date"),
   completionDate: timestamp("completion_date"),
-  
+
   // Notes
   notes: text("notes"),
-  
+
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -939,26 +1063,30 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
 
 // Project Expenses table
 export const projectExpenses = pgTable("project_expenses", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: 'cascade' }),
-  
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+
   // Expense details
   category: varchar("category").notNull(), // Materials, Labor, Transport, Equipment, Miscellaneous, etc.
   description: text("description").notNull(),
   amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
-  
+
   // Vendor/Payment info
   vendorName: varchar("vendor_name"),
   paymentMode: varchar("payment_mode"), // Cash, UPI, Cheque, Bank Transfer
   paymentDate: timestamp("payment_date"),
-  
+
   // Receipt/Invoice
   receiptNumber: varchar("receipt_number"),
   attachmentUrl: text("attachment_url"), // For future file upload
-  
+
   // Notes
   notes: text("notes"),
-  
+
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -1004,7 +1132,9 @@ export type NewProjectExpense = z.infer<typeof insertProjectExpenseSchema>;
 
 // Audit Log table
 export const auditLog = pgTable("audit_log", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(), // For now store user ID; later hook real auth
   userEmail: varchar("user_email"), // Store email for display
   section: varchar("section").notNull(), // "Rates" | "Templates" | "Brands" | "Painting&FC" | "GlobalRules"
@@ -1017,7 +1147,16 @@ export const auditLog = pgTable("audit_log", {
 });
 
 export const insertAuditLogSchema = createInsertSchema(auditLog, {
-  section: z.enum(["Rates", "Templates", "Brands", "Painting&FC", "GlobalRules", "Quotes", "Agreement", "Projects"]),
+  section: z.enum([
+    "Rates",
+    "Templates",
+    "Brands",
+    "Painting&FC",
+    "GlobalRules",
+    "Quotes",
+    "Agreement",
+    "Projects",
+  ]),
   action: z.enum(["CREATE", "UPDATE", "DELETE"]),
   summary: z.string().min(1).max(500),
 }).omit({
@@ -1030,30 +1169,34 @@ export type NewAuditLogRow = z.infer<typeof insertAuditLogSchema>;
 
 // Business Expenses table (monthly overhead costs)
 export const businessExpenses = pgTable("business_expenses", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+
   // Expense details
   category: varchar("category").notNull(), // Rent, Salaries, Utilities, Office Supplies, Marketing, Insurance, Maintenance, Subscriptions, Professional Fees, etc.
   description: text("description").notNull(),
   amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
-  
+
   // Vendor/Payment info
   vendorName: varchar("vendor_name"),
   paymentMode: varchar("payment_mode"), // Cash, UPI, Cheque, Bank Transfer
   paymentDate: timestamp("payment_date"),
-  
+
   // Receipt/Invoice
   receiptNumber: varchar("receipt_number"),
   attachmentUrl: text("attachment_url"), // For future file upload
-  
+
   // Recurring expense tracking
   isRecurring: boolean("is_recurring").default(false),
   recurringFrequency: varchar("recurring_frequency"), // Monthly, Quarterly, Yearly
-  
+
   // Notes
   notes: text("notes"),
-  
+
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -1085,30 +1228,42 @@ export type BusinessExpense = typeof businessExpenses.$inferSelect;
 export type NewBusinessExpense = z.infer<typeof insertBusinessExpenseSchema>;
 
 // Quotation Version History table
-export const quotationVersions = pgTable("quotation_versions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  quotationId: varchar("quotation_id").notNull().references(() => quotations.id, { onDelete: 'cascade' }),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  
-  // Version info
-  versionNumber: integer("version_number").notNull(), // Sequential version number per quotation
-  changeType: varchar("change_type").notNull(), // 'create', 'update_info', 'update_items', 'update_pricing', 'status_change'
-  changeSummary: text("change_summary"), // Human-readable summary of what changed
-  
-  // Snapshot of quotation data at this version
-  snapshot: jsonb("snapshot").$type<{
-    quotation: any; // Full quotation data
-    interiorItems?: any[]; // Interior items if changed
-    falseCeilingItems?: any[]; // False ceiling items if changed
-    totals?: any; // Financial totals
-  }>().notNull(),
-  
-  // Metadata
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => [
-  index("idx_quotation_versions_quotation").on(table.quotationId),
-  index("idx_quotation_versions_created").on(table.createdAt),
-]);
+export const quotationVersions = pgTable(
+  "quotation_versions",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    quotationId: varchar("quotation_id")
+      .notNull()
+      .references(() => quotations.id, { onDelete: "cascade" }),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    // Version info
+    versionNumber: integer("version_number").notNull(), // Sequential version number per quotation
+    changeType: varchar("change_type").notNull(), // 'create', 'update_info', 'update_items', 'update_pricing', 'status_change'
+    changeSummary: text("change_summary"), // Human-readable summary of what changed
+
+    // Snapshot of quotation data at this version
+    snapshot: jsonb("snapshot")
+      .$type<{
+        quotation: any; // Full quotation data
+        interiorItems?: any[]; // Interior items if changed
+        falseCeilingItems?: any[]; // False ceiling items if changed
+        totals?: any; // Financial totals
+      }>()
+      .notNull(),
+
+    // Metadata
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_quotation_versions_quotation").on(table.quotationId),
+    index("idx_quotation_versions_created").on(table.createdAt),
+  ],
+);
 
 export const quotationVersionsRelations = relations(quotationVersions, ({ one }) => ({
   quotation: one(quotations, {

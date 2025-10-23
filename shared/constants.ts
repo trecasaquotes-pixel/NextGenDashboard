@@ -26,13 +26,13 @@ export const SECTIONS = {
   interiors: "Interiors",
   falseCeiling: "False Ceiling",
   additionalWorks: "Additional Works", // Previously "Misc"
-  
+
   // Document sections
   scopeOfWork: "Scope of Work",
   estimate: "Estimate",
   termsAndConditions: "Terms & Conditions",
   paymentSchedule: "Payment Schedule",
-  
+
   // Room categories
   kitchen: "Kitchen",
   living: "Living",
@@ -82,12 +82,12 @@ export const PAYMENT_MILESTONES = {
 // TERMS & CONDITIONS TEMPLATE
 // ============================================================================
 export const TERMS_AND_CONDITIONS = {
-  quoteValidityTemplate: (validUntilDate: string) => 
+  quoteValidityTemplate: (validUntilDate: string) =>
     `Quote Validity: Valid until ${validUntilDate}.`,
-  
-  disputeResolution: 
+
+  disputeResolution:
     "Dispute Resolution: Any disputes will be resolved through amicable discussion. If unresolved, disputes shall be subject to arbitration under the Indian Arbitration and Conciliation Act, 1996, with jurisdiction limited to courts in Hyderabad.",
-  
+
   standardTerms: [
     "All prices are in Indian Rupees (₹) and are inclusive of GST unless otherwise stated.",
     "The quotation is valid for 30 days from the date of issue.",
@@ -104,7 +104,7 @@ export const TERMS_AND_CONDITIONS = {
 // ============================================================================
 export const GREETINGS = {
   pdfHeader: (clientName: string) => `Hi ${clientName} & Family`,
-  emailSubject: (quoteId: string, projectName: string) => 
+  emailSubject: (quoteId: string, projectName: string) =>
     `Your Quotation ${quoteId} - ${projectName}`,
 } as const;
 
@@ -123,7 +123,7 @@ export const TABLE_HEADERS = {
     rate: "Rate (₹/sft)",
     amount: "Amount (₹)",
   },
-  
+
   // False ceiling table
   falseCeiling: {
     description: "Description",
@@ -131,7 +131,7 @@ export const TABLE_HEADERS = {
     rate: "Rate (₹/sqft)",
     amount: "Amount (₹)",
   },
-  
+
   // Summary table
   summary: {
     particulars: "Particulars",

@@ -50,7 +50,7 @@ const categories: TemplateCategory[] = [
   "Residential 2BHK",
   "Residential 3BHK",
   "Villa",
-  "Commercial"
+  "Commercial",
 ];
 
 const units = ["LSUM", "SQFT", "RSUM", "COUNT"];
@@ -65,7 +65,13 @@ export default function TemplateEditorPage() {
   const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [newRoom, setNewRoom] = useState({ roomName: "", sortOrder: 0 });
-  const [newItem, setNewItem] = useState({ itemKey: "", displayName: "", unit: "LSUM", sortOrder: 0, isWallHighlightOrPanel: false });
+  const [newItem, setNewItem] = useState({
+    itemKey: "",
+    displayName: "",
+    unit: "LSUM",
+    sortOrder: 0,
+    isWallHighlightOrPanel: false,
+  });
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -101,8 +107,7 @@ export default function TemplateEditorPage() {
   });
 
   const createRoomMutation = useMutation({
-    mutationFn: (data: { roomName: string; sortOrder: number }) =>
-      createTemplateRoom(id!, data),
+    mutationFn: (data: { roomName: string; sortOrder: number }) => createTemplateRoom(id!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/templates", id] });
       setIsAddRoomDialogOpen(false);
@@ -156,7 +161,13 @@ export default function TemplateEditorPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/templates", id] });
       setIsAddItemDialogOpen(false);
       setSelectedRoomId(null);
-      setNewItem({ itemKey: "", displayName: "", unit: "LSUM", sortOrder: 0, isWallHighlightOrPanel: false });
+      setNewItem({
+        itemKey: "",
+        displayName: "",
+        unit: "LSUM",
+        sortOrder: 0,
+        isWallHighlightOrPanel: false,
+      });
       toast({ title: "Item added successfully" });
     },
     onError: (error: any) => {
@@ -169,8 +180,15 @@ export default function TemplateEditorPage() {
   });
 
   const updateItemMutation = useMutation({
-    mutationFn: ({ roomId, itemId, data }: { roomId: string; itemId: string; data: Partial<TemplateItemRow> }) =>
-      updateTemplateItem(id!, roomId, itemId, data),
+    mutationFn: ({
+      roomId,
+      itemId,
+      data,
+    }: {
+      roomId: string;
+      itemId: string;
+      data: Partial<TemplateItemRow>;
+    }) => updateTemplateItem(id!, roomId, itemId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/templates", id] });
       toast({ title: "Item updated successfully" });
@@ -273,14 +291,18 @@ export default function TemplateEditorPage() {
                 <Label htmlFor="template-category">Category</Label>
                 <Select
                   value={template.category}
-                  onValueChange={(value) => updateTemplateMutation.mutate({ category: value as TemplateCategory })}
+                  onValueChange={(value) =>
+                    updateTemplateMutation.mutate({ category: value as TemplateCategory })
+                  }
                 >
                   <SelectTrigger id="template-category" data-testid="select-template-category">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -289,7 +311,9 @@ export default function TemplateEditorPage() {
                 <Switch
                   id="template-active"
                   checked={template.isActive}
-                  onCheckedChange={(checked) => updateTemplateMutation.mutate({ isActive: checked })}
+                  onCheckedChange={(checked) =>
+                    updateTemplateMutation.mutate({ isActive: checked })
+                  }
                   data-testid="switch-template-active"
                 />
                 <Label htmlFor="template-active">Active</Label>
@@ -302,10 +326,7 @@ export default function TemplateEditorPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Rooms & Items</CardTitle>
-            <Button
-              onClick={() => setIsAddRoomDialogOpen(true)}
-              data-testid="button-add-room"
-            >
+            <Button onClick={() => setIsAddRoomDialogOpen(true)} data-testid="button-add-room">
               <Plus className="h-4 w-4 mr-2" />
               Add Room
             </Button>
@@ -334,14 +355,24 @@ export default function TemplateEditorPage() {
                             <div className="flex gap-2 flex-1">
                               <Input
                                 value={room.roomName}
-                                onChange={(e) => updateRoomMutation.mutate({ roomId: room.id, data: { roomName: e.target.value } })}
+                                onChange={(e) =>
+                                  updateRoomMutation.mutate({
+                                    roomId: room.id,
+                                    data: { roomName: e.target.value },
+                                  })
+                                }
                                 placeholder="Room name"
                                 data-testid={`input-room-name-${room.id}`}
                               />
                               <Input
                                 type="number"
                                 value={room.sortOrder}
-                                onChange={(e) => updateRoomMutation.mutate({ roomId: room.id, data: { sortOrder: parseInt(e.target.value) } })}
+                                onChange={(e) =>
+                                  updateRoomMutation.mutate({
+                                    roomId: room.id,
+                                    data: { sortOrder: parseInt(e.target.value) },
+                                  })
+                                }
                                 placeholder="Sort order"
                                 className="w-24"
                                 data-testid={`input-room-sort-${room.id}`}
@@ -379,36 +410,67 @@ export default function TemplateEditorPage() {
                           ) : (
                             <div className="space-y-2">
                               {room.items.map((item) => (
-                                <div key={item.id} className="flex gap-2 items-center p-2 border rounded-md">
+                                <div
+                                  key={item.id}
+                                  className="flex gap-2 items-center p-2 border rounded-md"
+                                >
                                   <Input
                                     value={item.itemKey}
-                                    onChange={(e) => updateItemMutation.mutate({ roomId: room.id, itemId: item.id, data: { itemKey: e.target.value } })}
+                                    onChange={(e) =>
+                                      updateItemMutation.mutate({
+                                        roomId: room.id,
+                                        itemId: item.id,
+                                        data: { itemKey: e.target.value },
+                                      })
+                                    }
                                     placeholder="Item key"
                                     data-testid={`input-item-key-${item.id}`}
                                   />
                                   <Input
                                     value={item.displayName}
-                                    onChange={(e) => updateItemMutation.mutate({ roomId: room.id, itemId: item.id, data: { displayName: e.target.value } })}
+                                    onChange={(e) =>
+                                      updateItemMutation.mutate({
+                                        roomId: room.id,
+                                        itemId: item.id,
+                                        data: { displayName: e.target.value },
+                                      })
+                                    }
                                     placeholder="Display name"
                                     data-testid={`input-item-displayname-${item.id}`}
                                   />
                                   <Select
                                     value={item.unit}
-                                    onValueChange={(value) => updateItemMutation.mutate({ roomId: room.id, itemId: item.id, data: { unit: value } })}
+                                    onValueChange={(value) =>
+                                      updateItemMutation.mutate({
+                                        roomId: room.id,
+                                        itemId: item.id,
+                                        data: { unit: value },
+                                      })
+                                    }
                                   >
-                                    <SelectTrigger className="w-32" data-testid={`select-item-unit-${item.id}`}>
+                                    <SelectTrigger
+                                      className="w-32"
+                                      data-testid={`select-item-unit-${item.id}`}
+                                    >
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {units.map((unit) => (
-                                        <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                                        <SelectItem key={unit} value={unit}>
+                                          {unit}
+                                        </SelectItem>
                                       ))}
                                     </SelectContent>
                                   </Select>
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => deleteItemMutation.mutate({ roomId: room.id, itemId: item.id })}
+                                    onClick={() =>
+                                      deleteItemMutation.mutate({
+                                        roomId: room.id,
+                                        itemId: item.id,
+                                      })
+                                    }
                                     data-testid={`button-delete-item-${item.id}`}
                                   >
                                     <Trash2 className="h-4 w-4" />
@@ -432,9 +494,7 @@ export default function TemplateEditorPage() {
         <DialogContent data-testid="dialog-add-room">
           <DialogHeader>
             <DialogTitle>Add Room</DialogTitle>
-            <DialogDescription>
-              Add a new room to this template
-            </DialogDescription>
+            <DialogDescription>Add a new room to this template</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -472,9 +532,7 @@ export default function TemplateEditorPage() {
         <DialogContent data-testid="dialog-add-item">
           <DialogHeader>
             <DialogTitle>Add Item</DialogTitle>
-            <DialogDescription>
-              Add a new item to this room
-            </DialogDescription>
+            <DialogDescription>Add a new item to this room</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -508,7 +566,9 @@ export default function TemplateEditorPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {units.map((unit) => (
-                    <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                    <SelectItem key={unit} value={unit}>
+                      {unit}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

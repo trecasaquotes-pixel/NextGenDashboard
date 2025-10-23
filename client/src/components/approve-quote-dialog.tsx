@@ -48,16 +48,20 @@ export function ApproveQuoteDialog({
         title: "Quote Approved",
         description: "Agreement has been generated successfully",
       });
-      
+
       // Invalidate queries with await
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}`] }),
-        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/interior-items`] }),
-        queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`] }),
+        queryClient.invalidateQueries({
+          queryKey: [`/api/quotations/${quotationId}/interior-items`],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: [`/api/quotations/${quotationId}/false-ceiling-items`],
+        }),
         queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/other-items`] }),
         queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quotationId}/agreement`] }),
       ]);
-      
+
       onOpenChange(false);
       setApprovedBy("");
       setSiteAddress("");
@@ -91,7 +95,8 @@ export function ApproveQuoteDialog({
         <DialogHeader>
           <DialogTitle>Approve Quote</DialogTitle>
           <DialogDescription>
-            Approve this quote and generate an agreement. This will lock the quote and prevent further edits.
+            Approve this quote and generate an agreement. This will lock the quote and prevent
+            further edits.
           </DialogDescription>
         </DialogHeader>
 
@@ -126,10 +131,7 @@ export function ApproveQuoteDialog({
               onCheckedChange={(checked) => setConfirmed(checked as boolean)}
               data-testid="checkbox-confirm-approve"
             />
-            <Label
-              htmlFor="confirm"
-              className="text-sm font-normal cursor-pointer"
-            >
+            <Label htmlFor="confirm" className="text-sm font-normal cursor-pointer">
               Lock this quote and generate Agreement
             </Label>
           </div>

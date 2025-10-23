@@ -1,9 +1,9 @@
-import { customAlphabet } from 'nanoid';
-import { db } from '../db';
-import { quotations } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { customAlphabet } from "nanoid";
+import { db } from "../db";
+import { quotations } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
-const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 32);
+const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 32);
 
 export function createClientToken(): string {
   return nanoid();
@@ -14,11 +14,7 @@ export async function verifyClientToken(quoteId: string, token: string): Promise
     return false;
   }
 
-  const quote = await db
-    .select()
-    .from(quotations)
-    .where(eq(quotations.id, quoteId))
-    .limit(1);
+  const quote = await db.select().from(quotations).where(eq(quotations.id, quoteId)).limit(1);
 
   if (!quote || quote.length === 0) {
     return false;

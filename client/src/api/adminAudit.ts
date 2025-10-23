@@ -44,20 +44,20 @@ export interface AuditLogFilters {
  */
 export async function listAuditLogs(filters: AuditLogFilters = {}): Promise<AuditLogListResponse> {
   const params = new URLSearchParams();
-  
-  if (filters.q) params.append('q', filters.q);
-  if (filters.section) params.append('section', filters.section);
-  if (filters.action) params.append('action', filters.action);
-  if (filters.since) params.append('since', filters.since.toString());
-  if (filters.until) params.append('until', filters.until.toString());
-  if (filters.page) params.append('page', filters.page.toString());
-  if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
-  
+
+  if (filters.q) params.append("q", filters.q);
+  if (filters.section) params.append("section", filters.section);
+  if (filters.action) params.append("action", filters.action);
+  if (filters.since) params.append("since", filters.since.toString());
+  if (filters.until) params.append("until", filters.until.toString());
+  if (filters.page) params.append("page", filters.page.toString());
+  if (filters.pageSize) params.append("pageSize", filters.pageSize.toString());
+
   const response = await fetch(`/api/admin/audit?${params}`);
   if (!response.ok) {
-    throw new Error('Failed to fetch audit logs');
+    throw new Error("Failed to fetch audit logs");
   }
-  
+
   return response.json();
 }
 
@@ -67,8 +67,8 @@ export async function listAuditLogs(filters: AuditLogFilters = {}): Promise<Audi
 export async function getAuditLog(id: string): Promise<AuditLogEntry> {
   const response = await fetch(`/api/admin/audit/${id}`);
   if (!response.ok) {
-    throw new Error('Failed to fetch audit log entry');
+    throw new Error("Failed to fetch audit log entry");
   }
-  
+
   return response.json();
 }

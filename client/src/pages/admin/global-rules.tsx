@@ -26,7 +26,14 @@ import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { ArrowLeft, Plus, Trash2, RotateCcw } from "lucide-react";
 import { useLocation } from "wouter";
-import { getGlobalRules, saveGlobalRules, parseGlobalRulesForForm, type PaymentScheduleItem, type CityFactorItem, type GlobalRulesFormData } from "@/api/adminGlobalRules";
+import {
+  getGlobalRules,
+  saveGlobalRules,
+  parseGlobalRulesForForm,
+  type PaymentScheduleItem,
+  type CityFactorItem,
+  type GlobalRulesFormData,
+} from "@/api/adminGlobalRules";
 import { queryClient } from "@/lib/queryClient";
 
 export default function AdminGlobalRulesPage() {
@@ -39,7 +46,7 @@ export default function AdminGlobalRulesPage() {
   const [gstPercent, setGstPercent] = useState(18);
   const [validityDays, setValidityDays] = useState(15);
   const [bedroomFactorBase, setBedroomFactorBase] = useState(3);
-  const [perBedroomDelta, setPerBedroomDelta] = useState(0.10);
+  const [perBedroomDelta, setPerBedroomDelta] = useState(0.1);
   const [paymentSchedule, setPaymentSchedule] = useState<PaymentScheduleItem[]>([]);
   const [cityFactors, setCityFactors] = useState<CityFactorItem[]>([]);
   const [footerLine1, setFooterLine1] = useState("");
@@ -87,11 +94,17 @@ export default function AdminGlobalRulesPage() {
 
   // Validation
   const isValid = useMemo(() => {
-    return Math.abs(paymentTotal - 100) < 0.01 && 
-           gstPercent >= 0 && gstPercent <= 28 &&
-           validityDays >= 1 && validityDays <= 90 &&
-           bedroomFactorBase >= 1 && bedroomFactorBase <= 5 &&
-           perBedroomDelta >= 0 && perBedroomDelta <= 0.25;
+    return (
+      Math.abs(paymentTotal - 100) < 0.01 &&
+      gstPercent >= 0 &&
+      gstPercent <= 28 &&
+      validityDays >= 1 &&
+      validityDays <= 90 &&
+      bedroomFactorBase >= 1 &&
+      bedroomFactorBase <= 5 &&
+      perBedroomDelta >= 0 &&
+      perBedroomDelta <= 0.25
+    );
   }, [paymentTotal, gstPercent, validityDays, bedroomFactorBase, perBedroomDelta]);
 
   // Save mutation
@@ -117,9 +130,10 @@ export default function AdminGlobalRulesPage() {
     if (!isValid) {
       toast({
         title: "Validation Error",
-        description: paymentTotal !== 100 
-          ? `Payment schedule must sum to 100% (currently ${paymentTotal}%)`
-          : "Please check all fields are within valid ranges",
+        description:
+          paymentTotal !== 100
+            ? `Payment schedule must sum to 100% (currently ${paymentTotal}%)`
+            : "Please check all fields are within valid ranges",
         variant: "destructive",
       });
       return;
@@ -148,7 +162,7 @@ export default function AdminGlobalRulesPage() {
     if (field === "label") {
       updated[index].label = value as string;
     } else {
-      updated[index].percent = typeof value === 'string' ? parseFloat(value) || 0 : value;
+      updated[index].percent = typeof value === "string" ? parseFloat(value) || 0 : value;
     }
     setPaymentSchedule(updated);
   };
@@ -162,13 +176,13 @@ export default function AdminGlobalRulesPage() {
       { label: "Booking", percent: 10 },
       { label: "Site Measurement", percent: 50 },
       { label: "On Delivery", percent: 35 },
-      { label: "After Installation", percent: 5 }
+      { label: "After Installation", percent: 5 },
     ]);
   };
 
   // City factors handlers
   const addCityFactor = () => {
-    setCityFactors([...cityFactors, { city: "", factor: 1.00 }]);
+    setCityFactors([...cityFactors, { city: "", factor: 1.0 }]);
   };
 
   const updateCityFactor = (index: number, field: "city" | "factor", value: string | number) => {
@@ -176,7 +190,7 @@ export default function AdminGlobalRulesPage() {
     if (field === "city") {
       updated[index].city = value as string;
     } else {
-      updated[index].factor = typeof value === 'string' ? parseFloat(value) || 1.00 : value;
+      updated[index].factor = typeof value === "string" ? parseFloat(value) || 1.0 : value;
     }
     setCityFactors(updated);
   };
@@ -326,10 +340,14 @@ export default function AdminGlobalRulesPage() {
               <div className="p-3 bg-muted rounded-md text-sm">
                 <div className="font-medium mb-1">Preview:</div>
                 <div className="text-muted-foreground">
-                  At 2 BHK: price = base × (1 {bedroomFactorBase > 2 ? '+' : '−'} {Math.abs(2 - bedroomFactorBase)} × {perBedroomDelta}) = base × {(1 + (2 - bedroomFactorBase) * perBedroomDelta).toFixed(2)}
+                  At 2 BHK: price = base × (1 {bedroomFactorBase > 2 ? "+" : "−"}{" "}
+                  {Math.abs(2 - bedroomFactorBase)} × {perBedroomDelta}) = base ×{" "}
+                  {(1 + (2 - bedroomFactorBase) * perBedroomDelta).toFixed(2)}
                 </div>
                 <div className="text-muted-foreground">
-                  At 4 BHK: price = base × (1 {bedroomFactorBase < 4 ? '+' : '−'} {Math.abs(4 - bedroomFactorBase)} × {perBedroomDelta}) = base × {(1 + (4 - bedroomFactorBase) * perBedroomDelta).toFixed(2)}
+                  At 4 BHK: price = base × (1 {bedroomFactorBase < 4 ? "+" : "−"}{" "}
+                  {Math.abs(4 - bedroomFactorBase)} × {perBedroomDelta}) = base ×{" "}
+                  {(1 + (4 - bedroomFactorBase) * perBedroomDelta).toFixed(2)}
                 </div>
               </div>
             </CardContent>
@@ -339,9 +357,7 @@ export default function AdminGlobalRulesPage() {
           <Card>
             <CardHeader>
               <CardTitle>Payment Schedule</CardTitle>
-              <CardDescription>
-                Define payment milestones (must sum to 100%)
-              </CardDescription>
+              <CardDescription>Define payment milestones (must sum to 100%)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -349,9 +365,7 @@ export default function AdminGlobalRulesPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Total: {paymentTotal.toFixed(1)}%</span>
                     {Math.abs(paymentTotal - 100) > 0.01 && (
-                      <span className="text-sm text-destructive">
-                        (must be 100%)
-                      </span>
+                      <span className="text-sm text-destructive">(must be 100%)</span>
                     )}
                   </div>
                   <Button
@@ -364,8 +378,8 @@ export default function AdminGlobalRulesPage() {
                     Reset to Default
                   </Button>
                 </div>
-                <Progress 
-                  value={Math.min(paymentTotal, 100)} 
+                <Progress
+                  value={Math.min(paymentTotal, 100)}
                   className={Math.abs(paymentTotal - 100) > 0.01 ? "bg-destructive/20" : ""}
                 />
               </div>
@@ -431,9 +445,7 @@ export default function AdminGlobalRulesPage() {
           <Card>
             <CardHeader>
               <CardTitle>City Factors</CardTitle>
-              <CardDescription>
-                Location-based price multipliers (0.8 - 1.3)
-              </CardDescription>
+              <CardDescription>Location-based price multipliers (0.8 - 1.3)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Table>
@@ -497,9 +509,7 @@ export default function AdminGlobalRulesPage() {
           <Card>
             <CardHeader>
               <CardTitle>Footer Branding (PDF)</CardTitle>
-              <CardDescription>
-                Footer text displayed on printed quotations
-              </CardDescription>
+              <CardDescription>Footer text displayed on printed quotations</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -528,11 +538,16 @@ export default function AdminGlobalRulesPage() {
                 <div className="text-sm font-medium mb-2">Preview:</div>
                 <div className="text-center space-y-1">
                   <div className="text-sm flex items-center justify-center gap-2">
-                    <span>{footerLine1.split('|')[0]?.trim() || 'TRECASA Design Studio'}</span>
+                    <span>{footerLine1.split("|")[0]?.trim() || "TRECASA Design Studio"}</span>
                     <span className="inline-block w-1.5 h-1.5 bg-red-600 rounded-full"></span>
-                    <span>{footerLine1.split('|').slice(1).join('|').trim() || 'Luxury Interiors | Architecture | Build'}</span>
+                    <span>
+                      {footerLine1.split("|").slice(1).join("|").trim() ||
+                        "Luxury Interiors | Architecture | Build"}
+                    </span>
                   </div>
-                  <div className="text-xs text-muted-foreground">{footerLine2 || 'www.trecasadesignstudio.com | +91-XXXXXXXXXX'}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {footerLine2 || "www.trecasadesignstudio.com | +91-XXXXXXXXXX"}
+                  </div>
                 </div>
               </div>
             </CardContent>

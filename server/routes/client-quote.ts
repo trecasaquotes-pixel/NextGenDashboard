@@ -10,7 +10,6 @@ import path from "path";
 import fs from "fs/promises";
 
 export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
-  
   // GET /api/client-quote/:quoteId/info?token=...
   // Returns public info for the portal
   app.get("/api/client-quote/:quoteId/info", async (req, res) => {
@@ -30,7 +29,7 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
       // Get interior and FC items to check if FC exists
       const interiorItems = await storage.getInteriorItems(quoteId);
       const fcItems = await storage.getFalseCeilingItems(quoteId);
-      
+
       // Calculate totals with discount and GST
       const interiorsSubtotal = quotation.totals?.interiorsSubtotal || 0;
       const fcSubtotal = quotation.totals?.fcSubtotal || 0;
@@ -38,10 +37,9 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
 
       const discountType = quotation.discountType || "percent";
       const discountValue = parseFloat(quotation.discountValue?.toString() || "0");
-      
-      const discountAmount = discountType === "percent" 
-        ? (grandSubtotal * discountValue) / 100 
-        : discountValue;
+
+      const discountAmount =
+        discountType === "percent" ? (grandSubtotal * discountValue) / 100 : discountValue;
 
       const afterDiscount = Math.max(0, grandSubtotal - discountAmount);
       const gstPercent = 18; // Fixed 18% GST
@@ -49,14 +47,14 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
       const grandTotal = afterDiscount + gstAmount;
 
       // Generate render tokens for PDF access
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
       const interiorsRenderToken = generateRenderToken(quoteId);
       const fcRenderToken = fcItems.length > 0 ? generateRenderToken(quoteId) : null;
 
       // Get terms from quotation
       const termsArray: string[] = [];
       if (quotation.terms?.interiors?.customText) {
-        termsArray.push(...quotation.terms.interiors.customText.split('\n').filter(Boolean));
+        termsArray.push(...quotation.terms.interiors.customText.split("\n").filter(Boolean));
       }
 
       const response = {
@@ -72,12 +70,15 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
             gstAmount: (interiorsSubtotal * gstPercent) / 100,
             grandTotal: interiorsSubtotal + (interiorsSubtotal * gstPercent) / 100,
           },
-          fc: fcItems.length > 0 ? {
-            subtotal: fcSubtotal,
-            gstPercent,
-            gstAmount: (fcSubtotal * gstPercent) / 100,
-            grandTotal: fcSubtotal + (fcSubtotal * gstPercent) / 100,
-          } : null,
+          fc:
+            fcItems.length > 0
+              ? {
+                  subtotal: fcSubtotal,
+                  gstPercent,
+                  gstAmount: (fcSubtotal * gstPercent) / 100,
+                  grandTotal: fcSubtotal + (fcSubtotal * gstPercent) / 100,
+                }
+              : null,
           discount: {
             type: discountType,
             value: discountValue,
@@ -89,7 +90,9 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
         },
         pdfUrls: {
           interiors: `${baseUrl}/api/quotations/${quoteId}/pdf/interiors?token=${interiorsRenderToken}`,
-          fc: fcRenderToken ? `${baseUrl}/api/quotations/${quoteId}/pdf/fc?token=${fcRenderToken}` : null,
+          fc: fcRenderToken
+            ? `${baseUrl}/api/quotations/${quoteId}/pdf/fc?token=${fcRenderToken}`
+            : null,
         },
         terms: termsArray,
         status: quotation.status,
@@ -127,8 +130,8 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
       // If quote is not approved, approve it first
       if (quotation.status !== "approved") {
         // Approve logic (similar to admin approve)
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        
+        const baseUrl = `${req.protocol}://${req.get("host")}`;
+
         // Build snapshot
         const [ratesData, brandsData, globalRulesData] = await Promise.all([
           db.select().from(rates).where(eq(rates.isActive, true)),
@@ -143,7 +146,7 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
           hardware: new Set<string>(),
         };
 
-        interiorItems.forEach(item => {
+        interiorItems.forEach((item) => {
           if (item.material) brandsUsed.materials.add(item.material);
           if (item.finish) brandsUsed.finishes.add(item.finish);
           if (item.hardware) brandsUsed.hardware.add(item.hardware);
@@ -178,9 +181,9 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
         try {
           const pdfs = await generateAllQuotationPDFs(quotation, baseUrl);
           if (pdfs.agreement) {
-            const storagePath = path.resolve('storage', 'pdf', 'quotes', quoteId);
+            const storagePath = path.resolve("storage", "pdf", "quotes", quoteId);
             await fs.mkdir(storagePath, { recursive: true });
-            const agreementPath = path.join(storagePath, 'agreement.pdf');
+            const agreementPath = path.join(storagePath, "agreement.pdf");
             await fs.writeFile(agreementPath, pdfs.agreement);
           }
         } catch (pdfError) {
@@ -220,11 +223,11 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
 
       // Generate render token for agreement PDF
       const agreementRenderToken = generateRenderToken(quoteId);
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      
-      res.json({ 
-        ok: true, 
-        agreementUrl: `${baseUrl}/api/quotations/${quoteId}/pdf/agreement?token=${agreementRenderToken}` 
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+      res.json({
+        ok: true,
+        agreementUrl: `${baseUrl}/api/quotations/${quoteId}/pdf/agreement?token=${agreementRenderToken}`,
       });
     } catch (error) {
       console.error("Error accepting quote:", error);
@@ -245,7 +248,7 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
       }
 
       const user = req.user as any;
-      
+
       // Verify ownership
       if (quotation.userId !== user.claims.sub) {
         return res.status(403).json({ message: "Forbidden" });
@@ -253,7 +256,7 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
 
       // Generate new token
       const clientToken = createClientToken();
-      const clientTokenExpiresAt = setExpiry ? Date.now() + (14 * 24 * 60 * 60 * 1000) : null; // 14 days
+      const clientTokenExpiresAt = setExpiry ? Date.now() + 14 * 24 * 60 * 60 * 1000 : null; // 14 days
 
       // Update quote
       await storage.updateQuotation(quoteId, {
@@ -268,15 +271,15 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
         section: "Quotes",
         action: "UPDATE",
         targetId: quoteId,
-        summary: `Client share link ${quotation.clientToken ? 'regenerated' : 'generated'} for ${quotation.quoteId}`,
+        summary: `Client share link ${quotation.clientToken ? "regenerated" : "generated"} for ${quotation.quoteId}`,
         beforeJson: JSON.stringify({ clientToken: quotation.clientToken }),
         afterJson: JSON.stringify({ clientToken, clientTokenExpiresAt }),
       });
 
-      const baseUrl = process.env.REPL_SLUG 
+      const baseUrl = process.env.REPL_SLUG
         ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
-        : `${req.protocol}://${req.get('host')}`;
-      
+        : `${req.protocol}://${req.get("host")}`;
+
       const shareUrl = `${baseUrl}/quote/${quoteId}?t=${clientToken}`;
 
       res.json({ shareUrl, expiresAt: clientTokenExpiresAt });

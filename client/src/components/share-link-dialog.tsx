@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,12 +24,12 @@ interface ShareLinkDialogProps {
   clientTokenExpiresAt?: number | null;
 }
 
-export function ShareLinkDialog({ 
-  open, 
-  onOpenChange, 
-  quoteId, 
-  clientToken, 
-  clientTokenExpiresAt 
+export function ShareLinkDialog({
+  open,
+  onOpenChange,
+  quoteId,
+  clientToken,
+  clientTokenExpiresAt,
 }: ShareLinkDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -42,7 +49,7 @@ export function ShareLinkDialog({
     onSuccess: async (data) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: [`/api/quotations/${quoteId}`] }),
-        queryClient.invalidateQueries({ queryKey: ['/api/quotations'] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/quotations"] }),
       ]);
       toast({
         title: "Share link generated",
@@ -58,12 +65,12 @@ export function ShareLinkDialog({
     },
   });
 
-  const shareUrl = clientToken 
+  const shareUrl = clientToken
     ? `${window.location.origin}/client/${quoteId}?token=${clientToken}`
     : null;
 
   const isExpired = clientTokenExpiresAt && clientTokenExpiresAt < Date.now();
-  const expiryDate = clientTokenExpiresAt 
+  const expiryDate = clientTokenExpiresAt
     ? new Date(clientTokenExpiresAt).toLocaleString()
     : "Never";
 
@@ -79,7 +86,7 @@ export function ShareLinkDialog({
 
   const handleOpenLink = () => {
     if (shareUrl) {
-      window.open(shareUrl, '_blank');
+      window.open(shareUrl, "_blank");
     }
   };
 
@@ -89,7 +96,8 @@ export function ShareLinkDialog({
         <DialogHeader>
           <DialogTitle>Client Share Link</DialogTitle>
           <DialogDescription>
-            Generate a secure link to share this quotation with your client. They can review and accept the quote without logging in.
+            Generate a secure link to share this quotation with your client. They can review and
+            accept the quote without logging in.
           </DialogDescription>
         </DialogHeader>
 
@@ -167,9 +175,7 @@ export function ShareLinkDialog({
               <div className="flex items-center justify-between rounded-lg border p-3">
                 <div className="space-y-0.5">
                   <Label>Set 14-day expiry</Label>
-                  <div className="text-sm text-muted-foreground">
-                    Link will expire in 14 days
-                  </div>
+                  <div className="text-sm text-muted-foreground">Link will expire in 14 days</div>
                 </div>
                 <Switch
                   checked={setExpiry}
@@ -191,11 +197,7 @@ export function ShareLinkDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            data-testid="button-close"
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} data-testid="button-close">
             Close
           </Button>
         </DialogFooter>

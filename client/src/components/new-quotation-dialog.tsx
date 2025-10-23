@@ -33,11 +33,7 @@ interface NewQuotationDialogProps {
   onSuccess: (quotation: Quotation) => void;
 }
 
-export function NewQuotationDialog({
-  open,
-  onOpenChange,
-  onSuccess,
-}: NewQuotationDialogProps) {
+export function NewQuotationDialog({ open, onOpenChange, onSuccess }: NewQuotationDialogProps) {
   const { toast } = useToast();
   const [step, setStep] = useState<"choose" | "details">("choose");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
@@ -47,7 +43,7 @@ export function NewQuotationDialog({
 
   // Fetch active templates
   const { data: templates = [], isLoading: isLoadingTemplates } = useQuery<TemplateSummary[]>({
-    queryKey: ['/api/admin/templates?active=1'],
+    queryKey: ["/api/admin/templates?active=1"],
     enabled: open && step === "choose",
   });
 
@@ -68,44 +64,36 @@ export function NewQuotationDialog({
 
       // Apply template if selected
       if (selectedTemplateId) {
-        await apiRequest(
-          "POST",
-          `/api/quotations/${newQuotation.id}/apply-template`,
-          { 
-            templateId: selectedTemplateId, 
-            mode: "merge" 
-          }
-        );
+        await apiRequest("POST", `/api/quotations/${newQuotation.id}/apply-template`, {
+          templateId: selectedTemplateId,
+          mode: "merge",
+        });
 
         // Also apply FC defaults
-        await apiRequest(
-          "POST",
-          `/api/quotations/${newQuotation.id}/apply-fc-defaults`,
-          {}
-        );
+        await apiRequest("POST", `/api/quotations/${newQuotation.id}/apply-fc-defaults`, {});
       }
 
       return newQuotation;
     },
     onSuccess: (data: Quotation) => {
       queryClient.invalidateQueries({ queryKey: ["/api/quotations"] });
-      
-      const message = selectedTemplateId 
-        ? "Quotation created with template applied" 
+
+      const message = selectedTemplateId
+        ? "Quotation created with template applied"
         : "New quotation created";
-      
+
       toast({
         title: "Success",
         description: message,
       });
-      
+
       // Reset state
       setStep("choose");
       setSelectedTemplateId(null);
       setProjectName("New Project");
       setClientName("Client Name");
       setBuildType("handmade");
-      
+
       onSuccess(data);
       onOpenChange(false);
     },
@@ -149,7 +137,7 @@ export function NewQuotationDialog({
             <ScrollArea className="flex-1 pr-4">
               <div className="space-y-4">
                 {/* Start Blank Option */}
-                <Card 
+                <Card
                   className="cursor-pointer hover-elevate active-elevate-2 border-2 border-border hover:border-primary/50 transition-colors"
                   onClick={() => handleTemplateSelect(null)}
                   data-testid="card-blank-quotation"
@@ -194,7 +182,8 @@ export function NewQuotationDialog({
                               </div>
                               {template.category && (
                                 <CardDescription className="text-sm">
-                                  Pre-configured rooms and items for {template.category.toLowerCase()} projects
+                                  Pre-configured rooms and items for{" "}
+                                  {template.category.toLowerCase()} projects
                                 </CardDescription>
                               )}
                             </CardHeader>
@@ -212,10 +201,9 @@ export function NewQuotationDialog({
             <DialogHeader>
               <DialogTitle>Quotation Details</DialogTitle>
               <DialogDescription>
-                {selectedTemplateId 
+                {selectedTemplateId
                   ? "Set basic details for your new quotation with selected template"
-                  : "Set basic details for your new quotation"
-                }
+                  : "Set basic details for your new quotation"}
               </DialogDescription>
             </DialogHeader>
 
@@ -244,7 +232,10 @@ export function NewQuotationDialog({
 
               <div className="space-y-2">
                 <Label htmlFor="build-type">Build Type</Label>
-                <Select value={buildType} onValueChange={(value: "handmade" | "factory") => setBuildType(value)}>
+                <Select
+                  value={buildType}
+                  onValueChange={(value: "handmade" | "factory") => setBuildType(value)}
+                >
                   <SelectTrigger id="build-type" data-testid="select-build-type">
                     <SelectValue />
                   </SelectTrigger>
