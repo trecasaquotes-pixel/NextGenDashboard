@@ -228,8 +228,8 @@ export default function Estimate() {
       <AppHeader />
       <QuotationHeader quotationId={quotationId!} currentStep="estimate" />
 
-      <main className="container mx-auto px-4 py-8 flex-1">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <main className="container-trecasa py-6 lg:py-8 flex-1">
+        <div className="space-y-6">
           {/* Summary Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Interiors Summary */}

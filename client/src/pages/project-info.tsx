@@ -181,8 +181,8 @@ export default function ProjectInfo() {
     return (
       <div className="min-h-screen bg-background">
         <QuotationHeader quotationId={quotationId!} currentStep="info" />
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
+        <main className="container-trecasa py-6 lg:py-8">
+          <div>
             <Card>
               <CardHeader className="space-y-2">
                 <div className="h-8 bg-muted rounded w-1/3 animate-pulse"></div>
@@ -205,8 +205,8 @@ export default function ProjectInfo() {
       <AppHeader />
       <QuotationHeader quotationId={quotationId!} currentStep="info" />
 
-      <main className="container mx-auto px-4 py-8 flex-1">
-        <div className="max-w-4xl mx-auto">
+      <main className="container-trecasa py-6 lg:py-8 flex-1">
+        <div>
           {/* Back Button */}
           <Button variant="ghost" onClick={() => navigate("/quotes")} className="mb-6" data-testid="button-back">
             <ArrowLeft className="mr-2 h-4 w-4" />

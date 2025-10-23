@@ -206,14 +206,14 @@ export default function BusinessExpenses() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container-trecasa py-6 lg:py-8">
         <div className="text-center py-12">Loading business expenses...</div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container-trecasa py-6 lg:py-8 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

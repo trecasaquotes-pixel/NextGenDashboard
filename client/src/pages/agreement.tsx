@@ -196,8 +196,8 @@ export default function Agreement() {
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
 
-      <main className="container mx-auto px-4 py-8 flex-1">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <main className="container-trecasa py-6 lg:py-8 flex-1">
+        <div className="space-y-6">
           {/* Navigation */}
           <div className="print:hidden flex items-center justify-between">
             <Button 

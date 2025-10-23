@@ -405,8 +405,8 @@ export default function Print() {
         <QuotationHeader quotationId={quotationId!} currentStep="print" />
       </div>
 
-      <main className="container mx-auto px-4 py-8 flex-1">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <main className="container-trecasa py-6 lg:py-8 flex-1">
+        <div className="space-y-6">
           {/* Screen navigation */}
           <div className="print:hidden flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">

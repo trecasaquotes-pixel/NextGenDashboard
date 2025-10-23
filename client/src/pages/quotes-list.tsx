@@ -276,8 +276,8 @@ export default function QuotesList() {
       </nav>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 flex-1">
-        <div className="max-w-7xl mx-auto">
+      <main className="container-trecasa py-6 lg:py-8 flex-1">
+        <div>
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-3xl font-bold text-foreground">Quotations</h2>

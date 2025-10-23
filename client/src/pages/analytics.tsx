@@ -51,7 +51,7 @@ export default function Analytics() {
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
       
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container-trecasa py-6 lg:py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold" data-testid="text-page-title">Business Insights</h1>
           <p className="text-muted-foreground mt-2">Comprehensive analytics and performance metrics</p>
