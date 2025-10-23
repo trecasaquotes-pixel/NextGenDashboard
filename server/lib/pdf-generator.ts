@@ -3,6 +3,8 @@ import type { Page } from "puppeteer";
 import type { Quotation } from "@shared/schema";
 import { generateRenderToken } from "./render-token";
 import { PDFDocument, rgb } from "pdf-lib";
+import { readFileSync } from "fs";
+import path from "path";
 
 /**
  * Generate PDF with optional universal header/footer templates
@@ -10,14 +12,30 @@ import { PDFDocument, rgb } from "pdf-lib";
  * @param useHeaderFooter - Whether to use Puppeteer's displayHeaderFooter (default: true)
  *                          Set to false for pages with built-in headers/footers (e.g., Agreement)
  */
+// Load logo once and cache it
+let cachedLogoBase64: string | null = null;
+function getLogoBase64(): string {
+  if (cachedLogoBase64 === null) {
+    try {
+      const logoPath = path.resolve(process.cwd(), "attached_assets", "trecasa-logo.png");
+      const logoBuffer = readFileSync(logoPath);
+      cachedLogoBase64 = logoBuffer.toString("base64");
+    } catch (error) {
+      console.error("Failed to load logo:", error);
+      cachedLogoBase64 = "";
+    }
+  }
+  return cachedLogoBase64;
+}
+
 export async function emitPdf(
   page: Page,
   titleText: string,
   includePageNumbers: boolean = true,
   useHeaderFooter: boolean = true,
 ): Promise<Buffer> {
-  // TODO: Load and embed logo as base64
-  const logoBase64 = ""; // Placeholder - will embed actual logo
+  // Load and embed logo as base64
+  const logoBase64 = getLogoBase64();
 
   const footerTemplate = includePageNumbers
     ? `
@@ -56,16 +74,16 @@ export async function emitPdf(
         *{font-family:Montserrat,Arial,sans-serif;font-size:10px;margin:0;padding:0}
         .bar{height:70px;background:#18492d;width:100%;position:relative}
         .wrap{width:100%;padding:8px 18mm;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box}
-        .title{color:#fff;font-weight:600;letter-spacing:.2px;font-size:15px}
+        .title{color:#fff;font-weight:600;letter-spacing:.2px;font-size:15px;display:flex;align-items:center;gap:10px}
         .muted{color:#cfd8d3;font-size:10px}
         .dot{width:6px;height:6px;border-radius:50%;background:#b52626;display:inline-block;margin-left:8px}
-        .logo{height:22px;vertical-align:middle;margin-right:10px}
+        .logo{height:28px;vertical-align:middle}
       </style>
       <div class="bar"></div>
       <div class="wrap">
         <div class="title">
-          ${logoBase64 ? `<img class="logo" src="data:image/svg+xml;base64,${logoBase64}" />` : ""}
-          TRECASA DESIGN STUDIO — ${titleText}
+          ${logoBase64 ? `<img class="logo" src="data:image/png;base64,${logoBase64}" alt="TRECASA Logo" />` : ""}
+          <span>TRECASA DESIGN STUDIO — ${titleText}</span>
         </div>
         <div class="muted">Generated: <span class="date"></span><span class="dot"></span></div>
       </div>

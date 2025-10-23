@@ -5,6 +5,7 @@ import { useLocation, useRoute } from "wouter";
 import type { Quotation } from "@shared/schema";
 import { createRoot } from "react-dom/client";
 import { formatDisplayDate } from "@shared/formatters";
+import logoPath from "@assets/trecasa-logo.png";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -512,13 +513,20 @@ export default function Agreement() {
               <div className="grid grid-cols-[70%_30%] gap-4">
                 {/* Left Column */}
                 <div>
-                  {/* Company Name */}
-                  <h1
-                    className="text-[15pt] font-semibold uppercase tracking-wide mb-1"
-                    style={{ letterSpacing: "0.4px" }}
-                  >
-                    TRECASA DESIGN STUDIO
-                  </h1>
+                  {/* Logo and Company Name */}
+                  <div className="flex items-center gap-3 mb-1">
+                    <img 
+                      src={logoPath} 
+                      alt="TRECASA Logo" 
+                      style={{ height: "40px", width: "auto" }} 
+                    />
+                    <h1
+                      className="text-[15pt] font-semibold uppercase tracking-wide"
+                      style={{ letterSpacing: "0.4px" }}
+                    >
+                      TRECASA DESIGN STUDIO
+                    </h1>
+                  </div>
 
                   {/* Company Address */}
                   <p className="text-[8.5pt] mb-2">
