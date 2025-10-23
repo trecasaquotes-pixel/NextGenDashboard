@@ -20,6 +20,7 @@ import { registerAdminPaintingFcRoutes } from "./routes.admin.paintingFc";
 import { registerAdminGlobalRulesRoutes } from "./routes.admin.globalRules";
 import { registerAdminAuditRoutes } from "./routes.admin.audit";
 import { registerClientQuoteRoutes } from "./routes/client-quote";
+import { registerAgreementRoutes } from "./routes.agreement";
 import { db } from "./db";
 import { eq, and, or, inArray } from "drizzle-orm";
 import { quotations } from "@shared/schema";
@@ -2598,6 +2599,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Client portal routes (public + admin)
   registerClientQuoteRoutes(app, isAuthenticated);
+
+  // Agreement routes
+  registerAgreementRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;

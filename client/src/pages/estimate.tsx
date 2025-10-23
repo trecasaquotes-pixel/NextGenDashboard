@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2, Download, Save, Share2, FileEdit, Briefcase, TrendingUp } from "lucide-react";
+import { ArrowLeft, ArrowRight, Percent, IndianRupee, CheckCircle2, Download, Save, Share2, FileEdit, Briefcase, TrendingUp, FileText } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
 import { QuotationHeader } from "@/components/quotation-header";
@@ -663,6 +663,14 @@ export default function Estimate() {
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Scope
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => navigate(`/quotation/${quotationId}/agreement`)}
+              data-testid="button-view-agreement"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Agreement Pack
             </Button>
             <Button 
               onClick={() => navigate(`/quotation/${quotationId}/print`)}
