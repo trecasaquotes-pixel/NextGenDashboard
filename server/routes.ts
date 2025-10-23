@@ -289,6 +289,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get active brands grouped by type for scope of work dropdowns
+  app.get("/api/brands/active", isAuthenticated, async (req: any, res) => {
+    try {
+      const { db } = await import("./db");
+      const { eq } = await import("drizzle-orm");
+      
+      const activeBrands = await db.select().from(brands).where(eq(brands.isActive, true));
+      
+      // Group brands by type
+      const grouped = {
+        core: activeBrands.filter(b => b.type === 'core').map(b => b.name),
+        finish: activeBrands.filter(b => b.type === 'finish').map(b => b.name),
+        hardware: activeBrands.filter(b => b.type === 'hardware').map(b => b.name),
+      };
+      
+      res.json(grouped);
+    } catch (error) {
+      console.error("Error fetching active brands:", error);
+      res.status(500).json({ message: "Failed to fetch brands" });
+    }
+  });
+
   // Quotation locking endpoints
 
   // Get lock status
