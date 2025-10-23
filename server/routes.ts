@@ -1377,11 +1377,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(globalRules)
         .where(eq(globalRules.id, "global"));
 
-      // Fetch interior items to get selected brands and rates
+      // Fetch interior items to get selected brands
       const interiorItemsList = await storage.getInteriorItems(quotationId);
 
-      // Build snapshot (rates, brands, global rules used at approval)
-      const ratesByItemKey: Record<string, any> = {};
+      // Build snapshot (brands, global rules used at approval)
       const brandsSelected = new Set<string>();
 
       for (const item of interiorItemsList) {
@@ -1393,7 +1392,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const snapshotJson = {
         globalRules: globalRulesData || {},
         brandsSelected: Array.from(brandsSelected),
-        ratesByItemKey,
       };
 
       // Calculate totals
@@ -1678,17 +1676,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Build snapshot from current state
-      const [allRates, allBrands, globalRulesData] = await Promise.all([
-        db.select().from(rates).where(eq(rates.isActive, true)),
+      const [allBrands, globalRulesData] = await Promise.all([
         db.select().from(brands).where(eq(brands.isActive, true)),
         db.select().from(globalRules).limit(1),
       ]);
-
-      // Build rates-by-itemKey map
-      const ratesByItemKey: Record<string, any> = {};
-      for (const rate of allRates) {
-        ratesByItemKey[rate.itemKey] = rate;
-      }
 
       // Get interior items to extract brands used
       const interiorItems = await storage.getInteriorItems(quotationId);
@@ -1706,7 +1697,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const snapshotData = {
         globalRules: globalRulesData[0] || null,
-        ratesByItemKey,
         brandsSelected: {
           materials: Array.from(brandsUsed.materials),
           finishes: Array.from(brandsUsed.finishes),

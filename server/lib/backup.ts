@@ -42,17 +42,10 @@ export async function buildQuoteZip(options: {
     snapshotData = quotation.snapshotJson;
   } else {
     // Build live snapshot of current state
-    const [allRates, allBrands, globalRulesData] = await Promise.all([
-      db.select().from(rates).where(eq(rates.isActive, true)),
+    const [allBrands, globalRulesData] = await Promise.all([
       db.select().from(brands).where(eq(brands.isActive, true)),
       db.select().from(globalRules).limit(1),
     ]);
-
-    // Build rates-by-itemKey map
-    const ratesByItemKey: Record<string, any> = {};
-    for (const rate of allRates) {
-      ratesByItemKey[rate.itemKey] = rate;
-    }
 
     // Get brands used in this quote (extract from interior items)
     const brandsUsed = {
@@ -69,7 +62,6 @@ export async function buildQuoteZip(options: {
 
     snapshotData = {
       globalRules: globalRulesData[0] || null,
-      ratesByItemKey,
       brandsSelected: {
         materials: Array.from(brandsUsed.materials),
         finishes: Array.from(brandsUsed.finishes),

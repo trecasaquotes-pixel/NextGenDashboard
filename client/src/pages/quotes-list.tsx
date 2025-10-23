@@ -293,13 +293,6 @@ export default function QuotesList() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => navigate("/admin/rates")}
-                data-testid="button-admin-rates"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Admin - Rates</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
                 onClick={() => navigate("/admin/templates")}
                 data-testid="button-admin-templates"
               >

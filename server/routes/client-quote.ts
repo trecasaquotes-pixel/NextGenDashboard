@@ -133,8 +133,7 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
         const baseUrl = `${req.protocol}://${req.get("host")}`;
 
         // Build snapshot
-        const [ratesData, brandsData, globalRulesData] = await Promise.all([
-          db.select().from(rates).where(eq(rates.isActive, true)),
+        const [brandsData, globalRulesData] = await Promise.all([
           db.select().from(brands).where(eq(brands.isActive, true)),
           db.select().from(globalRules).limit(1),
         ]);
@@ -152,14 +151,8 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
           if (item.hardware) brandsUsed.hardware.add(item.hardware);
         });
 
-        const ratesByItemKey: Record<string, any> = {};
-        for (const rate of ratesData) {
-          ratesByItemKey[rate.itemKey] = rate;
-        }
-
         const snapshotJson = {
           globalRules: globalRulesData[0] || null,
-          ratesByItemKey,
           brandsSelected: {
             materials: Array.from(brandsUsed.materials),
             finishes: Array.from(brandsUsed.finishes),
