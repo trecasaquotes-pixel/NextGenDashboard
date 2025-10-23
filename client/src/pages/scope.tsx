@@ -18,7 +18,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { TemplateModal } from "@/components/template-modal";
 import { ApplyTemplateModal } from "@/components/apply-template-modal";
 import { useQuotationLock } from "@/hooks/use-quotation-lock";
 import { LockStatusBanner } from "@/components/lock-status-banner";
@@ -96,7 +95,6 @@ export default function Scope() {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showApplyTemplateModal, setShowApplyTemplateModal] = useState(false);
   const [totalsUpdatedAt, setTotalsUpdatedAt] = useState<number | null>(null);
   
@@ -800,7 +798,7 @@ export default function Scope() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowTemplateModal(true)}
+                  onClick={() => setShowApplyTemplateModal(true)}
                   disabled={isLockedByOthers}
                   data-testid="button-apply-template"
                 >
@@ -828,7 +826,7 @@ export default function Scope() {
                     </div>
                     {quotation?.projectType && !["Other", ""].includes(quotation.projectType) && (
                       <Button
-                        onClick={() => setShowTemplateModal(true)}
+                        onClick={() => setShowApplyTemplateModal(true)}
                         data-testid="button-load-template-empty"
                       >
                         <Sparkles className="mr-2 h-4 w-4" />
@@ -1902,19 +1900,6 @@ export default function Scope() {
       </main>
 
       <AppFooter />
-
-      <TemplateModal
-        open={showTemplateModal}
-        onOpenChange={setShowTemplateModal}
-        quotationId={quotationId!}
-        category={quotation?.projectType || ""}
-        hasExistingItems={
-          interiorItems.length > 0 || falseCeilingItems.length > 0 || otherItems.length > 0
-        }
-        onSuccess={() => {
-          // Refresh the page or just close the modal - items will auto-refresh via query invalidation
-        }}
-      />
 
       <ApplyTemplateModal
         open={showApplyTemplateModal}

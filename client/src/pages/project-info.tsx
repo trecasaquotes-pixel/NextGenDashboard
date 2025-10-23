@@ -33,7 +33,6 @@ import {
 import { QuotationHeader } from "@/components/quotation-header";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
-import { TemplateModal } from "@/components/template-modal";
 import { ApplyTemplateModal } from "@/components/apply-template-modal";
 
 const projectInfoSchema = z
@@ -68,9 +67,7 @@ export default function ProjectInfo() {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showApplyTemplateModal, setShowApplyTemplateModal] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -188,8 +185,7 @@ export default function ProjectInfo() {
           ];
 
           if (finalProjectType && standardCategories.includes(finalProjectType)) {
-            setSelectedCategory(finalProjectType);
-            setShowTemplateModal(true);
+            setShowApplyTemplateModal(true);
           } else {
             // Skip template modal for "Custom" category or if no category
             navigate(`/quotation/${quotationId}/scope`);
@@ -463,15 +459,6 @@ export default function ProjectInfo() {
       </main>
 
       <AppFooter />
-
-      <TemplateModal
-        open={showTemplateModal}
-        onOpenChange={setShowTemplateModal}
-        quotationId={quotationId!}
-        category={selectedCategory}
-        hasExistingItems={false}
-        onSuccess={() => navigate(`/quotation/${quotationId}/scope`)}
-      />
 
       <ApplyTemplateModal
         open={showApplyTemplateModal}
