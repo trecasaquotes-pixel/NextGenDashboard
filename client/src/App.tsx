@@ -27,6 +27,7 @@ import AdminBrands from "@/pages/admin/brands";
 import AdminPaintingFc from "@/pages/admin/painting-fc";
 import AdminGlobalRules from "@/pages/admin/global-rules";
 import AdminAuditLog from "@/pages/admin/audit-log";
+import AdminUsers from "@/pages/admin/users";
 import ClientQuotePortal from "@/pages/client-quote-portal";
 
 function Router() {
@@ -69,6 +70,7 @@ function Router() {
       <Route path="/admin/painting-fc" component={AdminPaintingFc} />
       <Route path="/admin/global-rules" component={AdminGlobalRules} />
       <Route path="/admin/audit" component={AdminAuditLog} />
+      <Route path="/admin/users" component={AdminUsers} />
       <Route component={NotFound} />
     </Switch>
   );

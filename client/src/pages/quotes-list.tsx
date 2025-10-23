@@ -24,6 +24,7 @@ import {
   AlertCircle,
   Clock,
   BarChart3,
+  Shield,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Quotation } from "@shared/schema";
@@ -291,42 +292,53 @@ export default function QuotesList() {
                 <BarChart3 className="mr-2 h-4 w-4" />
                 <span>Business Insights</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => navigate("/admin/templates")}
-                data-testid="button-admin-templates"
-              >
-                <LayoutTemplate className="mr-2 h-4 w-4" />
-                <span>Admin - Templates</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate("/admin/brands")}
-                data-testid="button-admin-brands"
-              >
-                <Tag className="mr-2 h-4 w-4" />
-                <span>Admin - Brands & Add-ons</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate("/admin/painting-fc")}
-                data-testid="button-admin-painting-fc"
-              >
-                <Paintbrush className="mr-2 h-4 w-4" />
-                <span>Admin - Painting & FC</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate("/admin/global-rules")}
-                data-testid="button-admin-global-rules"
-              >
-                <Sliders className="mr-2 h-4 w-4" />
-                <span>Admin - Global Rules</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate("/admin/audit")}
-                data-testid="button-admin-audit"
-              >
-                <History className="mr-2 h-4 w-4" />
-                <span>Admin - Audit Log</span>
-              </DropdownMenuItem>
+              {user?.role === "admin" && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => navigate("/admin/templates")}
+                    data-testid="button-admin-templates"
+                  >
+                    <LayoutTemplate className="mr-2 h-4 w-4" />
+                    <span>Admin - Templates</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/admin/brands")}
+                    data-testid="button-admin-brands"
+                  >
+                    <Tag className="mr-2 h-4 w-4" />
+                    <span>Admin - Brands & Add-ons</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/admin/painting-fc")}
+                    data-testid="button-admin-painting-fc"
+                  >
+                    <Paintbrush className="mr-2 h-4 w-4" />
+                    <span>Admin - Painting & FC</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/admin/global-rules")}
+                    data-testid="button-admin-global-rules"
+                  >
+                    <Sliders className="mr-2 h-4 w-4" />
+                    <span>Admin - Global Rules</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/admin/users")}
+                    data-testid="button-admin-users"
+                  >
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Admin - Users</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/admin/audit")}
+                    data-testid="button-admin-audit"
+                  >
+                    <History className="mr-2 h-4 w-4" />
+                    <span>Admin - Audit Log</span>
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <a href="/api/logout" className="cursor-pointer" data-testid="button-logout">

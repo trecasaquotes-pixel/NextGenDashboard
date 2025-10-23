@@ -64,7 +64,7 @@ export function registerUserManagementRoutes(app: Express, storage: IStorage) {
         await logAudit({
           ...adminUser,
           section: "Users",
-          action: "UPDATE_ROLE",
+          action: "UPDATE",
           targetId: userId,
           summary: `Updated user role to ${role}`,
           afterJson: updated,

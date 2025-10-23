@@ -1217,6 +1217,7 @@ export const insertAuditLogSchema = createInsertSchema(auditLog, {
     "Quotes",
     "Agreement",
     "Projects",
+    "Users",
   ]),
   action: z.enum(["CREATE", "UPDATE", "DELETE"]),
   summary: z.string().min(1).max(500),
