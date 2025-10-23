@@ -522,11 +522,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               ? "handmade"
               : quotation.buildType || "handmade";
 
+            // Map template unit to interior calc type (SFT→SQFT)
+            const calcType = templateItem.unit === "SFT" ? "SQFT" : templateItem.unit;
+
             await db.insert(interiorItems).values({
               quotationId,
               roomType: roomName,
-              description: templateItem.displayName,
-              calc: templateItem.unit, // Map unit to calc (SFT→SQFT handled by schema default)
+              description: templateItem.displayName || "Item", // Ensure description is not empty
+              calc: calcType,
               buildType: itemBuildType,
               material: "Generic Ply", // Default
               finish: "Generic Laminate", // Default
