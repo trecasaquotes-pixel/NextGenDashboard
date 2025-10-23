@@ -647,8 +647,8 @@ export default function Scope() {
       <AppHeader />
       <QuotationHeader quotationId={quotationId!} currentStep="scope" />
 
-      <main className="container mx-auto px-4 py-8 flex-1">
-        <div className="max-w-7xl mx-auto">
+      <main className="container-trecasa py-6 lg:py-8 flex-1">
+        <div>
           <Button variant="ghost" onClick={() => navigate(`/quotation/${quotationId}/info`)} className="mb-6" data-testid="button-back">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Project Info
@@ -1083,8 +1083,8 @@ export default function Scope() {
                   
                   {/* Sticky Footer for Interiors Tab */}
                   <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-10">
-                    <div className="container mx-auto px-4 py-4">
-                      <div className="max-w-7xl mx-auto flex items-center justify-between">
+                    <div className="container-trecasa py-4">
+                      <div className="flex items-center justify-between">
                         <div className="text-sm font-semibold">
                           Interiors Subtotal: <span className="font-mono text-lg ml-2" data-testid="text-interiors-subtotal">
                             {formatINR(quotation?.totals?.interiorsSubtotal || 0)}
@@ -1442,8 +1442,8 @@ export default function Scope() {
                   
                   {/* Sticky Footer for False Ceiling Tab */}
                   <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-10">
-                    <div className="container mx-auto px-4 py-4">
-                      <div className="max-w-7xl mx-auto flex items-center justify-between">
+                    <div className="container-trecasa py-4">
+                      <div className="flex items-center justify-between">
                         <div className="text-sm font-semibold">
                           False Ceiling Subtotal: <span className="font-mono text-lg ml-2" data-testid="text-fc-subtotal">
                             {formatINR(quotation?.totals?.fcSubtotal || 0)}
