@@ -520,12 +520,28 @@ export const rates = pgTable("rates", {
 // Rate validation schemas
 export const unitEnum = z.enum(["SFT", "COUNT", "LSUM"]);
 export const categoryEnum = z.enum([
+  // Residential categories
   "Kitchen",
-  "Living",
+  "Living Room",
   "Dining",
   "Master Bedroom",
   "Bedroom 2",
   "Bedroom 3",
+  "Bathroom",
+  "Puja Room",
+  "Utility",
+  "Foyer",
+  "Balcony",
+  "Storage",
+  // Commercial categories
+  "Reception",
+  "Conference Room",
+  "Manager Cabin",
+  "Office Cabins",
+  "Pantry",
+  "Server Room",
+  "Restroom",
+  // General
   "Others",
   "FC",
 ]);

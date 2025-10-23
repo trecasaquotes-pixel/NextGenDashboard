@@ -94,14 +94,14 @@ const defaultRates: DefaultRate[] = [
     category: "Kitchen",
   },
 
-  // Living
+  // Living Room
   {
     itemKey: "tv_base_unit",
     displayName: "TV Base Unit",
     unit: "SFT",
     baseRateHandmade: 1300,
     baseRateFactory: 1500,
-    category: "Living",
+    category: "Living Room",
   },
   {
     itemKey: "tv_tall_unit_closed",
@@ -109,7 +109,7 @@ const defaultRates: DefaultRate[] = [
     unit: "SFT",
     baseRateHandmade: 1300,
     baseRateFactory: 1500,
-    category: "Living",
+    category: "Living Room",
   },
   {
     itemKey: "tv_open_display",
@@ -117,7 +117,7 @@ const defaultRates: DefaultRate[] = [
     unit: "SFT",
     baseRateHandmade: 1300,
     baseRateFactory: 1500,
-    category: "Living",
+    category: "Living Room",
   },
   {
     itemKey: "crockery_bar_unit",
@@ -125,7 +125,7 @@ const defaultRates: DefaultRate[] = [
     unit: "SFT",
     baseRateHandmade: 1300,
     baseRateFactory: 1500,
-    category: "Living",
+    category: "Living Room",
   },
   {
     itemKey: "decor_partition",
@@ -133,7 +133,7 @@ const defaultRates: DefaultRate[] = [
     unit: "SFT",
     baseRateHandmade: 1300,
     baseRateFactory: 1500,
-    category: "Living",
+    category: "Living Room",
   },
   {
     itemKey: "wall_panel_highlight",
@@ -141,7 +141,7 @@ const defaultRates: DefaultRate[] = [
     unit: "SFT",
     baseRateHandmade: 1300,
     baseRateFactory: 1500,
-    category: "Living",
+    category: "Living Room",
   },
 
   // Dining

@@ -57,12 +57,28 @@ import { queryClient } from "@/lib/queryClient";
 import { useDebounce } from "@/hooks/useDebounce.ts";
 
 const categories: Category[] = [
+  // Residential categories
   "Kitchen",
-  "Living",
+  "Living Room",
   "Dining",
   "Master Bedroom",
   "Bedroom 2",
   "Bedroom 3",
+  "Bathroom",
+  "Puja Room",
+  "Utility",
+  "Foyer",
+  "Balcony",
+  "Storage",
+  // Commercial categories
+  "Reception",
+  "Conference Room",
+  "Manager Cabin",
+  "Office Cabins",
+  "Pantry",
+  "Server Room",
+  "Restroom",
+  // General
   "Others",
   "FC",
 ];
