@@ -1956,6 +1956,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Project routes
+  app.post("/api/projects", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Validate input
+      const validated = insertProjectSchema.parse(req.body);
+      
+      // Generate unique project ID
+      const now = new Date();
+      const dateStr = now.toISOString().slice(2, 10).replace(/-/g, ""); // YYMMDD
+      const randomPart = nanoid(4).toUpperCase();
+      const projectId = `TRE_PRJ_${dateStr}_${randomPart}`;
+      
+      // Create project
+      const [newProject] = await db
+        .insert(projects)
+        .values({
+          ...validated,
+          projectId,
+          userId,
+          quotationId: null, // Manually created project
+          status: validated.status || "active",
+        })
+        .returning();
+      
+      res.json(newProject);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to create project" });
+    }
+  });
+
   app.get("/api/projects", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

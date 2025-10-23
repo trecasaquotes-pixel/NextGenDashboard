@@ -30,6 +30,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
+import { DashboardTabs } from "@/components/dashboard-tabs";
 
 const COLORS = ["#154734", "#C7A948", "#2D6A4F", "#74C69D", "#B7E4C7", "#95D5B2"];
 
@@ -89,6 +90,7 @@ export default function Analytics() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
+      <DashboardTabs />
 
       <main className="flex-1 container-trecasa py-6 lg:py-8">
         <div className="mb-8">

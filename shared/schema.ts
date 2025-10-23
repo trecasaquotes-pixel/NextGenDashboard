@@ -1008,15 +1008,14 @@ export const insertChangeOrderItemSchema = createInsertSchema(changeOrderItems, 
 export type ChangeOrderItem = typeof changeOrderItems.$inferSelect;
 export type NewChangeOrderItem = z.infer<typeof insertChangeOrderItemSchema>;
 
-// Projects table (created when quotation is approved)
+// Projects table (created when quotation is approved or manually)
 export const projects = pgTable("projects", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   quotationId: varchar("quotation_id")
-    .notNull()
     .references(() => quotations.id, { onDelete: "cascade" })
-    .unique(),
+    .unique(), // Optional now - null for manually created projects
   userId: varchar("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -1102,11 +1101,17 @@ export const projectExpensesRelations = relations(projectExpenses, ({ one }) => 
 export const insertProjectSchema = createInsertSchema(projects, {
   projectName: z.string().min(1, "Project name is required").max(200),
   clientName: z.string().min(1, "Client name is required").max(200),
+  projectAddress: z.string().optional(),
   contractAmount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount"),
-  status: z.enum(["active", "completed", "on-hold", "cancelled"]),
+  status: z.enum(["active", "completed", "on-hold", "cancelled"]).optional(),
+  notes: z.string().optional(),
 }).omit({
   id: true,
   projectId: true,
+  quotationId: true, // Omit - handled separately based on creation method
+  userId: true,
+  totalExpenses: true,
+  profitLoss: true,
   createdAt: true,
   updatedAt: true,
 });

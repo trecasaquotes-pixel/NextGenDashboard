@@ -36,6 +36,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { AppHeader } from "@/components/app-header";
+import { AppFooter } from "@/components/app-footer";
+import { DashboardTabs } from "@/components/dashboard-tabs";
 
 
 const expenseCategories = [
@@ -231,31 +234,40 @@ export default function BusinessExpenses() {
 
   if (isLoading) {
     return (
-      <div className="container-trecasa py-6 lg:py-8">
-        <div className="text-center py-12">Loading business expenses...</div>
+      <div className="min-h-screen bg-background flex flex-col">
+        <AppHeader />
+        <DashboardTabs />
+        <main className="flex-1 container-trecasa py-6 lg:py-8">
+          <div className="text-center py-12">Loading business expenses...</div>
+        </main>
+        <AppFooter />
       </div>
     );
   }
 
   return (
-    <div className="container-trecasa py-6 lg:py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Building2 className="h-8 w-8 text-primary" />
-            Business Expenses
-          </h1>
-          <p className="text-muted-foreground mt-1">Track monthly overhead and operational costs</p>
-        </div>
-        <Button onClick={handleAddExpense} data-testid="button-add-business-expense">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Expense
-        </Button>
-      </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      <AppHeader />
+      <DashboardTabs />
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <main className="flex-1 container-trecasa py-6 lg:py-8 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <Building2 className="h-8 w-8 text-primary" />
+              Business Expenses
+            </h1>
+            <p className="text-muted-foreground mt-1">Track monthly overhead and operational costs</p>
+          </div>
+          <Button onClick={handleAddExpense} data-testid="button-add-business-expense">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Expense
+          </Button>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
@@ -662,6 +674,9 @@ export default function BusinessExpenses() {
           </Form>
         </DialogContent>
       </Dialog>
+      </main>
+
+      <AppFooter />
     </div>
   );
 }
