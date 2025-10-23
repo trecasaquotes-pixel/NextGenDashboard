@@ -1157,66 +1157,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PDF download routes (supports both user auth and render token)
-  app.get("/api/quotations/:id/pdf/:type", async (req: any, res) => {
-    try {
-      const quotation = await storage.getQuotation(req.params.id);
-      if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
-      }
-
-      // Check authentication: either render token or user session
-      const token = req.query.token as string;
-      const quotationId = req.params.id;
-
-      if (token) {
-        // Verify render token
-        const { verifyRenderToken } = await import("./lib/render-token");
-        if (!verifyRenderToken(token, quotationId)) {
-          return res.status(403).json({ message: "Invalid or expired token" });
-        }
-      } else if (req.user?.claims?.sub) {
-        // Verify user ownership
-        if (quotation.userId !== req.user.claims.sub) {
-          return res.status(403).json({ message: "Forbidden" });
-        }
-      } else {
-        return res.status(401).json({ message: "Authentication required" });
-      }
-
-      const type = req.params.type as "interiors" | "false-ceiling" | "agreement";
-      if (!["interiors", "false-ceiling", "agreement"].includes(type)) {
-        return res.status(400).json({ message: "Invalid PDF type" });
-      }
-
-      // Determine base URL from request
-      const protocol = req.protocol;
-      const host = req.get("host");
-      const baseUrl = `${protocol}://${host}`;
-
-      console.log(`[PDF] Generating ${type} PDF for ${quotation.quoteId} with baseUrl: ${baseUrl}`);
-      const { generateQuotationPDF } = await import("./lib/pdf-generator");
-      const pdfBuffer = await generateQuotationPDF(quotation, type, baseUrl);
-
-      const typeLabel =
-        type === "interiors"
-          ? "Interiors"
-          : type === "false-ceiling"
-            ? "FalseCeiling"
-            : "Agreement";
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="TRECASA_${quotation.quoteId}_${typeLabel}.pdf"`,
-      );
-      res.send(pdfBuffer);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      res.status(500).json({ message: "Failed to generate PDF" });
-    }
-  });
-
-  // Agreement Pack PDF merger - Combines Interiors + False Ceiling + Agreement into single PDF with continuous page numbering
+  // Agreement Pack PDF merger - Combines Agreement + Interiors + False Ceiling into single PDF with continuous page numbering
+  // IMPORTANT: This route must come BEFORE the generic :type route to avoid route matching issues
   app.get("/api/quotations/:id/pdf/agreement-pack", async (req: any, res) => {
     try {
       const quotation = await storage.getQuotation(req.params.id);
@@ -1299,6 +1241,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating Agreement Pack PDF:", error);
       res.status(500).json({ message: "Failed to generate Agreement Pack PDF" });
+    }
+  });
+
+  // PDF download routes (supports both user auth and render token)
+  app.get("/api/quotations/:id/pdf/:type", async (req: any, res) => {
+    try {
+      const quotation = await storage.getQuotation(req.params.id);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+
+      // Check authentication: either render token or user session
+      const token = req.query.token as string;
+      const quotationId = req.params.id;
+
+      if (token) {
+        // Verify render token
+        const { verifyRenderToken } = await import("./lib/render-token");
+        if (!verifyRenderToken(token, quotationId)) {
+          return res.status(403).json({ message: "Invalid or expired token" });
+        }
+      } else if (req.user?.claims?.sub) {
+        // Verify user ownership
+        if (quotation.userId !== req.user.claims.sub) {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+      } else {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const type = req.params.type as "interiors" | "false-ceiling" | "agreement";
+      if (!["interiors", "false-ceiling", "agreement"].includes(type)) {
+        return res.status(400).json({ message: "Invalid PDF type" });
+      }
+
+      // Determine base URL from request
+      const protocol = req.protocol;
+      const host = req.get("host");
+      const baseUrl = `${protocol}://${host}`;
+
+      console.log(`[PDF] Generating ${type} PDF for ${quotation.quoteId} with baseUrl: ${baseUrl}`);
+      const { generateQuotationPDF } = await import("./lib/pdf-generator");
+      const pdfBuffer = await generateQuotationPDF(quotation, type, baseUrl);
+
+      const typeLabel =
+        type === "interiors"
+          ? "Interiors"
+          : type === "false-ceiling"
+            ? "FalseCeiling"
+            : "Agreement";
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="TRECASA_${quotation.quoteId}_${typeLabel}.pdf"`,
+      );
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      res.status(500).json({ message: "Failed to generate PDF" });
     }
   });
 
