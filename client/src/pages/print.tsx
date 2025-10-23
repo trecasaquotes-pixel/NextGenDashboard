@@ -339,10 +339,19 @@ export default function Print() {
     return null;
   }
 
+  // Task 5: Filter out zero-quantity items (hide items with sqft=0 or totalPrice=0)
+  const filteredInteriorItems = interiorItems.filter(
+    (item) => Number(item.sqft || 0) > 0 && Number(item.totalPrice || 0) > 0
+  );
+
+  const filteredFalseCeilingItems = falseCeilingItems.filter(
+    (item) => Number(item.area || 0) > 0 && Number(item.totalPrice || 0) > 0
+  );
+
   // Note: We'll calculate actual subtotals after grouping items by room (see below)
 
-  // Group items by room
-  const interiorsByRoom = interiorItems.reduce(
+  // Group items by room (using filtered items)
+  const interiorsByRoom = filteredInteriorItems.reduce(
     (acc, item) => {
       const room = item.roomType || "Other";
       if (!acc[room]) acc[room] = [];
@@ -352,7 +361,7 @@ export default function Print() {
     {} as Record<string, InteriorItem[]>,
   );
 
-  const falseCeilingByRoom = falseCeilingItems.reduce(
+  const falseCeilingByRoom = filteredFalseCeilingItems.reduce(
     (acc, item) => {
       const room = item.roomType || "Other";
       if (!acc[room]) acc[room] = [];
@@ -363,18 +372,23 @@ export default function Print() {
   );
 
   // Compute room totals for summary tables (Part 2A requirement)
+  // Task 5: Filter out rooms with zero total
   const interiorsRoomTotals = sortByRoom(
-    Object.entries(interiorsByRoom).map(([room, items]) => ({
-      room,
-      total: items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0),
-    })),
+    Object.entries(interiorsByRoom)
+      .map(([room, items]) => ({
+        room,
+        total: items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0),
+      }))
+      .filter(({ total }) => total > 0)
   );
 
   const fcRoomTotals = sortByRoom(
-    Object.entries(falseCeilingByRoom).map(([room, items]) => ({
-      room,
-      total: items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0),
-    })),
+    Object.entries(falseCeilingByRoom)
+      .map(([room, items]) => ({
+        room,
+        total: items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0),
+      }))
+      .filter(({ total }) => total > 0)
   );
 
   // Use server-calculated subtotals when available (more reliable), fallback to recalculation
@@ -1081,7 +1095,7 @@ export default function Print() {
                   </div>
 
                   {/* Custom Rate Legend (if any rates are overridden) */}
-                  {interiorItems.some((item) => item.isRateOverridden) && (
+                  {filteredInteriorItems.some((item) => item.isRateOverridden) && (
                     <div className="text-[8px] text-gray-600 mt-2 mb-4 break-inside-avoid">
                       <span className="font-semibold">*</span> Custom rate applied
                     </div>
@@ -1124,7 +1138,7 @@ export default function Print() {
                                 validUntilDate,
                                 ...terms.vars,
                               },
-                              interiorItems.map((item) => ({
+                              filteredInteriorItems.map((item) => ({
                                 material: item.material,
                                 finish: item.finish,
                                 hardware: item.hardware,
@@ -1864,7 +1878,7 @@ export default function Print() {
                                 validUntilDate,
                                 ...terms.vars,
                               },
-                              interiorItems.map((item) => ({
+                              filteredInteriorItems.map((item) => ({
                                 material: item.material,
                                 finish: item.finish,
                                 hardware: item.hardware,
