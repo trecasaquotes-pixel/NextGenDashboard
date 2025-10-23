@@ -188,9 +188,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateInteriorItem(id: string, data: Partial<InsertInteriorItem>): Promise<InteriorItem> {
+    // Filter out readonly fields that cannot be updated
+    const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...updateData } = data as any;
+    
     const [updated] = await db
       .update(interiorItems)
-      .set(data)
+      .set(updateData)
       .where(eq(interiorItems.id, id))
       .returning();
     return updated;
