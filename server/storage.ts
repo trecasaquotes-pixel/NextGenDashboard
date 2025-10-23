@@ -221,9 +221,12 @@ export class DatabaseStorage implements IStorage {
     id: string,
     data: Partial<InsertFalseCeilingItem>,
   ): Promise<FalseCeilingItem> {
+    // Filter out readonly fields that cannot be updated
+    const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...updateData } = data as any;
+    
     const [updated] = await db
       .update(falseCeilingItems)
-      .set(data)
+      .set(updateData)
       .where(eq(falseCeilingItems.id, id))
       .returning();
     return updated;
