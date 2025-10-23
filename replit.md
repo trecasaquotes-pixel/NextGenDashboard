@@ -15,10 +15,11 @@ No specific user preferences were provided in the original document.
 - **Branding**: TRECASA DESIGN STUDIO with a luxury aesthetic, deep green (#154734) header, gold (#C7A948) accents, red dot branding, deep teal primary color, and gold "TT" logo.
 - **Typography**: Montserrat for UI elements and Playfair Display (serif) for PDF headings and body text.
 - **Components**: Shadcn UI with custom theming and Tailwind CSS for responsive design.
-- **Dashboard Navigation**: Top-level tabs for main sections (Change Orders, Projects & Expenses, Business & Insights) with Lucide icons and active state highlighting using TRECASA brand colors.
+- **Dashboard Navigation**: Top-level tabs for main sections (Change Orders, Projects & Expenses, Business & Insights) with Lucide icons and active state highlighting using TRECASA brand colors. Logo displayed in AppHeader component.
 - **Universal PDF Header/Footer**: Standardized across all PDF exports (Interiors, False Ceiling, Agreement):
-  - **Header**: 110px height, #154734 dark green background, two-column 70/30 grid layout. Left column: Company name (Montserrat SemiBold 15pt uppercase), full address (8.5pt), client/project details (9pt), greeting "Hi [Client] & Family" (Playfair Display Italic 9.5pt). Right column: Contact details (email/phone 8.5pt), Issue Date and Quote ID (9pt). Rounded top corners (8px).
+  - **Header**: 110px height, #154734 dark green background, two-column 70/30 grid layout. Left column: TRECASA logo (40px height client-side, 28px server-side), Company name (Montserrat SemiBold 15pt uppercase), full address (8.5pt), client/project details (9pt), greeting "Hi [Client] & Family" (Playfair Display Italic 9.5pt). Right column: Contact details (email/phone 8.5pt), Issue Date and Quote ID (9pt). Rounded top corners (8px).
   - **Footer**: 40px height, #C7A948 gold border-top (1px), centered text "© 2025 TRECASA DESIGN STUDIO | www.trecasadesignstudio.com | @trecasa.designstudio" with red dot indicator. Montserrat Regular 8pt, #666666 color.
+  - **Logo Implementation**: Logo loaded from attached_assets/trecasa-logo.png, displayed in flex layout with company name. Server-side PDFs use cached base64-encoded PNG for consistent branding.
 
 ### Technical Implementations
 
