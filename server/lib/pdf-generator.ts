@@ -5,13 +5,16 @@ import { generateRenderToken } from "./render-token";
 import { PDFDocument, rgb } from "pdf-lib";
 
 /**
- * Generate PDF with universal header/footer templates
+ * Generate PDF with optional universal header/footer templates
  * Uses Puppeteer's native displayHeaderFooter with branded templates
+ * @param useHeaderFooter - Whether to use Puppeteer's displayHeaderFooter (default: true)
+ *                          Set to false for pages with built-in headers/footers (e.g., Agreement)
  */
 export async function emitPdf(
   page: Page,
   titleText: string,
   includePageNumbers: boolean = true,
+  useHeaderFooter: boolean = true,
 ): Promise<Buffer> {
   // TODO: Load and embed logo as base64
   const logoBase64 = ""; // Placeholder - will embed actual logo
@@ -44,9 +47,11 @@ export async function emitPdf(
   const pdfBytes = await page.pdf({
     format: "A4",
     printBackground: true,
-    displayHeaderFooter: true,
-    margin: { top: "80px", bottom: "60px", left: "18mm", right: "18mm" },
-    headerTemplate: `
+    displayHeaderFooter: useHeaderFooter,
+    margin: useHeaderFooter 
+      ? { top: "80px", bottom: "60px", left: "18mm", right: "18mm" }
+      : { top: "18mm", bottom: "18mm", left: "18mm", right: "18mm" },
+    headerTemplate: useHeaderFooter ? `
       <style>
         *{font-family:Montserrat,Arial,sans-serif;font-size:10px;margin:0;padding:0}
         .bar{height:70px;background:#18492d;width:100%;position:relative}
@@ -64,8 +69,8 @@ export async function emitPdf(
         </div>
         <div class="muted">Generated: <span class="date"></span><span class="dot"></span></div>
       </div>
-    `,
-    footerTemplate,
+    ` : "",
+    footerTemplate: useHeaderFooter ? footerTemplate : "",
   });
 
   // Convert Uint8Array to Buffer
@@ -515,10 +520,12 @@ export async function generateQuotationPDF(
     }
 
     // Generate PDF using new emitPdf with displayHeaderFooter
+    // Agreement PDFs have built-in headers/footers, so disable Puppeteer's displayHeaderFooter
+    const useHeaderFooter = type !== "agreement";
     console.log(
-      `[PDF Generator] Generating PDF for ${type} with title: ${titleText}, includePageNumbers: ${includePageNumbers}`,
+      `[PDF Generator] Generating PDF for ${type} with title: ${titleText}, includePageNumbers: ${includePageNumbers}, useHeaderFooter: ${useHeaderFooter}`,
     );
-    const pdfBuffer = await emitPdf(page, titleText, includePageNumbers);
+    const pdfBuffer = await emitPdf(page, titleText, includePageNumbers, useHeaderFooter);
     console.log(`[PDF Generator] PDF generated successfully, size: ${pdfBuffer.length} bytes`);
     return pdfBuffer;
   } catch (error) {

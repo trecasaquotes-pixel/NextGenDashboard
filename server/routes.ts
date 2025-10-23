@@ -1215,22 +1215,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ]);
 
       // Merge PDFs using pdf-lib
+      // Order: Agreement FIRST, then Interiors (Annexure A), then False Ceiling (Annexure B)
       const mergedPdf = await PDFDocument.create();
 
-      // Add Interiors pages
+      // Add Agreement pages FIRST (Service Agreement document)
+      const agreementDoc = await PDFDocument.load(agreementPdf);
+      const agreementPages = await mergedPdf.copyPages(agreementDoc, agreementDoc.getPageIndices());
+      agreementPages.forEach((page) => mergedPdf.addPage(page));
+
+      // Add Interiors pages (Annexure A)
       const interiorsDoc = await PDFDocument.load(interiorsPdf);
       const interiorPages = await mergedPdf.copyPages(interiorsDoc, interiorsDoc.getPageIndices());
       interiorPages.forEach((page) => mergedPdf.addPage(page));
 
-      // Add False Ceiling pages
+      // Add False Ceiling pages (Annexure B)
       const fcDoc = await PDFDocument.load(falseCeilingPdf);
       const fcPages = await mergedPdf.copyPages(fcDoc, fcDoc.getPageIndices());
       fcPages.forEach((page) => mergedPdf.addPage(page));
-
-      // Add Agreement pages
-      const agreementDoc = await PDFDocument.load(agreementPdf);
-      const agreementPages = await mergedPdf.copyPages(agreementDoc, agreementDoc.getPageIndices());
-      agreementPages.forEach((page) => mergedPdf.addPage(page));
 
       // Add continuous page numbers across all sections
       await addContinuousPageNumbers(mergedPdf);
