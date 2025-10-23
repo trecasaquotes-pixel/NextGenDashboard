@@ -81,6 +81,7 @@ export const quotations = pgTable("quotations", {
   totals: jsonb("totals").$type<{
     interiorsSubtotal: number;
     fcSubtotal: number;
+    paintingCost?: number;
     grandSubtotal: number;
     discountAmount?: number;
     afterDiscount?: number;
@@ -92,6 +93,9 @@ export const quotations = pgTable("quotations", {
   // Discount
   discountType: varchar("discount_type").default("percent"), // percent or amount
   discountValue: decimal("discount_value", { precision: 10, scale: 2 }).default("0"),
+
+  // Painting Pack (optional admin-configured painting package)
+  selectedPaintingPackId: varchar("selected_painting_pack_id").references(() => paintingPacks.id, { onDelete: "set null" }),
 
   // Terms & Conditions
   terms: jsonb("terms").$type<{

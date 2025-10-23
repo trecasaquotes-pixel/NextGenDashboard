@@ -282,6 +282,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get active painting packs for quotation selection
+  app.get("/api/painting-packs/active", isAuthenticated, async (req: any, res) => {
+    try {
+      const packs = await storage.getActivePaintingPacks();
+      res.json(packs);
+    } catch (error) {
+      console.error("Error fetching active painting packs:", error);
+      res.status(500).json({ message: "Failed to fetch painting packs" });
+    }
+  });
+
   // Quotation locking endpoints
 
   // Get lock status

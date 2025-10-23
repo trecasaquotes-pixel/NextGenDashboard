@@ -7,6 +7,7 @@ import {
   otherItems,
   agreements,
   quotationVersions,
+  paintingPacks,
   type User,
   type UpsertUser,
   type Quotation,
@@ -21,6 +22,7 @@ import {
   type InsertAgreement,
   type QuotationVersion,
   type NewQuotationVersion,
+  type PaintingPackRow,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -84,6 +86,9 @@ export interface IStorage {
   checkLockStatus(
     quotationId: string,
   ): Promise<{ isLocked: boolean; lockedBy?: string; lockedByName?: string; lockedAt?: number }>;
+
+  // Painting pack operations
+  getActivePaintingPacks(): Promise<PaintingPackRow[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -527,6 +532,15 @@ export class DatabaseStorage implements IStorage {
         : "Unknown User",
       lockedAt: quotation.lockedAt || undefined,
     };
+  }
+
+  // Painting pack operations
+  async getActivePaintingPacks(): Promise<PaintingPackRow[]> {
+    return await db
+      .select()
+      .from(paintingPacks)
+      .where(eq(paintingPacks.isActive, true))
+      .orderBy(paintingPacks.name);
   }
 }
 
