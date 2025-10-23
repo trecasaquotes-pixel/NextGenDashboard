@@ -69,14 +69,10 @@ export function TemplateModal({
   // Map category names to TemplateId
   const getCategoryTemplateId = (cat: string): TemplateId => {
     const mapping: Record<string, TemplateId> = {
-      "1 BHK": "1BHK",
-      "2 BHK": "2BHK",
-      "3 BHK": "3BHK",
-      "4 BHK": "4BHK",
-      Duplex: "Duplex",
-      Triplex: "Triplex",
-      Villa: "Villa",
-      Commercial: "Commercial",
+      "Residential 1BHK": "1BHK",
+      "Residential 2BHK": "2BHK",
+      "Residential 3BHK": "3BHK",
+      "Commercial": "Commercial",
     };
     return mapping[cat] || "3BHK";
   };

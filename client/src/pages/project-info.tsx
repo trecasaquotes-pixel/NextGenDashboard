@@ -49,7 +49,7 @@ const projectInfoSchema = z
   })
   .refine(
     (data) => {
-      if (data.projectType === "Other") {
+      if (data.projectType === "Custom") {
         return data.projectTypeOther && data.projectTypeOther.trim().length > 0;
       }
       return true;
@@ -70,6 +70,7 @@ export default function ProjectInfo() {
   const [, navigate] = useLocation();
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showApplyTemplateModal, setShowApplyTemplateModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -109,13 +110,9 @@ export default function ProjectInfo() {
   useEffect(() => {
     if (quotation) {
       const standardCategories = [
-        "1 BHK",
-        "2 BHK",
-        "3 BHK",
-        "4 BHK",
-        "Duplex",
-        "Triplex",
-        "Villa",
+        "Residential 1BHK",
+        "Residential 2BHK",
+        "Residential 3BHK",
         "Commercial",
       ];
       const projectType = quotation.projectType || "";
@@ -123,7 +120,7 @@ export default function ProjectInfo() {
 
       form.reset({
         projectName: quotation.projectName,
-        projectType: isStandardCategory ? projectType : projectType ? "Other" : "",
+        projectType: isStandardCategory ? projectType : projectType ? "Custom" : "",
         projectTypeOther: isStandardCategory ? "" : projectType,
         buildType: (quotation.buildType as "handmade" | "factory") || "handmade",
         clientName: quotation.clientName,
@@ -137,7 +134,7 @@ export default function ProjectInfo() {
   const updateMutation = useMutation({
     mutationFn: async (data: ProjectInfoForm) => {
       const finalProjectType =
-        data.projectType === "Other" ? data.projectTypeOther : data.projectType;
+        data.projectType === "Custom" ? data.projectTypeOther : data.projectType;
       const { projectTypeOther, ...quotationData } = data;
       await apiRequest("PATCH", `/api/quotations/${quotationId}`, {
         ...quotationData,
@@ -180,24 +177,21 @@ export default function ProjectInfo() {
     form.handleSubmit((data) => {
       updateMutation.mutate(data, {
         onSuccess: () => {
-          // Show template modal if category is set (and not "Other")
+          // Show template modal if category is set (and not "Custom")
           const finalProjectType =
-            data.projectType === "Other" ? data.projectTypeOther : data.projectType;
+            data.projectType === "Custom" ? data.projectTypeOther : data.projectType;
           const standardCategories = [
-            "1 BHK",
-            "2 BHK",
-            "3 BHK",
-            "4 BHK",
-            "Duplex",
-            "Triplex",
-            "Villa",
+            "Residential 1BHK",
+            "Residential 2BHK",
+            "Residential 3BHK",
             "Commercial",
           ];
 
           if (finalProjectType && standardCategories.includes(finalProjectType)) {
+            setSelectedCategory(finalProjectType);
             setShowTemplateModal(true);
           } else {
-            // Skip template modal for "Other" category or if no category
+            // Skip template modal for "Custom" category or if no category
             navigate(`/quotation/${quotationId}/scope`);
           }
         },
@@ -291,15 +285,11 @@ export default function ProjectInfo() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="1 BHK">1 BHK</SelectItem>
-                              <SelectItem value="2 BHK">2 BHK</SelectItem>
-                              <SelectItem value="3 BHK">3 BHK</SelectItem>
-                              <SelectItem value="4 BHK">4 BHK</SelectItem>
-                              <SelectItem value="Duplex">Duplex</SelectItem>
-                              <SelectItem value="Triplex">Triplex</SelectItem>
-                              <SelectItem value="Villa">Villa</SelectItem>
+                              <SelectItem value="Residential 1BHK">Residential 1BHK</SelectItem>
+                              <SelectItem value="Residential 2BHK">Residential 2BHK</SelectItem>
+                              <SelectItem value="Residential 3BHK">Residential 3BHK</SelectItem>
                               <SelectItem value="Commercial">Commercial</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
+                              <SelectItem value="Custom">Custom</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -329,7 +319,7 @@ export default function ProjectInfo() {
                       )}
                     />
 
-                    {form.watch("projectType") === "Other" && (
+                    {form.watch("projectType") === "Custom" && (
                       <FormField
                         control={form.control}
                         name="projectTypeOther"
@@ -338,9 +328,9 @@ export default function ProjectInfo() {
                             <FormLabel>Specify Category *</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Enter project category"
+                                placeholder="e.g., 4 BHK, Villa, Duplex, etc."
                                 {...field}
-                                data-testid="input-project-category-other"
+                                data-testid="input-project-category-custom"
                               />
                             </FormControl>
                             <FormMessage />
@@ -478,7 +468,7 @@ export default function ProjectInfo() {
         open={showTemplateModal}
         onOpenChange={setShowTemplateModal}
         quotationId={quotationId!}
-        category={quotation?.projectType || ""}
+        category={selectedCategory}
         hasExistingItems={false}
         onSuccess={() => navigate(`/quotation/${quotationId}/scope`)}
       />
