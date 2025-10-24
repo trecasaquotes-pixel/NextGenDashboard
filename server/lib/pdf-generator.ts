@@ -73,33 +73,31 @@ export async function emitPdf(
   // Load and embed logo as base64
   const logoBase64 = getLogoBase64();
   
-  // Fetch footer lines from global rules
-  const footerLines = await getFooterLines();
+  // Get current date for footer
+  const currentYear = new Date().getFullYear();
+  const currentDate = new Date().toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric' 
+  });
 
-  const footerTemplate = includePageNumbers
-    ? `
-      <style>
-        *{font-family:Montserrat,Arial,sans-serif;font-size:8pt;color:#666666;margin:0;padding:0}
-        .footer-wrap{width:100%;height:40px;line-height:40px;padding:0 18mm;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;border-top:1px solid #C7A948}
-        .sep{margin:0 8px;color:#999}
-        .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#dc2626;margin-left:6px;vertical-align:middle;transform:translateY(-0.5px)}
-      </style>
-      <div class="footer-wrap">
-        <div>${footerLines.line1} <span class="sep">|</span> ${footerLines.line2} <span class="dot"></span></div>
-        <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
-      </div>
-    `
-    : `
-      <style>
-        *{font-family:Montserrat,Arial,sans-serif;font-size:8pt;color:#666666;margin:0;padding:0}
-        .footer-wrap{width:100%;height:40px;line-height:40px;padding:0 18mm;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border-top:1px solid #C7A948}
-        .sep{margin:0 8px;color:#999}
-        .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#dc2626;margin-left:6px;vertical-align:middle;transform:translateY(-0.5px)}
-      </style>
-      <div class="footer-wrap">
-        <div>${footerLines.line1} <span class="sep">|</span> ${footerLines.line2} <span class="dot"></span></div>
-      </div>
-    `;
+  // Footer template WITHOUT page numbers (pdf-lib handles continuous numbering across merged docs)
+  const footerTemplate = `
+    <div style="
+      font-family: Montserrat, Arial, sans-serif;
+      font-size: 10px;
+      color: rgba(0, 0, 0, 0.6);
+      width: 100%;
+      padding: 6px 18mm 0 18mm;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    ">
+      <div>© ${currentYear} Trecasa Design Studio<span style="color:#E50914;margin-left:4px;">•</span></div>
+      <div style="opacity:0.85;">www.trecasadesignstudio.com&nbsp;|&nbsp;@trecasa.designstudio</div>
+    </div>
+  `;
 
   const pdfBytes = await page.pdf({
     format: "A4",
@@ -109,22 +107,18 @@ export async function emitPdf(
       ? { top: "80px", bottom: "60px", left: "18mm", right: "18mm" }
       : { top: "18mm", bottom: "18mm", left: "18mm", right: "18mm" },
     headerTemplate: useHeaderFooter ? `
-      <style>
-        *{font-family:Montserrat,Arial,sans-serif;font-size:10px;margin:0;padding:0}
-        .bar{height:70px;background:#18492d;width:100%;position:relative}
-        .wrap{width:100%;padding:8px 18mm;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box}
-        .title{color:#fff;font-weight:600;letter-spacing:.2px;font-size:15px;display:flex;align-items:center;gap:10px}
-        .muted{color:#cfd8d3;font-size:10px}
-        .dot{width:6px;height:6px;border-radius:50%;background:#b52626;display:inline-block;margin-left:8px}
-        .logo{height:28px;vertical-align:middle}
-      </style>
-      <div class="bar"></div>
-      <div class="wrap">
-        <div class="title">
-          ${logoBase64 ? `<img class="logo" src="data:image/png;base64,${logoBase64}" alt="TRECASA Logo" />` : ""}
-          <span>TRECASA DESIGN STUDIO — ${titleText}</span>
-        </div>
-        <div class="muted">Generated: <span class="date"></span><span class="dot"></span></div>
+      <div style="
+        font-family: Montserrat, Arial, sans-serif;
+        font-size: 12px;
+        color: #1C1C1C;
+        width: 100%;
+        padding: 6px 18mm 0 18mm;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      ">
+        <div>Trecasa Design Studio<span style="color:#E50914;margin-left:4px;">•</span></div>
+        <div style="opacity:0.75;">${currentDate}</div>
       </div>
     ` : "",
     footerTemplate: useHeaderFooter ? footerTemplate : "",
@@ -580,8 +574,8 @@ export async function generateQuotationPDF(
     }
 
     // Generate PDF using new emitPdf with displayHeaderFooter
-    // Agreement PDFs have built-in headers/footers, so disable Puppeteer's displayHeaderFooter
-    const useHeaderFooter = type !== "agreement";
+    // All PDFs now use Puppeteer's displayHeaderFooter for consistency
+    const useHeaderFooter = true;
     console.log(
       `[PDF Generator] Generating PDF for ${type} with title: ${titleText}, includePageNumbers: ${includePageNumbers}, useHeaderFooter: ${useHeaderFooter}`,
     );

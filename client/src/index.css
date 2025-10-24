@@ -660,15 +660,16 @@
   }
 
   /* Signature Blocks Anchored to Bottom */
-  /* Ensures signature section stays at bottom of last page */
+  /* Ensures signature section stays at bottom of last page, above Puppeteer footer */
   .pdf-signature-spacer {
-    height: 100mm; /* Fixed spacer height to push signatures down */
-    min-height: 100mm;
+    height: 80mm; /* Reduced from 100mm to account for Puppeteer footer margin (60px) */
+    min-height: 80mm;
   }
 
   .pdf-signature-block {
     break-inside: avoid;
     page-break-inside: avoid;
+    margin-bottom: 20px; /* Extra spacing above footer zone */
   }
 
   /* Branded Section Headers with Red Dot */

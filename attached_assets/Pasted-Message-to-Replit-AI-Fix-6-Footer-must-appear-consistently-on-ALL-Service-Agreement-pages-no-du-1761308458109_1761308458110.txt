@@ -1,0 +1,97 @@
+Message to Replit AI (Fix #6 — Footer must appear consistently on ALL Service Agreement pages, no duplication with page numbers):
+
+Please ensure the Service Agreement PDF (Puppeteer) renders a consistent footer on every page, and avoid any overlap with the signature block or duplicate page numbers.
+
+A) Puppeteer PDF Options (server/lib/pdf-generator.ts)
+
+Confirm these options when calling page.pdf(...):
+
+await page.pdf({
+  printBackground: true,
+  displayHeaderFooter: true,
+  margin: { top: '80px', bottom: '60px', left: '18mm', right: '18mm' },
+  headerTemplate: HEADER_HTML,   // see B)
+  footerTemplate: FOOTER_HTML    // see B)
+});
+
+B) Header/Footer HTML Templates (inline styles only)
+
+Keep styles inline (no external CSS) so Puppeteer renders reliably.
+
+const HEADER_HTML = `
+  <div style="
+    font-family: Montserrat, Arial, sans-serif;
+    font-size: 12px;
+    color:#1C1C1C;
+    width:100%;
+    padding: 6px 18mm 0 18mm;
+    display:flex; justify-content:space-between; align-items:center;
+  ">
+    <div>Trecasa Design Studio <span style="color:#E50914;margin-left:4px;">•</span></div>
+    <div style="opacity:.75;">{{date}}</div>
+  </div>
+`;
+
+const FOOTER_HTML = `
+  <div style="
+    font-family: Montserrat, Arial, sans-serif;
+    font-size: 10px;
+    color:#00000099;
+    width:100%;
+    padding: 6px 18mm 0 18mm;
+    border-top:1px solid #e0e0e0;
+    display:flex; justify-content:space-between; align-items:center;
+  ">
+    <div>© {{date | yyyy}} Trecasa Design Studio <span style='color:#E50914;margin-left:4px;'>•</span></div>
+    <!-- IMPORTANT: do NOT show page numbers here to avoid duplication.
+         pdf-lib will add continuous numbers across the merged document -->
+    <div style="opacity:.85;">www.trecasadesignstudio.com&nbsp;|&nbsp;@trecasa.designstudio</div>
+  </div>
+`;
+
+
+Rule: Remove page numbers from the Puppeteer footer template.
+Page numbering is handled only by addContinuousPageNumbers(...) (pdf-lib) after merge, ensuring one numbering style across Agreement + Annexures.
+
+C) Prevent overlap with bottom-anchored signatures
+
+Since the Service Agreement now has a fixed signature section at the bottom (Fix #3), offset it above the Puppeteer footer margin:
+
+@media print {
+  /* Footer margin is 60px → keep signature above it */
+  .signature-section {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: 60px;         /* was 0; move up by footer height */
+    padding: 12mm 18mm;
+    border-top: 1px solid #e0e0e0;
+    background: #fff;
+  }
+}
+
+
+This guarantees:
+
+Puppeteer footer always visible.
+
+Signature block sits cleanly above the footer line.
+
+No collision in the bottom zone.
+
+D) Annexures compatibility
+
+Annexures (html2pdf.js) keep their embedded footer bands (HTML body).
+addContinuousPageNumbers(...) (pdf-lib) will place page numbers across all pages at a global, consistent position.
+Ensure the annexure footer bands leave at least 12–14mm visual breathing room at the bottom so page numbers remain visible.
+
+E) Acceptance Criteria
+
+Service Agreement pages (all of them) show the footer bar (copyright + website + handle + red dot).
+
+No duplicate page numbers: only pdf-lib numbering appears, consistently across Agreement + Annexures.
+
+Signature block on the Service Agreement sits above the footer (no overlap).
+
+Annexure pages retain their embedded footer bands and still show the pdf-lib page numbers clearly.
+
+Visual spacing and typography match brand (Montserrat, red #E50914 dot).
