@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Loader2, LayoutTemplate, FileText, Sparkles } from "lucide-react";
 import type { TemplateSummary, Quotation } from "@shared/schema";
+import { RedDot } from "@/components/ui/red-dot";
 
 import {
   Dialog,
@@ -294,7 +295,10 @@ export function NewQuotationDialog({ open, onOpenChange, onSuccess }: NewQuotati
                     Creating...
                   </>
                 ) : (
-                  "Create Quotation"
+                  <>
+                    Create Quotation
+                    <RedDot size="sm" />
+                  </>
                 )}
               </Button>
             </DialogFooter>

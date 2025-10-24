@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
+import { RedDot } from "@/components/ui/red-dot";
 import { htmlToPdfBytes, mergePdfBytes, downloadBytesAs } from "@/lib/pdf";
 import { AnnexureTitle } from "@/components/annexure-title";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -294,7 +295,12 @@ export default function Agreement() {
               data-testid="button-download-agreement-pack"
             >
               <Download className="mr-2 h-5 w-5" />
-              {isGenerating ? "Generating..." : "Download Agreement Pack"}
+              {isGenerating ? "Generating..." : (
+                <>
+                  Download Agreement Pack
+                  <RedDot size="sm" />
+                </>
+              )}
             </Button>
           </div>
 
