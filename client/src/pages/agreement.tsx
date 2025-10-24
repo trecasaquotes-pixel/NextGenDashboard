@@ -534,7 +534,17 @@ export default function Agreement() {
                       style={{ letterSpacing: "0.4px" }}
                     >
                       TRECASA DESIGN STUDIO
-                      <RedDot size="sm" className="translate-y-[-0.2em]" />
+                      <span
+                        style={{
+                          display: "inline-block",
+                          width: "8px",
+                          height: "8px",
+                          borderRadius: "50%",
+                          backgroundColor: "#E50914",
+                          marginLeft: "0.4em",
+                          transform: "translateY(-0.2em)",
+                        }}
+                      />
                     </h1>
                   </div>
 
@@ -933,7 +943,16 @@ export default function Agreement() {
               >
                 <div className="text-center text-[8pt] text-[#666666] flex items-center justify-center">
                   © 2025 TRECASA DESIGN STUDIO
-                  <RedDot size="sm" animated={false} />
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      backgroundColor: "#E50914",
+                      marginLeft: "0.4em",
+                    }}
+                  />
                   <span className="mx-2">|</span>
                   www.trecasadesignstudio.com <span className="mx-2">|</span> @trecasa.designstudio
                 </div>
