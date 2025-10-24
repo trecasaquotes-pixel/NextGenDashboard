@@ -661,15 +661,12 @@
 
   /* Signature Blocks Anchored to Bottom */
   /* Ensures signature section stays at bottom of last page */
-  .pdf-signature-container {
-    min-height: 200mm; /* Ensure enough space to push signatures down */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+  .pdf-signature-spacer {
+    height: 100mm; /* Fixed spacer height to push signatures down */
+    min-height: 100mm;
   }
 
   .pdf-signature-block {
-    margin-top: auto; /* Push to bottom */
     break-inside: avoid;
     page-break-inside: avoid;
   }
