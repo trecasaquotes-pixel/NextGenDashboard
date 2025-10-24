@@ -864,12 +864,9 @@ export default function Print() {
 
                   {/* Section C: Detailed Room-wise Breakdown */}
                   <div className="space-y-1 page-break-before" style={{ marginTop: "16px" }}>
-                    <h3
-                      className="text-[11pt] font-bold text-[#1A1A1A] mb-1.5"
-                      style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                    >
-                      Detailed Room-wise Breakdown
-                    </h3>
+                    <h2 className="section-header">
+                      Detailed Room-wise Breakdown<span className="red-dot">•</span>
+                    </h2>
 
                     {sortRoomEntries(Object.entries(interiorsByRoom)).map(
                       ([room, items], roomIdx) => {
@@ -1112,12 +1109,9 @@ export default function Print() {
                     className="space-y-1 break-inside-avoid page-break-before"
                     style={{ marginTop: "14px" }}
                   >
-                    <h3
-                      className="text-[10pt] font-medium text-[#154734] mb-2"
-                      style={{ fontFamily: "'Montserrat', Arial, sans-serif" }}
-                    >
-                      TERMS & CONDITIONS
-                    </h3>
+                    <h2 className="section-header">
+                      Terms & Conditions<span className="red-dot">•</span>
+                    </h2>
                     <ul
                       className="text-[9.5px] space-y-1 list-disc list-inside text-gray-700"
                       style={{ fontFamily: "'Montserrat', Arial, sans-serif" }}
@@ -1600,12 +1594,9 @@ export default function Print() {
                   {/* Section C: Detailed Room-wise Breakdown - False Ceiling */}
                   {falseCeilingItems.length > 0 && (
                     <div className="space-y-1 page-break-before" style={{ marginTop: "16px" }}>
-                      <h3
-                        className="text-[11pt] font-bold text-[#1A1A1A] mb-1.5"
-                        style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                      >
-                        Detailed Room-wise Breakdown
-                      </h3>
+                      <h2 className="section-header">
+                        Detailed Room-wise Breakdown<span className="red-dot">•</span>
+                      </h2>
 
                       {sortRoomEntries(Object.entries(falseCeilingByRoom)).map(
                         ([room, items], roomIdx) => {
@@ -1787,8 +1778,8 @@ export default function Print() {
                   {/* Section C: OTHERS */}
                   {otherItems.length > 0 && (
                     <div className="space-y-1 break-inside-avoid">
-                      <h3 className="text-sm font-semibold text-[#154734] border-b border-gray-300 pb-1">
-                        OTHERS
+                      <h3 className="subsection-header">
+                        Others<span className="red-dot">•</span>
                       </h3>
                       <table className="w-full text-xs zebra-table">
                         <thead>
@@ -1821,8 +1812,8 @@ export default function Print() {
 
                   {/* Section D: Summary */}
                   <div className="summary-totals space-y-1 break-inside-avoid">
-                    <h3 className="text-sm font-semibold text-[#154734] border-b border-gray-300 pb-1">
-                      SUMMARY
+                    <h3 className="subsection-header">
+                      Summary<span className="red-dot">•</span>
                     </h3>
                     <table className="w-full max-w-md ml-auto text-xs">
                       <tbody>
@@ -1895,12 +1886,9 @@ export default function Print() {
                     className="space-y-1 break-inside-avoid page-break-before"
                     style={{ marginTop: "14px" }}
                   >
-                    <h3
-                      className="text-[10pt] font-medium text-[#154734] mb-2"
-                      style={{ fontFamily: "'Montserrat', Arial, sans-serif" }}
-                    >
-                      TERMS & CONDITIONS
-                    </h3>
+                    <h2 className="section-header">
+                      Terms & Conditions<span className="red-dot">•</span>
+                    </h2>
                     <ul
                       className="text-[9.5px] space-y-1 list-disc list-inside text-gray-700"
                       style={{ fontFamily: "'Montserrat', Arial, sans-serif" }}

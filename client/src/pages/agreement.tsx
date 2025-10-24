@@ -666,7 +666,7 @@ export default function Agreement() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#0E2F1B] text-base">1. SCOPE OF WORK</h3>
+                  <h3 className="subsection-header">1. Scope of Work<span className="red-dot">•</span></h3>
                   <p className="ml-4">
                     The Service Provider agrees to provide interior design and execution services as
                     detailed in the attached quotations:
@@ -683,7 +683,7 @@ export default function Agreement() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#0E2F1B] text-base">2. PROJECT TIMELINE</h3>
+                  <h3 className="subsection-header">2. Project Timeline<span className="red-dot">•</span></h3>
                   <p className="ml-4">
                     The project shall commence upon receipt of the advance payment and completion
                     shall be as mutually agreed upon by both parties in writing.
@@ -691,7 +691,7 @@ export default function Agreement() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#0E2F1B] text-base">3. PAYMENT TERMS</h3>
+                  <h3 className="subsection-header">3. Payment Terms<span className="red-dot">•</span></h3>
                   <p className="ml-4">
                     The Client agrees to make payments as per the following schedule
                     {agreementData?.falseCeiling?.hasItems ? " (combined total for Interiors and False Ceiling)" : ""}:
@@ -729,7 +729,7 @@ export default function Agreement() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#0E2F1B] text-base">4. WARRANTY</h3>
+                  <h3 className="subsection-header">4. Warranty<span className="red-dot">•</span></h3>
                   <p className="ml-4">
                     The Service Provider provides a warranty period of 12 months from the date of
                     project handover against manufacturing defects. Normal wear and tear is not
@@ -738,7 +738,7 @@ export default function Agreement() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#0E2F1B] text-base">5. MODIFICATIONS</h3>
+                  <h3 className="subsection-header">5. Modifications<span className="red-dot">•</span></h3>
                   <p className="ml-4">
                     Any modifications to the agreed scope of work must be communicated in writing
                     and may result in additional charges and timeline extensions.
@@ -746,7 +746,7 @@ export default function Agreement() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#0E2F1B] text-base">6. TERMINATION</h3>
+                  <h3 className="subsection-header">6. Termination<span className="red-dot">•</span></h3>
                   <p className="ml-4">
                     Either party may terminate this agreement with 15 days written notice. In case
                     of termination by the Client, payments made are non-refundable and work
@@ -755,7 +755,7 @@ export default function Agreement() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-[#0E2F1B] text-base">7. GOVERNING LAW</h3>
+                  <h3 className="subsection-header">7. Governing Law<span className="red-dot">•</span></h3>
                   <p className="ml-4">
                     This Agreement shall be governed by and construed in accordance with the laws of
                     India. Any disputes arising shall be subject to the jurisdiction of courts in
@@ -765,14 +765,14 @@ export default function Agreement() {
 
                 {/* Terms & Conditions Section */}
                 <div className="space-y-6 mt-8 pt-6 border-t-2">
-                  <h3 className="font-semibold text-[#0E2F1B] text-lg">TERMS & CONDITIONS</h3>
+                  <h2 className="section-header">Terms & Conditions<span className="red-dot">•</span></h2>
                   
                   {/* Interiors T&C */}
                   {quotation.includeAnnexureInteriors && (
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-[#0E2F1B] text-base">
-                        A. Interior Works Terms & Conditions
-                      </h4>
+                      <h3 className="subsection-header">
+                        A. Interior Works Terms & Conditions<span className="red-dot">•</span>
+                      </h3>
                       <div className="ml-4 space-y-3">
                         {(() => {
                           const terms = quotation.terms?.interiors;
@@ -808,9 +808,9 @@ export default function Agreement() {
                   {/* False Ceiling T&C */}
                   {quotation.includeAnnexureFC && agreementData?.falseCeiling?.hasItems && (
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-[#0E2F1B] text-base">
-                        B. False Ceiling Works Terms & Conditions
-                      </h4>
+                      <h3 className="subsection-header">
+                        B. False Ceiling Works Terms & Conditions<span className="red-dot">•</span>
+                      </h3>
                       <div className="ml-4 space-y-3">
                         {(() => {
                           const terms = quotation.terms?.falseCeiling;
@@ -845,7 +845,7 @@ export default function Agreement() {
                     agreementData.materials.finishes.length > 0 ||
                     agreementData.materials.hardware.length > 0) && (
                     <div className="space-y-4 mt-8 p-4 bg-gray-50 rounded">
-                      <h3 className="font-semibold text-[#0E2F1B] text-base">MATERIALS & BRANDS</h3>
+                      <h3 className="subsection-header">Materials & Brands<span className="red-dot">•</span></h3>
                       {agreementData.materials.coreMaterials.length > 0 && (
                         <div className="ml-4">
                           <p className="font-medium text-sm mb-1">Core Materials:</p>
