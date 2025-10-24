@@ -1,3 +1,5 @@
+import { RedDot } from "@/components/ui/red-dot";
+
 interface AnnexureTitleProps {
   letter: "A" | "B";
   title: string;
@@ -10,10 +12,10 @@ export function AnnexureTitle({ letter, title, quoteId, clientName }: AnnexureTi
     <div className="bg-white text-black p-8 min-h-[1120px] flex flex-col items-center justify-center">
       {/* Branded Header */}
       <div className="mb-12">
-        <div className="flex items-center justify-center gap-3 mb-3">
-          <h1 className="text-5xl font-bold text-[#0E2F1B] text-center">TRECASA DESIGN STUDIO</h1>
-          <div className="w-3 h-3 rounded-full bg-red-600"></div>
-        </div>
+        <h1 className="text-5xl font-bold text-[#0E2F1B] text-center flex items-center justify-center mb-3">
+          TRECASA DESIGN STUDIO
+          <RedDot size="lg" className="translate-y-[-0.3em]" />
+        </h1>
         <p className="text-[#C7A948] text-lg text-center">
           Luxury Interiors | Architecture | Build
         </p>

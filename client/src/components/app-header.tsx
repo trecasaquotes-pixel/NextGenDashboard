@@ -1,6 +1,7 @@
 import { useLocation } from "wouter";
 import logoPath from "@assets/trecasa-logo.png";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RedDot } from "@/components/ui/red-dot";
 
 export function AppHeader() {
   const [location, navigate] = useLocation();
@@ -38,16 +39,10 @@ export function AppHeader() {
           <div className="text-center space-y-2">
             <div className="flex items-center justify-center gap-3">
               <img src={logoPath} alt="TRECASA Logo" className="h-12 md:h-14" />
-              <div className="flex items-center gap-1">
-                <h1 className="text-2xl md:text-3xl font-bold text-white tracking-wide">
-                  TRECASA DESIGN STUDIO
-                </h1>
-                <span
-                  className="inline-block w-2 h-2 rounded-full translate-y-[-0.5em]"
-                  style={{ backgroundColor: "#C62828" }}
-                  aria-label="dot"
-                />
-              </div>
+              <h1 className="text-2xl md:text-3xl font-bold text-white tracking-wide flex items-center">
+                TRECASA DESIGN STUDIO
+                <RedDot size="md" className="translate-y-[-0.3em]" />
+              </h1>
             </div>
             <p
               className="text-sm md:text-base font-light tracking-wider"
