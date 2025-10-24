@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Download, Plus, Trash2, Save, ChevronDown, ChevronUp } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import type { Quotation } from "@shared/schema";
+import { COMPANY } from "@shared/constants";
 import { createRoot } from "react-dom/client";
 import { formatDisplayDate } from "@shared/formatters";
 import logoPath from "@assets/trecasa-logo.png";
@@ -617,13 +618,15 @@ export default function Agreement() {
 
                 <div className="ml-4 space-y-2">
                   <p>
-                    <strong>TRECASA DESIGN STUDIO</strong> (hereinafter referred to as "Service
+                    <strong>{COMPANY.legalName}</strong> (hereinafter referred to as "Service
                     Provider")
                   </p>
                   <p className="text-xs text-gray-600">
-                    Address: [Service Provider Address]
+                    Address: {COMPANY.address}
                     <br />
-                    Contact: www.trecasadesignstudio.com | @trecasa.designstudio
+                    Contact: {COMPANY.phone} | {COMPANY.email}
+                    <br />
+                    Website: {COMPANY.website} | {COMPANY.instagram}
                   </p>
                 </div>
 
