@@ -634,6 +634,8 @@ export default function Agreement() {
 
               {/* Agreement Content - With Signature Container for Bottom Anchoring */}
               <div className="space-y-6 text-sm pdf-signature-container">
+                {/* Content Wrapper - Flex Child 1 */}
+                <div>
                 <p>
                   This Agreement is entered into on <strong>{currentDate}</strong> between:
                 </p>
@@ -880,8 +882,10 @@ export default function Agreement() {
                       )}
                     </div>
                   )}
+                </div>
+                {/* End Content Wrapper */}
 
-                {/* Signatures - Anchored to Bottom */}
+                {/* Signatures - Anchored to Bottom - Flex Child 2 */}
                 <div className="mt-12 pt-8 border-t-2 border-gray-300 pdf-signature-block">
                   <div
                     className="grid grid-cols-2 gap-8 break-inside-avoid"

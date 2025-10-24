@@ -724,6 +724,8 @@ export default function Print() {
                   className="pdf-body print-body-content pdf-signature-container"
                   style={{ padding: "10px 14px", fontFamily: "'Montserrat', Arial, sans-serif" }}
                 >
+                  {/* Content Wrapper - Flex Child 1 */}
+                  <div>
                   {/* Room Totals Summary - Professional */}
                   <section className="summary-section" style={{ marginTop: "10px" }}>
                     <div
@@ -1171,8 +1173,10 @@ export default function Print() {
                     </ul>
                   </div>
                   )}
+                  </div>
+                  {/* End Content Wrapper */}
 
-                  {/* Signatures - Anchored to Bottom */}
+                  {/* Signatures - Anchored to Bottom - Flex Child 2 */}
                   <div
                     className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid pdf-signature-block"
                     data-testid="signature-block-interiors"
@@ -1447,6 +1451,8 @@ export default function Print() {
                   className="pdf-body print-body-content pdf-signature-container"
                   style={{ padding: "10px 14px", fontFamily: "'Montserrat', Arial, sans-serif" }}
                 >
+                  {/* Content Wrapper - Flex Child 1 */}
+                  <div>
                   {/* Room Totals Summary - Professional */}
                   {fcRoomTotals.length > 0 && (
                     <>
@@ -1951,8 +1957,10 @@ export default function Print() {
                     </ul>
                   </div>
                   )}
+                  </div>
+                  {/* End Content Wrapper */}
 
-                  {/* Signatures - Anchored to Bottom */}
+                  {/* Signatures - Anchored to Bottom - Flex Child 2 */}
                   <div
                     className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid pdf-signature-block"
                     data-testid="signature-block-false-ceiling"
