@@ -1635,9 +1635,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storage.getFalseCeilingItems(quotationId),
       ]);
 
+      // Use pre-calculated totals from quotation.totals (includes all calc types, brand adders, etc.)
+      const interiorsTotal = quotation.totals?.interiorsSubtotal || 0;
+      const falseCeilingTotal = quotation.totals?.fcSubtotal || 0;
+      const paintingCost = quotation.totals?.paintingCost || 0;
+      
+      // Grand total with painting if included
+      const grandTotal = quotation.totals?.grandSubtotal || (interiorsTotal + falseCeilingTotal + paintingCost);
+
+      console.log(`[Agreement Data] Quotation ${quotationId}: Interiors = ₹${interiorsTotal}, FC = ₹${falseCeilingTotal}, Painting = ₹${paintingCost}, Grand Total = ₹${grandTotal}`);
+
       // Calculate if false ceiling has items
       const hasFCItems = falseCeilingItems.length > 0;
-      console.log(`[Agreement Data] Quotation ${quotationId}: FC items count = ${falseCeilingItems.length}, hasFCItems = ${hasFCItems}`);
 
       // Get existing agreement if any
       const existingAgreement = await storage.getAgreementByQuotationId(quotationId);
@@ -1649,17 +1658,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hardware: Array.from(new Set(interiorItems.map(item => item.hardware).filter(Boolean))),
       };
 
-      // Get payment schedule - use default since quotation doesn't store it yet
-      const paymentSchedule = [
-        { label: "Advance Payment", percent: 40 },
-        { label: "After Measurements", percent: 30 },
-        { label: "Before Installation", percent: 20 },
-        { label: "After Completion", percent: 10 },
+      // Default payment schedule percentages
+      const defaultSchedule = [
+        { label: "Token Advance", percent: 10 },
+        { label: "Design Finalisation", percent: 60 },
+        { label: "Mid Execution", percent: 25 },
+        { label: "After Handover", percent: 5 },
       ];
+
+      // Use custom payment schedule if exists, otherwise default
+      // Note: paymentScheduleJson is stored as JSON string, need to parse it
+      let schedulePercentages = defaultSchedule;
+      if (existingAgreement?.paymentScheduleJson) {
+        try {
+          const parsed = typeof existingAgreement.paymentScheduleJson === 'string'
+            ? JSON.parse(existingAgreement.paymentScheduleJson)
+            : existingAgreement.paymentScheduleJson;
+          schedulePercentages = Array.isArray(parsed) ? parsed : defaultSchedule;
+        } catch (error) {
+          console.error('[Agreement Data] Failed to parse paymentScheduleJson, using default', error);
+        }
+      }
+
+      // Calculate payment amounts based on grand total
+      const paymentSchedule = schedulePercentages.map((milestone: { label: string; percent: number }) => ({
+        label: milestone.label,
+        percent: milestone.percent,
+        amount: Math.round((grandTotal * milestone.percent) / 100), // Amount in paise (cents)
+      }));
 
       // Return agreement data structure
       res.json({
         quotationId,
+        totals: {
+          interiorsTotal,
+          falseCeilingTotal,
+          grandTotal,
+        },
         falseCeiling: {
           hasItems: hasFCItems,
         },

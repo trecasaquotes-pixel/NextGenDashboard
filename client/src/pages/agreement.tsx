@@ -25,6 +25,17 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { renderTerms, defaultTerms } from "@/lib/terms";
 
 
+// Safe rendering helper to prevent NaN and format numbers with Indian locale
+const formatAmount = (amount: number | undefined | null): string => {
+  if (amount === undefined || amount === null || isNaN(amount)) {
+    return "—";
+  }
+  return amount.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 export default function Agreement() {
   const [match, params] = useRoute("/quotation/:id/agreement");
   const quotationId = params?.id;
@@ -674,25 +685,34 @@ export default function Agreement() {
                     The Client agrees to make payments as per the following schedule
                     {agreementData?.falseCeiling?.hasItems ? " (combined total for Interiors and False Ceiling)" : ""}:
                   </p>
-                  {agreementData?.paymentSchedule && (
+                  {/* Summary of totals */}
+                  {agreementData?.totals && (
+                    <div className="ml-8 mb-3 text-xs text-gray-700 space-y-1">
+                      {agreementData.totals.interiorsTotal > 0 && (
+                        <p>Interiors Total: ₹{formatAmount(agreementData.totals.interiorsTotal)}</p>
+                      )}
+                      {agreementData.totals.falseCeilingTotal > 0 && (
+                        <p>False Ceiling Total: ₹{formatAmount(agreementData.totals.falseCeilingTotal)}</p>
+                      )}
+                      <p className="font-semibold">
+                        Grand Total: ₹{formatAmount(agreementData.totals.grandTotal)}
+                      </p>
+                    </div>
+                  )}
+                  {agreementData?.paymentSchedule && agreementData.paymentSchedule.length > 0 ? (
                     <ul className="ml-8 list-disc space-y-1">
                       {agreementData.paymentSchedule.map((payment: any, idx: number) => (
                         <li key={idx}>
-                          {payment.label} — ₹
-                          {(payment.amount / 100).toLocaleString("en-IN", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {payment.label} ({payment.percent}%) — ₹{formatAmount(payment.amount)}
                         </li>
                       ))}
                     </ul>
-                  )}
-                  {!agreementData?.paymentSchedule && (
+                  ) : (
                     <ul className="ml-8 list-disc space-y-1">
-                      <li>Token Advance – 10% upon agreement signing</li>
-                      <li>Design Finalisation – 60% upon design approval</li>
-                      <li>Mid Execution – 25% upon completion of 50% of the work</li>
-                      <li>After Handover – 5% upon project completion</li>
+                      <li>Token Advance (10%) — upon agreement signing</li>
+                      <li>Design Finalisation (60%) — upon design approval</li>
+                      <li>Mid Execution (25%) — upon completion of 50% of the work</li>
+                      <li>After Handover (5%) — upon project completion</li>
                     </ul>
                   )}
                 </div>
