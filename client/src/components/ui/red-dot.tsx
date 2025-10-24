@@ -8,9 +8,9 @@ interface RedDotProps {
 
 export function RedDot({ className, size = "md", animated = true }: RedDotProps) {
   const sizeClasses = {
-    sm: "w-1.5 h-1.5",
-    md: "w-2 h-2",
-    lg: "w-2.5 h-2.5",
+    sm: "w-2 h-2",      // 8px
+    md: "w-2.5 h-2.5",  // 10px
+    lg: "w-3 h-3",      // 12px
   };
 
   return (

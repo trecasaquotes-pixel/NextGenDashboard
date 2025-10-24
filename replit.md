@@ -14,6 +14,8 @@ TRECASA is a web application for interior designers to create, manage, and expor
 
 The application features a luxury aesthetic with a deep green and gold color scheme, Montserrat typography for UI, and Playfair Display for PDF text. Shadcn UI with Tailwind CSS ensures responsive design. Navigation includes top-level tabs and a universal PDF header/footer with branded elements and logo integration.
 
+**Red Dot Theory**: The application implements a signature visual identity system where a red dot (#E50914) appears after "TRECASA DESIGN STUDIO" branding and on primary action buttons. This represents precision, focus, and brand identity. Implementation follows strict rules: only one dot per section/screen, positioned 0.4em from text, with 0.3s fade-in animation. The RedDot component is used consistently across app headers, PDF documents, primary CTAs, and completion states.
+
 ### Technical Implementations
 
 The frontend uses React with Wouter, TanStack Query, React Hook Form, and Zod for validation. The backend is an Express.js server connected to a PostgreSQL database via Drizzle ORM. Authentication is handled by Replit Auth.

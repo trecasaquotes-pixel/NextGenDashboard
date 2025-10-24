@@ -6,7 +6,39 @@
 
 ## Core Design Elements
 
-### A. Color Palette
+### A. Red Dot Theory - Brand Identity System
+
+**Concept:** The red dot (#E50914) is TRECASA's signature visual mark, representing precision, focus, and identity. It appears strategically throughout the application as a minimal, recognizable brand element.
+
+**Implementation Rules:**
+
+1. **Placement:**
+   - After "TRECASA DESIGN STUDIO" branding (in headers, PDFs, footers)
+   - On primary action buttons (Download Agreement Pack, Create Quotation, etc.)
+   - At completion states (Quote Ready, Saved Successfully)
+   - **One dot per section/screen** - never overuse
+
+2. **Visual Specifications:**
+   - Color: #E50914 (signature red)
+   - Shape: Perfect circle
+   - Size: Small (8px), Medium (10px), Large (12px) depending on context
+   - Spacing: 0.4em gap from adjacent text
+   - Animation: 0.3s fade-in with ease-in timing (optional for static contexts)
+   - Opacity: 100% (always solid)
+
+3. **Component Usage:**
+   - Use the `<RedDot />` component from `@/components/ui/red-dot`
+   - Props: `size="sm|md|lg"`, `animated={true|false}`, `className`
+   - Example: `<h1>TRECASA DESIGN STUDIO<RedDot size="md" /></h1>`
+
+4. **Application:**
+   - App headers and navigation
+   - PDF document headers and footers
+   - Primary CTAs and action buttons
+   - Completion indicators and success states
+   - Email signatures (when implemented)
+
+### B. Color Palette
 
 **Light Mode:**
 
