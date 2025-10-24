@@ -180,8 +180,19 @@ export default function Agreement() {
       // Add continuous page numbers
       mergedPdfBytes = await addContinuousPageNumbers(mergedPdfBytes);
 
-      // Download the merged PDF
-      await downloadBytesAs(`TRECASA_${quotation.quoteId}_AgreementPack.pdf`, mergedPdfBytes);
+      // Download the merged PDF with client name in filename
+      // Sanitize client name: strip special chars, replace spaces with _, uppercase
+      let safeClientName = (quotation.clientName || '')
+        .replace(/[^a-zA-Z0-9\s]/g, '')
+        .replace(/\s+/g, '_')
+        .toUpperCase()
+        .trim()
+        .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+      // Fallback to quoteId if sanitized name is empty or has no alphanumeric chars
+      if (!safeClientName || !/[A-Z0-9]/.test(safeClientName)) {
+        safeClientName = quotation.quoteId;
+      }
+      await downloadBytesAs(`Trecasa_AgreementPack_${safeClientName}_${quotation.quoteId}.pdf`, mergedPdfBytes);
 
       toast({
         title: "Success",
@@ -621,8 +632,8 @@ export default function Agreement() {
                 <h2 className="text-2xl font-bold text-[#154734]">SERVICE AGREEMENT</h2>
               </div>
 
-              {/* Agreement Content */}
-              <div className="space-y-6 text-sm">
+              {/* Agreement Content - With Signature Container for Bottom Anchoring */}
+              <div className="space-y-6 text-sm pdf-signature-container">
                 <p>
                   This Agreement is entered into on <strong>{currentDate}</strong> between:
                 </p>
@@ -870,8 +881,8 @@ export default function Agreement() {
                     </div>
                   )}
 
-                {/* Signatures */}
-                <div className="mt-12 pt-8 border-t-2 border-gray-300">
+                {/* Signatures - Anchored to Bottom */}
+                <div className="mt-12 pt-8 border-t-2 border-gray-300 pdf-signature-block">
                   <div
                     className="grid grid-cols-2 gap-8 break-inside-avoid"
                     data-testid="signature-block-agreement"

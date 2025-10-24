@@ -658,4 +658,19 @@
   .cover-page {
     display: flex !important;
   }
+
+  /* Signature Blocks Anchored to Bottom */
+  /* Ensures signature section stays at bottom of last page */
+  .pdf-signature-container {
+    min-height: 200mm; /* Ensure enough space to push signatures down */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .pdf-signature-block {
+    margin-top: auto; /* Push to bottom */
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }

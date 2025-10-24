@@ -166,7 +166,18 @@ export default function Print() {
         const link = document.createElement("a");
         link.href = url;
         const typeLabel = type === "interiors" ? "Interiors" : "FalseCeiling";
-        link.download = `TRECASA_${quotation.quoteId}_${typeLabel}.pdf`;
+        // Sanitize client name: strip special chars, replace spaces with _, uppercase
+        let safeClientName = (quotation.clientName || '')
+          .replace(/[^a-zA-Z0-9\s]/g, '')
+          .replace(/\s+/g, '_')
+          .toUpperCase()
+          .trim()
+          .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+        // Fallback to quoteId if sanitized name is empty or has no alphanumeric chars
+        if (!safeClientName || !/[A-Z0-9]/.test(safeClientName)) {
+          safeClientName = quotation.quoteId;
+        }
+        link.download = `Trecasa_${typeLabel}_${safeClientName}_${quotation.quoteId}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -207,7 +218,18 @@ export default function Print() {
 
       const pdfBytes = await htmlToPdfBytes(element);
       const typeLabel = type === "interiors" ? "Interiors" : "FalseCeiling";
-      const filename = `TRECASA_${quotation.quoteId}_${typeLabel}.pdf`;
+      // Sanitize client name: strip special chars, replace spaces with _, uppercase
+      let safeClientName = (quotation.clientName || '')
+        .replace(/[^a-zA-Z0-9\s]/g, '')
+        .replace(/\s+/g, '_')
+        .toUpperCase()
+        .trim()
+        .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+      // Fallback to quoteId if sanitized name is empty or has no alphanumeric chars
+      if (!safeClientName || !/[A-Z0-9]/.test(safeClientName)) {
+        safeClientName = quotation.quoteId;
+      }
+      const filename = `Trecasa_${typeLabel}_${safeClientName}_${quotation.quoteId}.pdf`;
 
       await downloadBytesAs(filename, pdfBytes);
 
@@ -697,9 +719,9 @@ export default function Print() {
                   </div>
                 </div>
 
-                {/* PDF Body - Content */}
+                {/* PDF Body - Content - With Signature Container for Bottom Anchoring */}
                 <div
-                  className="pdf-body print-body-content"
+                  className="pdf-body print-body-content pdf-signature-container"
                   style={{ padding: "10px 14px", fontFamily: "'Montserrat', Arial, sans-serif" }}
                 >
                   {/* Room Totals Summary - Professional */}
@@ -1150,9 +1172,9 @@ export default function Print() {
                   </div>
                   )}
 
-                  {/* Signatures */}
+                  {/* Signatures - Anchored to Bottom */}
                   <div
-                    className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid"
+                    className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid pdf-signature-block"
                     data-testid="signature-block-interiors"
                   >
                     <h3
@@ -1420,9 +1442,9 @@ export default function Print() {
                   </div>
                 </div>
 
-                {/* PDF Body - Content */}
+                {/* PDF Body - Content - With Signature Container for Bottom Anchoring */}
                 <div
-                  className="pdf-body print-body-content"
+                  className="pdf-body print-body-content pdf-signature-container"
                   style={{ padding: "10px 14px", fontFamily: "'Montserrat', Arial, sans-serif" }}
                 >
                   {/* Room Totals Summary - Professional */}
@@ -1930,9 +1952,9 @@ export default function Print() {
                   </div>
                   )}
 
-                  {/* Signatures */}
+                  {/* Signatures - Anchored to Bottom */}
                   <div
-                    className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid"
+                    className="mt-2 border border-gray-300 rounded-lg p-3 space-y-2 break-inside-avoid pdf-signature-block"
                     data-testid="signature-block-false-ceiling"
                   >
                     <h3
