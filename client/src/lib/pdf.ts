@@ -8,9 +8,9 @@ export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
   rootEl.classList.add("pdf-export-mode");
 
   // Match Puppeteer margins: 80px top, 60px bottom, 18mm (68px) left/right
-  // Convert px to mm: 80px ≈ 28mm, 60px ≈ 21mm, 18mm = 18mm
+  // Convert px to mm at 96 DPI: 80px = 21.17mm, 60px = 15.88mm
   const opt = {
-    margin: [28, 18, 21, 18] as [number, number, number, number], // top, right, bottom, left in mm
+    margin: [21, 18, 16, 18] as [number, number, number, number], // top, right, bottom, left in mm
     filename: "temp.pdf",
     image: { type: "jpeg" as const, quality: 0.98 },
     html2canvas: {
@@ -35,13 +35,17 @@ export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
   // Detect and remove trailing blank page if present
   const pageCount = pdf.internal.getNumberOfPages();
   if (pageCount > 1) {
-    // Check if last page is likely empty
-    // html2pdf.js sometimes adds a trailing blank page
-    const lastPageOps = pdf.internal.pages[pageCount];
-    const isLastPageEmpty = !lastPageOps || (Array.isArray(lastPageOps) && lastPageOps.length <= 2);
+    // Check if last page is likely empty by inspecting its content stream
+    // jsPDF stores page content as a string in pdf.internal.pages[pageNum]
+    const lastPageContent = pdf.internal.pages[pageCount];
+    
+    // A truly blank page has minimal content (just structural commands, no real drawing ops)
+    // Typical blank page is just a few bytes of basic PDF commands
+    const isLastPageEmpty = typeof lastPageContent === 'string' && 
+                           lastPageContent.trim().length < 100;
     
     if (isLastPageEmpty) {
-      console.log(`[PDF] Removing trailing blank page ${pageCount}`);
+      console.log(`[PDF] Removing trailing blank page ${pageCount} (content length: ${lastPageContent?.length || 0})`);
       pdf.deletePage(pageCount);
     }
   }
