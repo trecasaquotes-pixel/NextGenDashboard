@@ -1,0 +1,129 @@
+Message to Replit AI:
+
+Thanks for the update—great progress on 1–4. Let’s finish this by hardening Annexures and eliminating blank pages.
+
+⸻
+
+Action Items (Annexures + Post-merge)
+
+A) HTML-level Blank-Page Prevention for Annexures (html2pdf.js)
+
+Please add these rules to the Annexure HTML/CSS (used by client/src/lib/pdf.ts):
+
+html2pdf options
+
+const opt = {
+  margin: [80, 18, 60, 18], // top,right,bottom,left (match Puppeteer: 80px top, 60px bottom)
+  filename: annexureFileName,
+  pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+  jsPDF: { unit: 'pt', format: 'a4', compress: true }
+};
+
+CSS for stable pagination
+
+/* Keep headings with first paragraph/table */
+h1, h2, h3 { break-after: avoid; break-inside: avoid; }
+h1 + p, h2 + p, h3 + p, h1 + table, h2 + table, h3 + table { break-before: avoid; }
+
+/* Keep small blocks and cards together */
+.keep-together, .card, .summary, .block { break-inside: avoid; page-break-inside: avoid; }
+
+/* Tables should not split rows */
+table { break-inside: auto; page-break-inside: auto; }
+tr, td, th { break-inside: avoid; page-break-inside: avoid; }
+
+/* Avoid orphans/widows */
+p, li { orphans: 3; widows: 3; }
+
+/* Static header/footer bands inside Annexure body */
+.annexure-header, .annexure-footer {
+  font: 10pt Montserrat, Arial, sans-serif;
+  color: #00000099;
+  display: flex; justify-content: space-between;
+  padding: 8px 12mm;
+}
+.annexure-header { border-bottom: 1px solid #e0e0e0; margin-bottom: 16px; }
+.annexure-footer { border-top: 1px solid #e0e0e0; margin-top: 16px; }
+.red-dot { color: #E50914; margin-left: 4px; }
+
+Header/Footer bands (rendered in HTML)
+
+<div class="annexure-header">
+  <div class="left">Trecasa Design Studio <span class="red-dot">•</span></div>
+  <div class="right">{{date}}</div>
+</div>
+
+<!-- Annexure content here -->
+
+<div class="annexure-footer">
+  <div class="left">© {{year}} Trecasa Design Studio <span class="red-dot">•</span></div>
+  <div class="right">Page {{pageNumber}} of {{totalPages}}</div>
+</div>
+
+B) Prevent Trailing Blank Page in html2pdf.js (safe guard)
+
+html2pdf.js (via jsPDF) sometimes appends a trailing empty page. After generating but before returning bytes, delete an empty last page:
+
+const instance = html2pdf().set(opt).from(element);
+await instance.toPdf();
+const pdf = await instance.get('pdf');
+
+const n = pdf.internal.getNumberOfPages();
+// Heuristic: empty pages have extremely small content streams
+const isLastPageEmpty = () => {
+  const page = pdf.internal.pages[n]; // jsPDF stores page ops here
+  return !page || (Array.isArray(page) && page.length <= 1);
+};
+if (isLastPageEmpty()) pdf.deletePage(n);
+
+const annexureBytes = pdf.output('arraybuffer');
+
+C) Post-merge Sanity (pdf-lib)
+
+Keep the merge as is, but add a minimal, safe cleanup: remove pages that are truly zero-content placeholders created during merge (not common, but safe to guard). Since pdf-lib can’t reliably read text streams, only remove pages that have no content streams and zero annotations:
+
+import { PDFDocument } from 'pdf-lib';
+
+function removeTriviallyEmptyPages = async (mergedPdf: PDFDocument) => {
+  const pagesToRemove: number[] = [];
+  const pageCount = mergedPdf.getPageCount();
+
+  for (let i = 0; i < pageCount; i++) {
+    const p = mergedPdf.getPage(i);
+    const opsLen = p.node?.Contents()?.array?.length ?? 0; // low-level; may be undefined
+    const annots = p.node?.Annots();
+    const hasAnnots = !!annots && (annots.array?.length ?? 0) > 0;
+
+    if (!hasAnnots && opsLen === 0) pagesToRemove.push(i);
+  }
+  // Remove from end to start
+  pagesToRemove.reverse().forEach(idx => mergedPdf.removePage(idx));
+};
+
+Note: Do not attempt deep content heuristics; the HTML-level fixes + trailing-page guard above should eliminate the issue at source.
+
+D) Brand Tokens (confirm usage)
+
+Continue using client/src/lib/pdf-constants.ts and ensure:
+	•	Brand name: “Trecasa Design Studio” everywhere
+	•	Red: #E50914 (used for the dot via inline backgroundColor or text •)
+	•	Font: Montserrat (as per current design)
+	•	Header/Footers: Visual match between Puppeteer Agreement and Annexures (using the bands above)
+
+⸻
+
+QA Scenarios (must pass)
+	1.	Short Annexure (1–1.5 pages content):
+	•	No extra blank page at end
+	•	Header/footer bands visible
+	•	Red dot renders
+	2.	Annexure with table near page end:
+	•	Heading does not orphan (stays with the first row)
+	•	Table rows don’t split mid-row
+	•	No header-only page
+	3.	Full Pack Merge (Agreement + Annexure A + Annexure B):
+	•	Continuous numbering 1…N
+	•	No blank pages anywhere
+	•	Branding consistent across all sections
+
+Once implemented, please deploy to staging and share a sample Agreement Pack (with both Annexures) to confirm.

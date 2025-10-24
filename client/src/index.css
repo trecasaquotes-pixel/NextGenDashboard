@@ -553,14 +553,43 @@
     break-before: page;
   }
 
+  /* Enhanced Pagination Rules for Stable PDF Generation */
+  /* Keep headings with their first paragraph/table */
+  h1, h2, h3 {
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  h1 + p, h2 + p, h3 + p,
+  h1 + table, h2 + table, h3 + table {
+    break-before: avoid;
+    page-break-before: avoid;
+  }
+
+  /* Keep small blocks and cards together */
+  .keep-together, .card, .summary, .block, .summary-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Avoid orphans and widows in paragraphs */
+  p, li {
+    orphans: 3;
+    widows: 3;
+  }
+
   /* Tables - Optimized for wider print canvas */
   table {
     page-break-inside: auto;
+    break-inside: auto;
     max-width: 100%;
     table-layout: fixed;
   }
 
-  tr {
+  /* Table rows and cells should not split */
+  tr, td, th {
     page-break-inside: avoid;
     break-inside: avoid;
   }

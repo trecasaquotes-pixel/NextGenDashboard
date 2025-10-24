@@ -7,8 +7,10 @@ export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
   // Only the green .pdf-header will appear in client-side PDFs
   rootEl.classList.add("pdf-export-mode");
 
+  // Match Puppeteer margins: 80px top, 60px bottom, 18mm (68px) left/right
+  // Convert px to mm: 80px ≈ 28mm, 60px ≈ 21mm, 18mm = 18mm
   const opt = {
-    margin: [10, 10, 10, 10] as [number, number, number, number],
+    margin: [28, 18, 21, 18] as [number, number, number, number], // top, right, bottom, left in mm
     filename: "temp.pdf",
     image: { type: "jpeg" as const, quality: 0.98 },
     html2canvas: {
@@ -20,17 +22,37 @@ export async function htmlToPdfBytes(rootEl: HTMLElement): Promise<Uint8Array> {
       unit: "mm",
       format: "a4",
       orientation: "portrait" as const,
+      compress: true,
     },
     pagebreak: { mode: ["avoid-all", "css", "legacy"] },
   };
 
-  const pdfBlob = await html2pdf().set(opt).from(rootEl).outputPdf("blob");
-  const arrayBuffer = await pdfBlob.arrayBuffer();
+  // Generate PDF using html2pdf
+  const instance = html2pdf().set(opt).from(rootEl);
+  await instance.toPdf();
+  const pdf = await instance.get("pdf");
 
+  // Detect and remove trailing blank page if present
+  const pageCount = pdf.internal.getNumberOfPages();
+  if (pageCount > 1) {
+    // Check if last page is likely empty
+    // html2pdf.js sometimes adds a trailing blank page
+    const lastPageOps = pdf.internal.pages[pageCount];
+    const isLastPageEmpty = !lastPageOps || (Array.isArray(lastPageOps) && lastPageOps.length <= 2);
+    
+    if (isLastPageEmpty) {
+      console.log(`[PDF] Removing trailing blank page ${pageCount}`);
+      pdf.deletePage(pageCount);
+    }
+  }
+
+  // Get PDF as array buffer
+  const pdfOutput = pdf.output("arraybuffer");
+  
   // Clean up
   rootEl.classList.remove("pdf-export-mode");
 
-  return new Uint8Array(arrayBuffer);
+  return new Uint8Array(pdfOutput);
 }
 
 export async function mergePdfBytes(docs: Uint8Array[]): Promise<Uint8Array> {
@@ -44,12 +66,57 @@ export async function mergePdfBytes(docs: Uint8Array[]): Promise<Uint8Array> {
     });
   }
 
-  // TODO: Implement blank page removal
-  // Note: pdf-lib doesn't provide a straightforward API to detect blank pages
-  // Current approach: Manual review or preprocessing HTML to avoid blank pages
-  console.log(`[PDF] Merged ${docs.length} documents. Total pages: ${mergedPdf.getPageCount()}`);
+  console.log(`[PDF] Merged ${docs.length} documents. Total pages before cleanup: ${mergedPdf.getPageCount()}`);
+
+  // Minimal safe cleanup: remove pages with no content streams and no annotations
+  // Only targets truly empty placeholder pages created during merge
+  await removeTriviallyEmptyPages(mergedPdf);
+
+  console.log(`[PDF] Final page count after cleanup: ${mergedPdf.getPageCount()}`);
 
   return await mergedPdf.save();
+}
+
+/**
+ * Remove only pages that are trivially empty (no content streams, no annotations)
+ * This is a minimal, safe guard against merge-created placeholder pages
+ */
+async function removeTriviallyEmptyPages(pdfDoc: PDFDocument): Promise<void> {
+  const pagesToRemove: number[] = [];
+  const pageCount = pdfDoc.getPageCount();
+
+  for (let i = 0; i < pageCount; i++) {
+    try {
+      const page = pdfDoc.getPage(i);
+      const pageNode = page.node;
+      
+      // Check if page has content streams
+      const contentsRef = pageNode.Contents();
+      const hasContents = !!contentsRef;
+      
+      // Check if page has annotations
+      const annotsRef = pageNode.Annots();
+      const hasAnnots = !!annotsRef;
+
+      // Only remove if BOTH content and annotations are absent
+      if (!hasContents && !hasAnnots) {
+        console.log(`[PDF] Marking trivially empty page ${i + 1} for removal`);
+        pagesToRemove.push(i);
+      }
+    } catch (error) {
+      // If we can't analyze, keep the page to be safe
+      console.log(`[PDF] Could not analyze page ${i + 1}, keeping it:`, error);
+    }
+  }
+
+  // Remove from end to start to maintain correct indices
+  if (pagesToRemove.length > 0) {
+    pagesToRemove.reverse().forEach(idx => {
+      console.log(`[PDF] Removing trivially empty page ${idx + 1}`);
+      pdfDoc.removePage(idx);
+    });
+    console.log(`[PDF] Removed ${pagesToRemove.length} trivially empty pages`);
+  }
 }
 
 export async function addContinuousPageNumbers(pdfBytes: Uint8Array): Promise<Uint8Array> {
