@@ -530,10 +530,11 @@ export default function Agreement() {
                       style={{ height: "40px", width: "auto" }} 
                     />
                     <h1
-                      className="text-[15pt] font-semibold uppercase tracking-wide"
+                      className="text-[15pt] font-semibold uppercase tracking-wide flex items-center"
                       style={{ letterSpacing: "0.4px" }}
                     >
                       TRECASA DESIGN STUDIO
+                      <RedDot size="sm" className="translate-y-[-0.2em]" />
                     </h1>
                   </div>
 
@@ -930,13 +931,11 @@ export default function Agreement() {
                   fontFamily: "'Montserrat', Arial, sans-serif",
                 }}
               >
-                <div className="text-center text-[8pt] text-[#666666]">
-                  © 2025 TRECASA DESIGN STUDIO <span className="mx-2">|</span>{" "}
-                  www.trecasadesignstudio.com <span className="mx-2">|</span> @trecasa.designstudio{" "}
-                  <span
-                    className="inline-block w-[5px] h-[5px] rounded-full bg-red-600 ml-2"
-                    style={{ verticalAlign: "middle" }}
-                  ></span>
+                <div className="text-center text-[8pt] text-[#666666] flex items-center justify-center">
+                  © 2025 TRECASA DESIGN STUDIO
+                  <RedDot size="sm" animated={false} />
+                  <span className="mx-2">|</span>
+                  www.trecasadesignstudio.com <span className="mx-2">|</span> @trecasa.designstudio
                 </div>
               </div>
             </div>
