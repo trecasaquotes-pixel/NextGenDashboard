@@ -1,0 +1,121 @@
+Sure — here’s the exact message you can copy-paste to Replit AI (no edits needed):
+
+⸻
+
+Message to Replit AI:
+
+Please implement the following Acceptance Criteria for the Trecasa Design Studio Agreement Pack PDF Generation:
+
+⸻
+
+✅ Acceptance Criteria – Trecasa Design Studio Agreement Pack PDF Generation
+
+🧠 Objective
+
+Ensure visual consistency, blank-page handling, and brand compliance across all generated PDFs (Agreement + Annexures).
+Target result: one seamless, professional multi-section PDF with uniform header/footer, continuous page numbers, and no empty pages.
+
+⸻
+
+1️⃣ Architecture Confirmation
+
+Keep current setup (Dual Engine):
+	•	Puppeteer (Server-side): Used for main Agreement PDF with full T&C and professional header/footer.
+	•	html2pdf.js (Client-side): Used for Annexure A & B (excludeTerms=true).
+	•	pdf-lib (Post-processing): Used to merge all three into a single document with continuous numbering.
+
+⸻
+
+2️⃣ Brand Tokens (Global)
+
+Centralize brand values and inject them into both Puppeteer and html2pdf.js templates:
+
+Token	Value	Notes
+Brand Name	Trecasa Design Studio	Use consistently in all headers and footers.
+Primary Color	#E50914	Red Dot color.
+Font Family	"Inter", "Arial", sans-serif	Apply globally.
+Header Height	80px	Consistent visual spacing.
+Footer Height	60px	Matches Puppeteer margin.
+Red Dot	Solid circle 🔴 (CSS or SVG)	Appears once per page (in header or footer only).
+
+
+⸻
+
+3️⃣ Annexure HTML (Client-side / html2pdf.js)
+
+Add static header & footer bands inside the HTML layout before conversion:
+
+Header Band:
+
+<div class="annexure-header">
+  <div class="left">Trecasa Design Studio <span class="red-dot">•</span></div>
+  <div class="right">{{date}}</div>
+</div>
+
+Footer Band:
+
+<div class="annexure-footer">
+  <div class="left">© {{year}} Trecasa Design Studio <span class="red-dot">•</span></div>
+  <div class="right">Page {{pageNumber}} of {{totalPages}}</div>
+</div>
+
+CSS:
+
+.annexure-header, .annexure-footer {
+  font: 10pt Inter, Arial, sans-serif;
+  color: #00000099;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12mm;
+}
+.annexure-header { border-bottom: 1px solid #e0e0e0; margin-bottom: 16px; }
+.annexure-footer { border-top: 1px solid #e0e0e0; margin-top: 16px; }
+.red-dot { color: #E50914; margin-left: 4px; }
+
+This ensures Annexures visually match Puppeteer-generated pages.
+
+⸻
+
+4️⃣ Blank Page Removal Logic (pdf-lib)
+
+Add a post-merge cleanup pass after combining PDFs:
+
+const pagesToRemove = [];
+for (let i = 0; i < mergedPdf.getPageCount(); i++) {
+  const page = mergedPdf.getPage(i);
+  const textContent = page.getTextContent ? await page.getTextContent() : null;
+  if (!textContent || textContent.items.length === 0) pagesToRemove.push(i);
+}
+pagesToRemove.reverse().forEach(i => mergedPdf.removePage(i));
+
+✅ Ensures no empty or header-only pages remain (e.g., current page 7 issue).
+
+⸻
+
+5️⃣ Continuous Page Numbering
+
+After blank-page removal:
+	•	Recalculate totalPages.
+	•	Update <span class="pageNumber"></span> and <span class="totalPages"></span> inside both Puppeteer and html2pdf templates.
+
+⸻
+
+6️⃣ QA Checklist (Done = Pass)
+
+Check	Expected Result
+Header/footer visible on every page	✅ Yes
+Red dot appears once per page	✅ Yes
+No fully blank pages	✅ Yes
+Continuous page numbering after merge	✅ Yes
+Margins & typography consistent across all sections	✅ Yes
+Brand name says “Trecasa Design Studio” everywhere	✅ Yes
+
+
+⸻
+
+💬 Optional (Long-term Enhancement)
+
+Evaluate moving Annexure generation to Puppeteer for 100% layout parity (headers, margins, rendering engine).
+This would unify style control and simplify codebase.
+
+⸻

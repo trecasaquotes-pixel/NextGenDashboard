@@ -44,6 +44,11 @@ export async function mergePdfBytes(docs: Uint8Array[]): Promise<Uint8Array> {
     });
   }
 
+  // TODO: Implement blank page removal
+  // Note: pdf-lib doesn't provide a straightforward API to detect blank pages
+  // Current approach: Manual review or preprocessing HTML to avoid blank pages
+  console.log(`[PDF] Merged ${docs.length} documents. Total pages: ${mergedPdf.getPageCount()}`);
+
   return await mergedPdf.save();
 }
 
