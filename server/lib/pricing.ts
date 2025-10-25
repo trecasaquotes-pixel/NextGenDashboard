@@ -1,3 +1,5 @@
+import { logger } from "../utils/logger";
+
 /**
  * Server-side Pricing Calculation for Interior Items
  *
@@ -72,7 +74,7 @@ export async function getPricingData(): Promise<PricingCache> {
     
     return cachedPricing;
   } catch (error) {
-    console.error("Error fetching pricing data:", error);
+    logger.error("Error fetching pricing data", { error });
     // Return default values on error
     return {
       brandLookup: {},

@@ -1,0 +1,7 @@
+{
+  "name": "ts-prune",
+  "version": "0.0.0",
+  "bin": {
+    "ts-prune": "index.js"
+  }
+}

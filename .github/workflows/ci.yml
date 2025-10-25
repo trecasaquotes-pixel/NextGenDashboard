@@ -1,0 +1,22 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Set npm registry
+        run: npm config set registry https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm run check
+      - run: npx ts-prune
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run smoke tests
+        run: npm run smoke
+        env:
+          BASE_URL: https://nextgendashboard.trecasa.com
+          SMOKE_SESSION_COOKIE: ${{ secrets.SMOKE_SESSION_COOKIE }}

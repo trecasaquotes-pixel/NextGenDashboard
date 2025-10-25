@@ -1,8 +1,8 @@
 import crypto from "crypto";
+import { config } from "../config";
+import { logger } from "../utils/logger";
 
-// Generate a secret token for internal rendering
-// In production, this should be from environment variable
-const RENDER_SECRET = process.env.RENDER_SECRET || crypto.randomBytes(32).toString("hex");
+const RENDER_SECRET = config.renderSecret;
 
 /**
  * Generate a signed render token for a specific quotation
@@ -40,7 +40,7 @@ export function verifyRenderToken(token: string, quotationId: string): boolean {
     const maxAge = 5 * 60 * 1000; // 5 minutes
 
     if (now - timestamp > maxAge) {
-      console.log("[Render Token] Token expired");
+      logger.warn("[Render Token] Token expired", { traceId: `render-${quotationId}` });
       return false;
     }
 
@@ -49,13 +49,13 @@ export function verifyRenderToken(token: string, quotationId: string): boolean {
     const expectedSignature = crypto.createHmac("sha256", RENDER_SECRET).update(data).digest("hex");
 
     if (signature !== expectedSignature) {
-      console.log("[Render Token] Invalid signature");
+      logger.warn("[Render Token] Invalid signature", { traceId: `render-${quotationId}` });
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error("[Render Token] Verification error:", error);
+    logger.error("[Render Token] Verification error", { traceId: `render-${quotationId}`, error });
     return false;
   }
 }

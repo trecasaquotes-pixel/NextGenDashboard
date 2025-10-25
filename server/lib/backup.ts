@@ -8,6 +8,7 @@ import { brands, globalRules, agreements } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import fs from "fs/promises";
 import path from "path";
+import { logger } from "../utils/logger";
 
 interface QuoteBackupData {
   quotation: Quotation;
@@ -123,7 +124,7 @@ export async function buildQuoteZip(options: {
         filesList.push("pdfs/agreement.pdf");
       }
     } catch (error) {
-      console.error("[buildQuoteZip] PDF generation failed, continuing without PDFs:", error);
+    logger.error("[buildQuoteZip] PDF generation failed, continuing without PDFs", { error });
       pdfGenerationError = error instanceof Error ? error.message : "Unknown error";
       // Continue without PDFs instead of throwing
     }
@@ -195,7 +196,7 @@ export async function createQuoteBackupZip(quotationId: string, baseUrl: string)
   folder.file("quote.json", JSON.stringify(backupData, null, 2));
 
   // Generate and add PDFs
-  console.log(`[Backup] Generating PDFs for ${quotation.quoteId}...`);
+  logger.info(`[Backup] Generating PDFs for ${quotation.quoteId}...`);
   try {
     const pdfs = await generateAllQuotationPDFs(quotation, baseUrl);
 
@@ -203,9 +204,9 @@ export async function createQuoteBackupZip(quotationId: string, baseUrl: string)
     folder.file("False_Ceiling_Quotation.pdf", pdfs.falseCeiling);
     folder.file("Service_Agreement.pdf", pdfs.agreement);
 
-    console.log(`[Backup] PDFs generated successfully for ${quotation.quoteId}`);
+    logger.info(`[Backup] PDFs generated successfully for ${quotation.quoteId}`);
   } catch (error) {
-    console.error(`[Backup] Failed to generate PDFs for ${quotation.quoteId}:`, error);
+    logger.error(`[Backup] Failed to generate PDFs for ${quotation.quoteId}:`, { error });
     // Add error note if PDF generation fails
     folder.file(
       "PDF_GENERATION_ERROR.txt",
@@ -257,13 +258,13 @@ export async function createAllDataBackupZip(userId: string, baseUrl: string): P
         zip.file(filename, data);
       } catch (error: any) {
         if (error.code !== "ENOENT") {
-          console.error(`Failed to read ${filename}:`, error);
+          logger.error(`Failed to read ${filename}:`, { error });
         }
       }
     }
 
     // Get all quotations and generate PDFs
-    console.log("[Backup] Fetching all quotations for global backup...");
+    logger.info("[Backup] Fetching all quotations for global backup...");
     const quotations = await storage.getQuotations(userId);
 
     if (quotations.length > 0) {
@@ -271,7 +272,7 @@ export async function createAllDataBackupZip(userId: string, baseUrl: string): P
       if (pdfsFolder) {
         for (const quotation of quotations) {
           try {
-            console.log(`[Backup] Generating PDFs for ${quotation.quoteId}...`);
+            logger.info(`[Backup] Generating PDFs for ${quotation.quoteId}...`);
             const pdfs = await generateAllQuotationPDFs(quotation, baseUrl);
 
             // Create a subfolder for each quotation
@@ -282,9 +283,9 @@ export async function createAllDataBackupZip(userId: string, baseUrl: string): P
               quoteFolder.file("Service_Agreement.pdf", pdfs.agreement);
             }
 
-            console.log(`[Backup] PDFs generated successfully for ${quotation.quoteId}`);
+            logger.info(`[Backup] PDFs generated successfully for ${quotation.quoteId}`);
           } catch (error) {
-            console.error(`[Backup] Failed to generate PDFs for ${quotation.quoteId}:`, error);
+            logger.error(`[Backup] Failed to generate PDFs for ${quotation.quoteId}:`, { error });
             // Continue with other quotations even if one fails
           }
         }
@@ -313,7 +314,7 @@ export async function createAllDataBackupZip(userId: string, baseUrl: string): P
     const buffer = await zip.generateAsync({ type: "nodebuffer" });
     return buffer;
   } catch (error) {
-    console.error("Failed to create backup:", error);
+    logger.error("Failed to create backup:", { error });
     throw error;
   }
 }
@@ -343,8 +344,8 @@ export async function backupDatabaseToFiles(userId: string): Promise<void> {
     // Save to quotes.json
     await saveJSON("quotes.json", quotesData);
 
-    console.log(`[Backup] Saved ${quotations.length} quotes to quotes.json`);
+    logger.info(`[Backup] Saved ${quotations.length} quotes to quotes.json`);
   } catch (error) {
-    console.error("[Backup] Failed to backup database:", error);
+    logger.error("[Backup] Failed to backup database:", { error });
   }
 }

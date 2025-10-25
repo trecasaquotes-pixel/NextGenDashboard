@@ -4,6 +4,7 @@ import type { IStorage } from "./storage";
 import { userRoleEnum } from "@shared/schema";
 import { z } from "zod";
 import { logAudit, getAdminUser } from "./lib/audit";
+import { sendErrorResponse } from "./utils/apiError";
 
 const updateRoleSchema = z.object({
   role: z.enum(userRoleEnum),
@@ -18,15 +19,14 @@ export function registerUserManagementRoutes(app: Express, storage: IStorage) {
         const currentUser = await storage.getUser(req.user.claims.sub);
         
         if (!currentUser || currentUser.role !== "admin") {
-          return res.status(403).json({ message: "Admin access required" });
+          return sendErrorResponse(res, { status: 403, message: "Admin access required" });
         }
 
         const users = await storage.getAllUsers();
         res.json(users);
       } catch (error) {
-        console.error("Error fetching users:", error);
-        res.status(500).json({ message: "Failed to fetch users" });
-      }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch users", error });
+  }
     },
   );
 
@@ -38,23 +38,26 @@ export function registerUserManagementRoutes(app: Express, storage: IStorage) {
         const currentUser = await storage.getUser(req.user.claims.sub);
         
         if (!currentUser || currentUser.role !== "admin") {
-          return res.status(403).json({ message: "Admin access required" });
+          return sendErrorResponse(res, { status: 403, message: "Admin access required" });
         }
 
         const validation = updateRoleSchema.safeParse(req.body);
         if (!validation.success) {
-          return res.status(400).json({ 
+          return sendErrorResponse(res, {
+            status: 400,
             message: "Invalid role",
-            errors: validation.error.errors 
+            details: validation.error.errors,
           });
         }
 
         const { role } = validation.data;
         const userId = req.params.userId;
 
-        if (userId === req.user.claims.sub) {
-          return res.status(400).json({ 
-            message: "Cannot change your own role" 
+        const requester = req.user as any;
+        if (userId === requester?.claims?.sub) {
+          return sendErrorResponse(res, {
+            status: 400,
+            message: "Cannot change your own role",
           });
         }
 
@@ -72,9 +75,8 @@ export function registerUserManagementRoutes(app: Express, storage: IStorage) {
 
         res.json(updated);
       } catch (error) {
-        console.error("Error updating user role:", error);
-        res.status(500).json({ message: "Failed to update user role" });
-      }
+    sendErrorResponse(res, { status: 500, message: "Failed to update user role", error });
+  }
     },
   );
 }

@@ -58,7 +58,7 @@ export function NewQuotationDialog({ open, onOpenChange, onSuccess }: NewQuotati
 
   // Fetch active templates
   const { data: templates = [], isLoading: isLoadingTemplates } = useQuery<TemplateSummary[]>({
-    queryKey: ["/api/admin/templates?active=1"],
+    queryKey: ["/api/admin/templates", { active: 1 }],
     enabled: open && step === "choose",
   });
 

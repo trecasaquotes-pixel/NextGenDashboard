@@ -38,7 +38,7 @@ export async function logAudit({
 }: {
   userId: string;
   userEmail: string;
-  section: "Rates" | "Templates" | "Brands" | "Painting&FC" | "GlobalRules";
+  section: "Rates" | "Templates" | "Brands" | "Painting&FC" | "GlobalRules" | "Users";
   action: "CREATE" | "UPDATE" | "DELETE";
   targetId: string;
   summary: string;

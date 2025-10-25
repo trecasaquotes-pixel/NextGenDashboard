@@ -1,4 +1,5 @@
 import type { IStorage } from "../storage";
+import { logger } from "../utils/logger";
 
 /**
  * Calculate totalPrice for a false ceiling item from its canonical dimensions
@@ -89,7 +90,7 @@ export async function calculateGSTAmount(amountAfterDiscount: number): Promise<n
     
     return roundCurrency(amountAfterDiscount * (gstPercent / 100));
   } catch (error) {
-    console.error("Error fetching GST from global rules:", error);
+    logger.error("Error fetching GST from global rules", { error });
     // Fallback to 18% on error
     return roundCurrency(amountAfterDiscount * 0.18);
   }

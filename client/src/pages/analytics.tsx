@@ -33,13 +33,55 @@ import { AppFooter } from "@/components/app-footer";
 
 const COLORS = ["#154734", "#C7A948", "#2D6A4F", "#74C69D", "#B7E4C7", "#95D5B2"];
 
+interface DashboardOverviewResponse {
+  overview: {
+    totalQuotations: number;
+    activeQuotations: number;
+    acceptedQuotations: number;
+    totalRevenue: number;
+    conversionRate: number;
+    avgQuoteValue: number;
+  };
+  statusDistribution: Record<string, number>;
+  monthlyRevenue: Array<{ month: string; revenue: number; count: number }>;
+}
+
+interface QuotationAnalyticsResponse {
+  valueByStatus: Record<string, { count: number; value: number }>;
+  categoryAnalysis: Record<string, { count: number; totalValue: number; accepted: number }>;
+  buildTypeAnalysis: Record<string, { count: number; totalValue: number }>;
+  valueRanges: Record<string, number>;
+}
+
+interface FinancialAnalyticsResponse {
+  summary: {
+    totalRevenue: number;
+    totalExpenses: number;
+    projectExpenses: number;
+    businessExpenses: number;
+    netProfit: number;
+    profitMargin: number;
+  };
+  monthlyFinancials: Array<{ month: string; revenue: number; expenses: number; profit: number }>;
+  expenseByCategory: Record<string, number>;
+}
+
+interface MaterialAnalyticsResponse {
+  topMaterials: Array<{ name: string; count: number }>;
+  topFinishes: Array<{ name: string; count: number }>;
+  topHardware: Array<{ name: string; count: number }>;
+  roomAnalysis: Array<{ name: string; count: number }>;
+  calcTypeDistribution: Record<string, number>;
+  totalItems: number;
+}
+
 export default function Analytics() {
   // P4-1: Dashboard Overview
   const {
     data: dashboardData,
     isLoading: dashboardLoading,
     error: dashboardError,
-  } = useQuery({
+  } = useQuery<DashboardOverviewResponse>({
     queryKey: ["/api/analytics/dashboard"],
   });
 
@@ -48,7 +90,7 @@ export default function Analytics() {
     data: quotationData,
     isLoading: quotationLoading,
     error: quotationError,
-  } = useQuery({
+  } = useQuery<QuotationAnalyticsResponse>({
     queryKey: ["/api/analytics/quotations"],
   });
 
@@ -57,7 +99,7 @@ export default function Analytics() {
     data: financialData,
     isLoading: financialLoading,
     error: financialError,
-  } = useQuery({
+  } = useQuery<FinancialAnalyticsResponse>({
     queryKey: ["/api/analytics/financials"],
   });
 
@@ -66,7 +108,7 @@ export default function Analytics() {
     data: materialData,
     isLoading: materialLoading,
     error: materialError,
-  } = useQuery({
+  } = useQuery<MaterialAnalyticsResponse>({
     queryKey: ["/api/analytics/materials"],
   });
 
