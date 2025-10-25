@@ -11,6 +11,7 @@ import {
 import { eq, sql, and, or, like } from "drizzle-orm";
 import { z } from "zod";
 import { getAdminUser, logAudit, createTemplateSummary } from "./lib/audit";
+import { sendErrorResponse } from "./utils/apiError";
 
 export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any) {
   // GET /api/admin/templates - List all templates with filters
@@ -48,9 +49,8 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
 
       res.json(result);
     } catch (error) {
-      console.error("Error fetching templates:", error);
-      res.status(500).json({ message: "Failed to fetch templates" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch templates", error });
+  }
   });
 
   // GET /api/admin/templates/:id - Get template with rooms and items
@@ -60,7 +60,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
 
       const [template] = await db.select().from(templates).where(eq(templates.id, id));
       if (!template) {
-        return res.status(404).json({ message: "Template not found" });
+        return sendErrorResponse(res, { status: 404, message: "Template not found" });
       }
 
       const rooms = await db
@@ -83,9 +83,8 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
 
       res.json({ ...template, rooms: roomsWithItems });
     } catch (error) {
-      console.error("Error fetching template:", error);
-      res.status(500).json({ message: "Failed to fetch template" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch template", error });
+  }
   });
 
   // POST /api/admin/templates - Create new template
@@ -115,10 +114,14 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
       res.status(201).json(newTemplate);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error creating template:", error);
-      res.status(500).json({ message: "Failed to create template" });
+      sendErrorResponse(res, { status: 500, message: "Failed to create template", error });
     }
   });
 
@@ -137,7 +140,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
       // Fetch existing template for audit
       const [existingTemplate] = await db.select().from(templates).where(eq(templates.id, id));
       if (!existingTemplate) {
-        return res.status(404).json({ message: "Template not found" });
+        return sendErrorResponse(res, { status: 404, message: "Template not found" });
       }
 
       const [updatedTemplate] = await db
@@ -150,7 +153,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
         .returning();
 
       if (!updatedTemplate) {
-        return res.status(404).json({ message: "Template not found" });
+        return sendErrorResponse(res, { status: 404, message: "Template not found" });
       }
 
       // Log audit
@@ -168,10 +171,14 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
       res.json(updatedTemplate);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error updating template:", error);
-      res.status(500).json({ message: "Failed to update template" });
+      sendErrorResponse(res, { status: 500, message: "Failed to update template", error });
     }
   });
 
@@ -183,7 +190,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
       // Fetch existing template for audit
       const [existingTemplate] = await db.select().from(templates).where(eq(templates.id, id));
       if (!existingTemplate) {
-        return res.status(404).json({ message: "Template not found" });
+        return sendErrorResponse(res, { status: 404, message: "Template not found" });
       }
 
       const [deletedTemplate] = await db
@@ -193,7 +200,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
         .returning();
 
       if (!deletedTemplate) {
-        return res.status(404).json({ message: "Template not found" });
+        return sendErrorResponse(res, { status: 404, message: "Template not found" });
       }
 
       // Log audit
@@ -210,9 +217,8 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
 
       res.json(deletedTemplate);
     } catch (error) {
-      console.error("Error deleting template:", error);
-      res.status(500).json({ message: "Failed to delete template" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete template", error });
+  }
   });
 
   // POST /api/admin/templates/:id/rooms - Add room to template
@@ -226,10 +232,14 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
       res.status(201).json(newRoom);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error adding room:", error);
-      res.status(500).json({ message: "Failed to add room" });
+      sendErrorResponse(res, { status: 500, message: "Failed to add room", error });
     }
   });
 
@@ -254,16 +264,20 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
         .returning();
 
       if (!updatedRoom) {
-        return res.status(404).json({ message: "Room not found" });
+        return sendErrorResponse(res, { status: 404, message: "Room not found" });
       }
 
       res.json(updatedRoom);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error updating room:", error);
-      res.status(500).json({ message: "Failed to update room" });
+      sendErrorResponse(res, { status: 500, message: "Failed to update room", error });
     }
   });
 
@@ -276,8 +290,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
 
       res.json({ success: true });
     } catch (error) {
-      console.error("Error deleting room:", error);
-      res.status(500).json({ message: "Failed to delete room" });
+      sendErrorResponse(res, { status: 500, message: "Failed to delete room", error });
     }
   });
 
@@ -295,10 +308,14 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
         res.status(201).json(newItem);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          return res.status(400).json({ message: "Validation error", errors: error.errors });
+          return sendErrorResponse(res, {
+            status: 400,
+            message: "Validation error",
+            details: error.errors,
+            error,
+          });
         }
-        console.error("Error adding item:", error);
-        res.status(500).json({ message: "Failed to add item" });
+        sendErrorResponse(res, { status: 500, message: "Failed to add item", error });
       }
     },
   );
@@ -330,16 +347,20 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
           .returning();
 
         if (!updatedItem) {
-          return res.status(404).json({ message: "Item not found" });
+          return sendErrorResponse(res, { status: 404, message: "Item not found" });
         }
 
         res.json(updatedItem);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          return res.status(400).json({ message: "Validation error", errors: error.errors });
+          return sendErrorResponse(res, {
+            status: 400,
+            message: "Validation error",
+            details: error.errors,
+            error,
+          });
         }
-        console.error("Error updating item:", error);
-        res.status(500).json({ message: "Failed to update item" });
+        sendErrorResponse(res, { status: 500, message: "Failed to update item", error });
       }
     },
   );
@@ -356,9 +377,8 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
 
         res.json({ success: true });
       } catch (error) {
-        console.error("Error deleting item:", error);
-        res.status(500).json({ message: "Failed to delete item" });
-      }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete item", error });
+  }
     },
   );
 
@@ -368,7 +388,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
       const { json: templateData } = req.body;
 
       if (!templateData || !templateData.template) {
-        return res.status(400).json({ message: "Invalid import data" });
+        return sendErrorResponse(res, { status: 400, message: "Invalid import data" });
       }
 
       // Create template
@@ -410,9 +430,8 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
 
       res.status(201).json(newTemplate);
     } catch (error) {
-      console.error("Error importing template:", error);
-      res.status(500).json({ message: "Failed to import template" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to import template", error });
+  }
   });
 
   // GET /api/admin/templates/:id/export - Export template as JSON
@@ -422,7 +441,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
 
       const [template] = await db.select().from(templates).where(eq(templates.id, id));
       if (!template) {
-        return res.status(404).json({ message: "Template not found" });
+        return sendErrorResponse(res, { status: 404, message: "Template not found" });
       }
 
       const rooms = await db
@@ -465,9 +484,8 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
 
       res.json(exportData);
     } catch (error) {
-      console.error("Error exporting template:", error);
-      res.status(500).json({ message: "Failed to export template" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to export template", error });
+  }
   });
 
   // POST /api/admin/templates/:id/duplicate - Duplicate a template
@@ -477,7 +495,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
 
       const [originalTemplate] = await db.select().from(templates).where(eq(templates.id, id));
       if (!originalTemplate) {
-        return res.status(404).json({ message: "Template not found" });
+        return sendErrorResponse(res, { status: 404, message: "Template not found" });
       }
 
       // Create new template with "(copy)" appended
@@ -529,8 +547,7 @@ export function registerAdminTemplatesRoutes(app: Express, isAuthenticated: any)
 
       res.status(201).json(newTemplate);
     } catch (error) {
-      console.error("Error duplicating template:", error);
-      res.status(500).json({ message: "Failed to duplicate template" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to duplicate template", error });
+  }
   });
 }

@@ -8,6 +8,8 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
+import { config } from "./config";
+import { sendErrorResponse } from "./utils/apiError";
 
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
@@ -33,13 +35,14 @@ export function getSession() {
     tableName: "sessions",
   });
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: config.sessionSecret,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: config.cookies.secure,
+      sameSite: config.cookies.sameSite,
       maxAge: sessionTtl,
     },
   });
@@ -129,7 +132,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user.expires_at) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return sendErrorResponse(res, { status: 401, message: "Unauthorized" });
   }
 
   const now = Math.floor(Date.now() / 1000);
@@ -139,7 +142,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 
   const refreshToken = user.refresh_token;
   if (!refreshToken) {
-    res.status(401).json({ message: "Unauthorized" });
+    sendErrorResponse(res, { status: 401, message: "Unauthorized" });
     return;
   }
 
@@ -149,7 +152,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     updateUserSession(user, tokenResponse);
     return next();
   } catch (error) {
-    res.status(401).json({ message: "Unauthorized" });
+    sendErrorResponse(res, { status: 401, message: "Unauthorized" });
     return;
   }
 };

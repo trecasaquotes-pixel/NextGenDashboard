@@ -57,6 +57,8 @@ import { registerAgreementRoutes } from "./routes.agreement";
 import { db } from "./db";
 import { eq, and, or, inArray } from "drizzle-orm";
 import { quotations } from "@shared/schema";
+import { sendErrorResponse } from "./utils/apiError";
+import { logger } from "./utils/logger";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -75,9 +77,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch user", error });
+  }
   });
 
   // Quotation routes
@@ -87,9 +88,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const quotations = await storage.getQuotations(userId);
       res.json(quotations);
     } catch (error) {
-      console.error("Error fetching quotations:", error);
-      res.status(500).json({ message: "Failed to fetch quotations" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch quotations", error });
+  }
   });
 
   app.get("/api/quotations/:id", async (req: any, res) => {
@@ -99,24 +99,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isRenderMode = token && verifyRenderToken(token, req.params.id);
 
       if (!isRenderMode && !req.isAuthenticated?.()) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return sendErrorResponse(res, { status: 401, message: "Unauthorized" });
       }
 
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       // Ensure user owns this quotation (skip check in render mode)
       if (!isRenderMode && quotation.userId !== req.user?.claims?.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       res.json(quotation);
     } catch (error) {
-      console.error("Error fetching quotation:", error);
-      res.status(500).json({ message: "Failed to fetch quotation" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch quotation", error });
+  }
   });
 
   app.post("/api/quotations", isAuthenticated, async (req: any, res) => {
@@ -200,14 +199,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(201).json(quotation);
     } catch (error) {
-      console.error("Error creating quotation:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message: "Validation error",
-          errors: error.errors.map((e) => ({ field: e.path.join("."), message: e.message })),
+          details: error.errors.map((e) => ({ field: e.path.join("."), message: e.message })),
+          error,
         });
       }
-      res.status(400).json({ message: "Failed to create quotation" });
+
+      sendErrorResponse(res, { status: 400, message: "Failed to create quotation", error });
     }
   });
 
@@ -215,18 +216,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
       if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Verify lock ownership
       const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
       if (!lockCheck.hasLock) {
-        return res.status(423).json({
+        return sendErrorResponse(res, {
+          status: 423,
           message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
-          lockedBy: lockCheck.lockedByName,
+          details: { lockedBy: lockCheck.lockedByName },
         });
       }
 
@@ -255,26 +257,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(updated);
     } catch (error) {
-      console.error("Error updating quotation:", error);
-      res.status(400).json({ message: "Failed to update quotation" });
-    }
+    sendErrorResponse(res, { status: 400, message: "Failed to update quotation", error });
+  }
   });
 
   app.delete("/api/quotations/:id", isAuthenticated, async (req: any, res) => {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
       if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
       await storage.deleteQuotation(req.params.id);
       res.status(204).send();
     } catch (error) {
-      console.error("Error deleting quotation:", error);
-      res.status(500).json({ message: "Failed to delete quotation" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete quotation", error });
+  }
   });
 
   // Get version history for a quotation
@@ -282,18 +282,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
       if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const versions = await storage.getQuotationVersions(req.params.id);
       res.json(versions);
     } catch (error) {
-      console.error("Error fetching version history:", error);
-      res.status(500).json({ message: "Failed to fetch version history" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch version history", error });
+  }
   });
 
   // Get active painting packs for quotation selection
@@ -302,9 +301,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const packs = await storage.getActivePaintingPacks();
       res.json(packs);
     } catch (error) {
-      console.error("Error fetching active painting packs:", error);
-      res.status(500).json({ message: "Failed to fetch painting packs" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch painting packs", error });
+  }
   });
 
   // Get active brands grouped by type for scope of work dropdowns
@@ -324,9 +322,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(grouped);
     } catch (error) {
-      console.error("Error fetching active brands:", error);
-      res.status(500).json({ message: "Failed to fetch brands" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch brands", error });
+  }
   });
 
   // Quotation locking endpoints
@@ -336,18 +333,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
       if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const lockStatus = await storage.checkLockStatus(req.params.id);
       res.json(lockStatus);
     } catch (error) {
-      console.error("Error checking lock status:", error);
-      res.status(500).json({ message: "Failed to check lock status" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to check lock status", error });
+  }
   });
 
   // Acquire lock
@@ -355,27 +351,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
       if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const result = await storage.acquireLock(req.params.id, req.user.claims.sub);
 
       if (!result.success) {
-        return res.status(423).json({
+        return sendErrorResponse(res, {
+          status: 423,
           message: "Quotation is locked",
-          lockedBy: result.lockedBy,
-          lockedByName: result.lockedByName,
+          details: { lockedBy: result.lockedBy, lockedByName: result.lockedByName },
         });
       }
 
       res.json({ success: true });
     } catch (error) {
-      console.error("Error acquiring lock:", error);
-      res.status(500).json({ message: "Failed to acquire lock" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to acquire lock", error });
+  }
   });
 
   // Update lock heartbeat
@@ -384,14 +379,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await storage.updateLockHeartbeat(req.params.id, req.user.claims.sub);
 
       if (!result.success) {
-        return res.status(403).json({ message: "Lock not held by current user" });
+        return sendErrorResponse(res, { status: 403, message: "Lock not held by current user" });
       }
 
       res.json({ success: true });
     } catch (error) {
-      console.error("Error updating lock heartbeat:", error);
-      res.status(500).json({ message: "Failed to update lock heartbeat" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to update lock heartbeat", error });
+  }
   });
 
   // Release lock
@@ -400,14 +394,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await storage.releaseLock(req.params.id, req.user.claims.sub);
 
       if (!result.success) {
-        return res.status(403).json({ message: "Lock not held by current user" });
+        return sendErrorResponse(res, { status: 403, message: "Lock not held by current user" });
       }
 
       res.json({ success: true });
     } catch (error) {
-      console.error("Error releasing lock:", error);
-      res.status(500).json({ message: "Failed to release lock" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to release lock", error });
+  }
   });
 
   // Duplicate quotation with all items
@@ -415,10 +408,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const originalQuotation = await storage.getQuotation(req.params.id);
       if (!originalQuotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
       if (originalQuotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Generate new quote ID
@@ -469,9 +462,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(201).json(duplicateQuotation);
     } catch (error) {
-      console.error("Error duplicating quotation:", error);
-      res.status(500).json({ message: "Failed to duplicate quotation" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to duplicate quotation", error });
+  }
   });
 
   // Apply template to quotation (create rooms and items)
@@ -482,10 +474,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check quotation ownership
       const quotation = await storage.getQuotation(quotationId);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
       if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Validate request
@@ -494,7 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Load template with rooms and items
       const [template] = await db.select().from(templates).where(eq(templates.id, templateId));
       if (!template) {
-        return res.status(404).json({ message: "Template not found" });
+        return sendErrorResponse(res, { status: 404, message: "Template not found" });
       }
 
       const rooms = await db
@@ -582,9 +574,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(response);
     } catch (error) {
-      console.error("Error applying template:", error);
-      res.status(500).json({ message: "Failed to apply template" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to apply template", error });
+  }
   });
 
   // Apply FC defaults to quotation (mirror interior rooms + FC Others)
@@ -595,10 +586,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check quotation ownership
       const quotation = await storage.getQuotation(quotationId);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
       if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Get all unique room types from interior items
@@ -648,9 +639,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       });
     } catch (error) {
-      console.error("Error applying FC defaults:", error);
-      res.status(500).json({ message: "Failed to apply FC defaults" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to apply FC defaults", error });
+  }
   });
 
   // Interior items routes
@@ -661,39 +651,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isRenderMode = token && verifyRenderToken(token, req.params.id);
 
       if (!isRenderMode && !req.isAuthenticated?.()) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return sendErrorResponse(res, { status: 401, message: "Unauthorized" });
       }
 
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       if (!isRenderMode && quotation.userId !== req.user?.claims?.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const items = await storage.getInteriorItems(req.params.id);
       res.json(items);
     } catch (error) {
-      console.error("Error fetching interior items:", error);
-      res.status(500).json({ message: "Failed to fetch interior items" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch interior items", error });
+  }
   });
 
   app.post("/api/quotations/:id/interior-items", isAuthenticated, async (req: any, res) => {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation || quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Verify lock ownership
       const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
       if (!lockCheck.hasLock) {
-        return res.status(423).json({
+        return sendErrorResponse(res, {
+          status: 423,
           message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
-          lockedBy: lockCheck.lockedByName,
+          details: { lockedBy: lockCheck.lockedByName },
         });
       }
 
@@ -720,14 +710,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(201).json(item);
     } catch (error) {
-      console.error("Error creating interior item:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message: "Validation error",
-          errors: error.errors.map((e) => ({ field: e.path.join("."), message: e.message })),
+          details: error.errors.map((e) => ({ field: e.path.join("."), message: e.message })),
+          error,
         });
       }
-      res.status(400).json({ message: "Failed to create interior item" });
+
+      sendErrorResponse(res, { status: 400, message: "Failed to create interior item", error });
     }
   });
 
@@ -738,15 +730,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const quotation = await storage.getQuotation(req.params.id);
         if (!quotation || quotation.userId !== req.user.claims.sub) {
-          return res.status(403).json({ message: "Forbidden" });
+          return sendErrorResponse(res, { status: 403, message: "Forbidden" });
         }
 
         // Verify lock ownership
         const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
         if (!lockCheck.hasLock) {
-          return res.status(423).json({
+          return sendErrorResponse(res, {
+            status: 423,
             message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
-            lockedBy: lockCheck.lockedByName,
+            details: { lockedBy: lockCheck.lockedByName },
           });
         }
 
@@ -755,7 +748,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const existingItem = interiorItems.find((item) => item.id === req.params.itemId);
 
         if (!existingItem) {
-          return res.status(404).json({ message: "Interior item not found" });
+          return sendErrorResponse(res, { status: 404, message: "Interior item not found" });
         }
 
         // Merge partial update with existing data
@@ -786,9 +779,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         res.json(item);
       } catch (error) {
-        console.error("Error updating interior item:", error);
-        res.status(400).json({ message: "Failed to update interior item" });
-      }
+    sendErrorResponse(res, { status: 400, message: "Failed to update interior item", error });
+  }
     },
   );
 
@@ -799,15 +791,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const quotation = await storage.getQuotation(req.params.id);
         if (!quotation || quotation.userId !== req.user.claims.sub) {
-          return res.status(403).json({ message: "Forbidden" });
+          return sendErrorResponse(res, { status: 403, message: "Forbidden" });
         }
 
         // Verify lock ownership
         const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
         if (!lockCheck.hasLock) {
-          return res.status(423).json({
+          return sendErrorResponse(res, {
+            status: 423,
             message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
-            lockedBy: lockCheck.lockedByName,
+            details: { lockedBy: lockCheck.lockedByName },
           });
         }
 
@@ -833,9 +826,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         res.status(204).send();
       } catch (error) {
-        console.error("Error deleting interior item:", error);
-        res.status(500).json({ message: "Failed to delete interior item" });
-      }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete interior item", error });
+  }
     },
   );
 
@@ -847,16 +839,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isRenderMode = token && verifyRenderToken(token, req.params.id);
 
       if (!isRenderMode && !req.isAuthenticated?.()) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return sendErrorResponse(res, { status: 401, message: "Unauthorized" });
       }
 
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       if (!isRenderMode && quotation.userId !== req.user?.claims?.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const items = await storage.getFalseCeilingItems(req.params.id);
@@ -874,24 +866,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(normalizedItems);
     } catch (error) {
-      console.error("Error fetching false ceiling items:", error);
-      res.status(500).json({ message: "Failed to fetch false ceiling items" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch false ceiling items", error });
+  }
   });
 
   app.post("/api/quotations/:id/false-ceiling-items", isAuthenticated, async (req: any, res) => {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation || quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Verify lock ownership
       const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
       if (!lockCheck.hasLock) {
-        return res.status(423).json({
+        return sendErrorResponse(res, {
+          status: 423,
           message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
-          lockedBy: lockCheck.lockedByName,
+          details: { lockedBy: lockCheck.lockedByName },
         });
       }
 
@@ -908,9 +900,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(201).json(item);
     } catch (error) {
-      console.error("Error creating false ceiling item:", error);
-      res.status(400).json({ message: "Failed to create false ceiling item" });
-    }
+    sendErrorResponse(res, { status: 400, message: "Failed to create false ceiling item", error });
+  }
   });
 
   app.patch(
@@ -920,15 +911,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const quotation = await storage.getQuotation(req.params.id);
         if (!quotation || quotation.userId !== req.user.claims.sub) {
-          return res.status(403).json({ message: "Forbidden" });
+          return sendErrorResponse(res, { status: 403, message: "Forbidden" });
         }
 
         // Verify lock ownership
         const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
         if (!lockCheck.hasLock) {
-          return res.status(423).json({
+          return sendErrorResponse(res, {
+            status: 423,
             message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
-            lockedBy: lockCheck.lockedByName,
+            details: { lockedBy: lockCheck.lockedByName },
           });
         }
 
@@ -937,7 +929,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const existingItem = existingItems.find((i) => i.id === req.params.itemId);
 
         if (!existingItem) {
-          return res.status(404).json({ message: "Item not found" });
+          return sendErrorResponse(res, { status: 404, message: "Item not found" });
         }
 
         // Merge existing data with updates for complete dimension calculation
@@ -955,9 +947,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         res.json(item);
       } catch (error) {
-        console.error("Error updating false ceiling item:", error);
-        res.status(400).json({ message: "Failed to update false ceiling item" });
-      }
+    sendErrorResponse(res, { status: 400, message: "Failed to update false ceiling item", error });
+  }
     },
   );
 
@@ -968,15 +959,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const quotation = await storage.getQuotation(req.params.id);
         if (!quotation || quotation.userId !== req.user.claims.sub) {
-          return res.status(403).json({ message: "Forbidden" });
+          return sendErrorResponse(res, { status: 403, message: "Forbidden" });
         }
 
         // Verify lock ownership
         const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
         if (!lockCheck.hasLock) {
-          return res.status(423).json({
+          return sendErrorResponse(res, {
+            status: 423,
             message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
-            lockedBy: lockCheck.lockedByName,
+            details: { lockedBy: lockCheck.lockedByName },
           });
         }
 
@@ -988,9 +980,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         res.status(204).send();
       } catch (error) {
-        console.error("Error deleting false ceiling item:", error);
-        res.status(500).json({ message: "Failed to delete false ceiling item" });
-      }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete false ceiling item", error });
+  }
     },
   );
 
@@ -1002,39 +993,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isRenderMode = token && verifyRenderToken(token, req.params.id);
 
       if (!isRenderMode && !req.isAuthenticated?.()) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return sendErrorResponse(res, { status: 401, message: "Unauthorized" });
       }
 
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       if (!isRenderMode && quotation.userId !== req.user?.claims?.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const items = await storage.getOtherItems(req.params.id);
       res.json(items);
     } catch (error) {
-      console.error("Error fetching other items:", error);
-      res.status(500).json({ message: "Failed to fetch other items" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch other items", error });
+  }
   });
 
   app.post("/api/quotations/:id/other-items", isAuthenticated, async (req: any, res) => {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation || quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Verify lock ownership
       const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
       if (!lockCheck.hasLock) {
-        return res.status(423).json({
+        return sendErrorResponse(res, {
+          status: 423,
           message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
-          lockedBy: lockCheck.lockedByName,
+          details: { lockedBy: lockCheck.lockedByName },
         });
       }
 
@@ -1045,57 +1036,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const item = await storage.createOtherItem(validatedData);
       res.status(201).json(item);
     } catch (error) {
-      console.error("Error creating other item:", error);
-      res.status(400).json({ message: "Failed to create other item" });
-    }
+    sendErrorResponse(res, { status: 400, message: "Failed to create other item", error });
+  }
   });
 
   app.patch("/api/quotations/:id/other-items/:itemId", isAuthenticated, async (req: any, res) => {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation || quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Verify lock ownership
       const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
       if (!lockCheck.hasLock) {
-        return res.status(423).json({
+        return sendErrorResponse(res, {
+          status: 423,
           message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
-          lockedBy: lockCheck.lockedByName,
+          details: { lockedBy: lockCheck.lockedByName },
         });
       }
 
       const item = await storage.updateOtherItem(req.params.itemId, req.body);
       res.json(item);
     } catch (error) {
-      console.error("Error updating other item:", error);
-      res.status(400).json({ message: "Failed to update other item" });
-    }
+    sendErrorResponse(res, { status: 400, message: "Failed to update other item", error });
+  }
   });
 
   app.delete("/api/quotations/:id/other-items/:itemId", isAuthenticated, async (req: any, res) => {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation || quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Verify lock ownership
       const lockCheck = await storage.verifyLockOwnership(req.params.id, req.user.claims.sub);
       if (!lockCheck.hasLock) {
-        return res.status(423).json({
+        return sendErrorResponse(res, {
+          status: 423,
           message: `Quotation is locked by ${lockCheck.lockedByName}. Cannot make changes.`,
-          lockedBy: lockCheck.lockedByName,
+          details: { lockedBy: lockCheck.lockedByName },
         });
       }
 
       await storage.deleteOtherItem(req.params.itemId);
       res.status(204).send();
     } catch (error) {
-      console.error("Error deleting other item:", error);
-      res.status(500).json({ message: "Failed to delete other item" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete other item", error });
+  }
   });
 
   // Backup routes
@@ -1103,10 +1093,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
       if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Determine base URL from request
@@ -1114,7 +1104,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const host = req.get("host");
       const baseUrl = `${protocol}://${host}`;
 
-      console.log(`[Backup] Creating backup for ${quotation.quoteId} with baseUrl: ${baseUrl}`);
+      logger.info(`[Backup] Creating backup for ${quotation.quoteId} with baseUrl: ${baseUrl}`, {
+        traceId: res.locals.traceId,
+      });
       const zipBuffer = await createQuoteBackupZip(req.params.id, baseUrl);
 
       res.setHeader("Content-Type", "application/zip");
@@ -1124,9 +1116,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       res.send(zipBuffer);
     } catch (error) {
-      console.error("Error creating quote backup:", error);
-      res.status(500).json({ message: "Failed to create backup" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to create backup", error });
+  }
   });
 
   app.get("/api/backup/all-data", isAuthenticated, async (req: any, res) => {
@@ -1142,7 +1133,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await backupDatabaseToFiles(userId);
 
       // Then create ZIP from those files with PDFs
-      console.log(`[Backup] Creating global backup with baseUrl: ${baseUrl}`);
+      logger.info(`[Backup] Creating global backup with baseUrl: ${baseUrl}`, {
+        traceId: res.locals.traceId,
+      });
       const zipBuffer = await createAllDataBackupZip(userId, baseUrl);
 
       res.setHeader("Content-Type", "application/zip");
@@ -1152,9 +1145,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       res.send(zipBuffer);
     } catch (error) {
-      console.error("Error creating full backup:", error);
-      res.status(500).json({ message: "Failed to create full backup" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to create full backup", error });
+  }
   });
 
   // Agreement Pack PDF merger - Combines Agreement + Interiors + False Ceiling into single PDF with continuous page numbering
@@ -1163,27 +1155,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       // Check authorization (same as individual PDF route)
       if (req.user?.claims?.sub) {
         if (quotation.userId !== req.user.claims.sub) {
-          return res.status(403).json({ message: "Forbidden" });
+          return sendErrorResponse(res, { status: 403, message: "Forbidden" });
         }
       } else {
-        return res.status(401).json({ message: "Authentication required" });
+        return sendErrorResponse(res, { status: 401, message: "Authentication required" });
       }
 
       // Ensure quotation has required totals (recompute if missing for legacy quotations)
       if (!quotation.totals || typeof quotation.totals.grandSubtotal === 'undefined') {
-        console.log(`[PDF] Recomputing totals for legacy quotation ${quotation.quoteId}`);
+        logger.info(`[PDF] Recomputing totals for legacy quotation ${quotation.quoteId}`, {
+          traceId: res.locals.traceId,
+        });
         const { recalculateQuotationTotals } = await import("./lib/totals");
         await recalculateQuotationTotals(req.params.id, storage);
         // Refetch quotation with updated totals
         const updatedQuotation = await storage.getQuotation(req.params.id);
         if (!updatedQuotation) {
-          return res.status(404).json({ message: "Quotation not found after totals update" });
+          return sendErrorResponse(res, {
+            status: 404,
+            message: "Quotation not found after totals update",
+          });
         }
         Object.assign(quotation, updatedQuotation);
       }
@@ -1192,21 +1189,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const host = req.get("host");
       const baseUrl = `${protocol}://${host}`;
 
-      console.log(
+      logger.info(
         `[PDF] Generating Agreement Pack for ${quotation.quoteId} with continuous page numbering`,
+        { traceId: res.locals.traceId },
       );
-      const { generateQuotationPDF, addContinuousPageNumbers } = await import(
+      const { generateAllQuotationPDFs, addContinuousPageNumbers } = await import(
         "./lib/pdf-generator"
       );
       const { PDFDocument } = await import("pdf-lib");
 
-      // Generate all 3 PDFs WITHOUT page numbers (we'll add them after merging)
-      // Exclude T&C from quotation annexures since they're in the agreement
-      const [interiorsPdf, falseCeilingPdf, agreementPdf] = await Promise.all([
-        generateQuotationPDF(quotation, "interiors", baseUrl, false, true), // excludeTerms=true
-        generateQuotationPDF(quotation, "false-ceiling", baseUrl, false, true), // excludeTerms=true
-        generateQuotationPDF(quotation, "agreement", baseUrl, false),
-      ]);
+      const { interiors: interiorsPdf, falseCeiling: falseCeilingPdf, agreement: agreementPdf } =
+        await generateAllQuotationPDFs(quotation, baseUrl);
 
       // Merge PDFs using pdf-lib
       // Order: Agreement FIRST, then Interiors (Annexure A), then False Ceiling (Annexure B)
@@ -1239,8 +1232,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       res.send(Buffer.from(mergedPdfBytes));
     } catch (error) {
-      console.error("Error generating Agreement Pack PDF:", error);
-      res.status(500).json({ message: "Failed to generate Agreement Pack PDF" });
+      const status = typeof (error as any)?.status === "number" ? (error as any).status : 500;
+      sendErrorResponse(res, { status, message: "Failed to generate Agreement Pack PDF", error });
     }
   });
 
@@ -1249,7 +1242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       // Check authentication: either render token or user session
@@ -1260,20 +1253,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Verify render token
         const { verifyRenderToken } = await import("./lib/render-token");
         if (!verifyRenderToken(token, quotationId)) {
-          return res.status(403).json({ message: "Invalid or expired token" });
+          return sendErrorResponse(res, { status: 403, message: "Invalid or expired token" });
         }
       } else if (req.user?.claims?.sub) {
         // Verify user ownership
         if (quotation.userId !== req.user.claims.sub) {
-          return res.status(403).json({ message: "Forbidden" });
+          return sendErrorResponse(res, { status: 403, message: "Forbidden" });
         }
       } else {
-        return res.status(401).json({ message: "Authentication required" });
+        return sendErrorResponse(res, { status: 401, message: "Authentication required" });
       }
 
       const type = req.params.type as "interiors" | "false-ceiling" | "agreement";
       if (!["interiors", "false-ceiling", "agreement"].includes(type)) {
-        return res.status(400).json({ message: "Invalid PDF type" });
+        return sendErrorResponse(res, { status: 400, message: "Invalid PDF type" });
       }
 
       // Determine base URL from request
@@ -1281,7 +1274,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const host = req.get("host");
       const baseUrl = `${protocol}://${host}`;
 
-      console.log(`[PDF] Generating ${type} PDF for ${quotation.quoteId} with baseUrl: ${baseUrl}`);
+      logger.info(`[PDF] Generating ${type} PDF for ${quotation.quoteId} with baseUrl: ${baseUrl}`, {
+        traceId: res.locals.traceId,
+      });
       const { generateQuotationPDF } = await import("./lib/pdf-generator");
       const pdfBuffer = await generateQuotationPDF(quotation, type, baseUrl);
 
@@ -1298,8 +1293,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       res.send(pdfBuffer);
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      res.status(500).json({ message: "Failed to generate PDF" });
+      const status = typeof (error as any)?.status === "number" ? (error as any).status : 500;
+      sendErrorResponse(res, { status, message: "Failed to generate PDF", error });
     }
   });
 
@@ -1311,12 +1306,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const quotationId = req.params.id;
 
       if (!token || !verifyRenderToken(token, quotationId)) {
-        return res.status(403).json({ message: "Invalid or expired render token" });
+        return sendErrorResponse(res, { status: 403, message: "Invalid or expired render token" });
       }
 
       const quotation = await storage.getQuotation(quotationId);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       // Return minimal HTML that loads the print page content
@@ -1340,9 +1335,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         </html>
       `);
     } catch (error) {
-      console.error("Error rendering print page:", error);
-      res.status(500).json({ message: "Failed to render page" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to render page", error });
+  }
   });
 
   app.get("/render/quotation/:id/agreement", async (req: any, res) => {
@@ -1351,12 +1345,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const quotationId = req.params.id;
 
       if (!token || !verifyRenderToken(token, quotationId)) {
-        return res.status(403).json({ message: "Invalid or expired render token" });
+        return sendErrorResponse(res, { status: 403, message: "Invalid or expired render token" });
       }
 
       const quotation = await storage.getQuotation(quotationId);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       // Return minimal HTML that loads the agreement page content
@@ -1379,9 +1373,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         </html>
       `);
     } catch (error) {
-      console.error("Error rendering agreement page:", error);
-      res.status(500).json({ message: "Failed to render page" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to render page", error });
+  }
   });
 
   // API endpoint to get render token (for testing/debugging)
@@ -1389,18 +1382,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quotation = await storage.getQuotation(req.params.id);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
       if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const token = generateRenderToken(req.params.id);
       res.json({ token });
     } catch (error) {
-      console.error("Error generating render token:", error);
-      res.status(500).json({ message: "Failed to generate token" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to generate token", error });
+  }
   });
 
   // Approval & Agreement routes
@@ -1412,17 +1404,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch quotation
       const quotation = await storage.getQuotation(quotationId);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       // Check ownership
       if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Check if already approved
       if (quotation.status === "approved") {
-        return res.status(409).json({ message: "Quote already approved" });
+        return sendErrorResponse(res, { status: 409, message: "Quote already approved" });
       }
 
       // Fetch global rules for GST and payment schedule
@@ -1587,9 +1579,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         project: newProject,
       });
     } catch (error) {
-      console.error("Error approving quotation:", error);
-      res.status(500).json({ message: "Failed to approve quotation" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to approve quotation", error });
+  }
   });
 
   // Get agreement by ID
@@ -1597,20 +1588,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const agreement = await storage.getAgreement(req.params.id);
       if (!agreement) {
-        return res.status(404).json({ message: "Agreement not found" });
+        return sendErrorResponse(res, { status: 404, message: "Agreement not found" });
+      }
+
+      const requesterClaims = req.user?.claims;
+      const requesterId = requesterClaims?.sub;
+      if (!requesterId) {
+        return sendErrorResponse(res, { status: 401, message: "Unauthorized" });
       }
 
       // Verify ownership through quotation
       const quotation = await storage.getQuotation(agreement.quotationId);
-      if (!quotation || quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+      if (!quotation || quotation.userId !== requesterId) {
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       res.json(agreement);
     } catch (error) {
-      console.error("Error fetching agreement:", error);
-      res.status(500).json({ message: "Failed to fetch agreement" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch agreement", error });
+  }
   });
 
   // Get agreement data for quotation (for agreement page display)
@@ -1621,12 +1617,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get quotation to extract data
       const quotation = await storage.getQuotation(quotationId);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
+      }
+
+      const requesterId = req.user?.claims?.sub;
+      if (!requesterId) {
+        return sendErrorResponse(res, { status: 401, message: "Unauthorized" });
       }
 
       // Verify ownership
-      if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+      if (quotation.userId !== requesterId) {
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Get all items to check what exists
@@ -1635,15 +1636,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storage.getFalseCeilingItems(quotationId),
       ]);
 
-      // Use pre-calculated totals from quotation.totals (includes all calc types, brand adders, etc.)
-      const interiorsTotal = quotation.totals?.interiorsSubtotal || 0;
-      const falseCeilingTotal = quotation.totals?.fcSubtotal || 0;
-      const paintingCost = quotation.totals?.paintingCost || 0;
-      
-      // Grand total with painting if included
-      const grandTotal = quotation.totals?.grandSubtotal || (interiorsTotal + falseCeilingTotal + paintingCost);
+      const safeNumber = (value: unknown, fallback = 0): number => {
+        if (typeof value === "number" && Number.isFinite(value)) {
+          return value;
+        }
 
-      console.log(`[Agreement Data] Quotation ${quotationId}: Interiors = ₹${interiorsTotal}, FC = ₹${falseCeilingTotal}, Painting = ₹${paintingCost}, Grand Total = ₹${grandTotal}`);
+        if (typeof value === "string") {
+          const parsed = Number.parseFloat(value);
+          return Number.isFinite(parsed) ? parsed : fallback;
+        }
+
+        return fallback;
+      };
+
+        type TotalsSnapshot = {
+          interiorsSubtotal?: number | string | null;
+          fcSubtotal?: number | string | null;
+          paintingCost?: number | string | null;
+          grandSubtotal?: number | string | null;
+          discountAmount?: number | string | null;
+          afterDiscount?: number | string | null;
+          gstAmount?: number | string | null;
+          finalTotal?: number | string | null;
+        };
+
+        const totalsSnapshot: TotalsSnapshot = (quotation.totals ?? {}) as TotalsSnapshot;
+      const interiorsTotal = safeNumber(totalsSnapshot.interiorsSubtotal);
+      const falseCeilingTotal = safeNumber(totalsSnapshot.fcSubtotal);
+      const paintingCost = safeNumber(totalsSnapshot.paintingCost);
+      const grandSubtotal = safeNumber(
+        totalsSnapshot.grandSubtotal,
+        interiorsTotal + falseCeilingTotal + paintingCost,
+      );
+      const discountAmount = safeNumber(totalsSnapshot.discountAmount);
+      const amountAfterDiscount = Math.max(0, safeNumber(totalsSnapshot.afterDiscount, grandSubtotal - discountAmount));
+      const gstAmount = safeNumber(totalsSnapshot.gstAmount);
+      const finalTotal = safeNumber(totalsSnapshot.finalTotal, amountAfterDiscount + gstAmount);
+
+      const currencyFormatter = new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0,
+      });
+      const formattedTotals = {
+        interiorsTotal: currencyFormatter.format(interiorsTotal),
+        falseCeilingTotal: currencyFormatter.format(falseCeilingTotal),
+        paintingCost: currencyFormatter.format(paintingCost),
+        grandSubtotal: currencyFormatter.format(grandSubtotal),
+        discountAmount: currencyFormatter.format(discountAmount),
+        amountAfterDiscount: currencyFormatter.format(amountAfterDiscount),
+        gstAmount: currencyFormatter.format(gstAmount),
+        finalTotal: currencyFormatter.format(finalTotal),
+        grandTotal: currencyFormatter.format(finalTotal),
+      };
 
       // Calculate if false ceiling has items
       const hasFCItems = falseCeilingItems.length > 0;
@@ -1676,16 +1721,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : existingAgreement.paymentScheduleJson;
           schedulePercentages = Array.isArray(parsed) ? parsed : defaultSchedule;
         } catch (error) {
-          console.error('[Agreement Data] Failed to parse paymentScheduleJson, using default', error);
+          logger.warn('[Agreement Data] Failed to parse paymentScheduleJson, using default', {
+            traceId: res.locals.traceId,
+            error,
+          });
         }
       }
 
       // Calculate payment amounts based on grand total
-      const paymentSchedule = schedulePercentages.map((milestone: { label: string; percent: number }) => ({
-        label: milestone.label,
-        percent: milestone.percent,
-        amount: Math.round((grandTotal * milestone.percent) / 100), // Amount in paise (cents)
-      }));
+      const paymentScheduleBase = finalTotal;
+      const paymentSchedule = schedulePercentages.map((milestone: { label: string; percent: number }) => {
+        const amount = Math.round((paymentScheduleBase * milestone.percent) / 100);
+        return {
+          label: milestone.label,
+          percent: milestone.percent,
+          amount,
+          formattedAmount: currencyFormatter.format(amount),
+        };
+      });
 
       // Return agreement data structure
       res.json({
@@ -1693,8 +1746,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totals: {
           interiorsTotal,
           falseCeilingTotal,
-          grandTotal,
+          paintingCost,
+          grandSubtotal,
+          discountAmount,
+          amountAfterDiscount,
+          gstAmount,
+          finalTotal,
+          grandTotal: finalTotal,
         },
+        totalsFormatted: formattedTotals,
         falseCeiling: {
           hasItems: hasFCItems,
         },
@@ -1707,9 +1767,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } : undefined,
       });
     } catch (error) {
-      console.error("Error fetching agreement data:", error);
-      res.status(500).json({ message: "Failed to fetch agreement data" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch agreement data", error });
+  }
   });
 
   // Sign agreement
@@ -1719,13 +1778,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const agreement = await storage.getAgreement(req.params.id);
       if (!agreement) {
-        return res.status(404).json({ message: "Agreement not found" });
+        return sendErrorResponse(res, { status: 404, message: "Agreement not found" });
+      }
+
+      const requesterClaims = req.user?.claims;
+      const requesterId = requesterClaims?.sub;
+      if (!requesterId) {
+        return sendErrorResponse(res, { status: 401, message: "Unauthorized" });
       }
 
       // Verify ownership through quotation
       const quotation = await storage.getQuotation(agreement.quotationId);
-      if (!quotation || quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+      if (!quotation || quotation.userId !== requesterId) {
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const updated = await storage.updateAgreement(req.params.id, {
@@ -1735,8 +1800,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Log signing
       await db.insert(auditLog).values({
-        userId: req.user.claims.sub,
-        userEmail: req.user.claims.email || "",
+        userId: requesterId,
+        userEmail: (requesterClaims?.email as string | undefined) || "",
         section: "Agreement",
         action: "UPDATE",
         targetId: req.params.id,
@@ -1747,8 +1812,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(updated);
     } catch (error) {
-      console.error("Error signing agreement:", error);
-      res.status(500).json({ message: "Failed to sign agreement" });
+      sendErrorResponse(res, { status: 500, message: "Failed to sign agreement", error });
     }
   });
 
@@ -1760,12 +1824,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const quotation = await storage.getQuotation(quotationId);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
+      }
+
+      const requesterId = req.user?.claims?.sub;
+      if (!requesterId) {
+        return sendErrorResponse(res, { status: 401, message: "Unauthorized" });
       }
 
       // Verify ownership
-      if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+      if (quotation.userId !== requesterId) {
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const baseUrl = `${req.protocol}://${req.get("host")}`;
@@ -1784,8 +1853,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
       res.send(zipBuffer);
     } catch (error) {
-      console.error("Error exporting quotation ZIP:", error);
-      res.status(500).json({ message: "Failed to export quotation" });
+      sendErrorResponse(res, { status: 500, message: "Failed to export quotation", error });
     }
   });
 
@@ -1796,12 +1864,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const quotation = await storage.getQuotation(quotationId);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
+      }
+
+      const requesterId = req.user?.claims?.sub;
+      if (!requesterId) {
+        return sendErrorResponse(res, { status: 401, message: "Unauthorized" });
       }
 
       // Verify ownership
-      if (quotation.userId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+      if (quotation.userId !== requesterId) {
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Build snapshot from current state
@@ -1824,7 +1897,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (item.hardware) brandsUsed.hardware.add(item.hardware);
       });
 
-      const snapshotData = {
+      const snapshotData: any = {
         globalRules: globalRulesData[0] || null,
         brandsSelected: {
           materials: Array.from(brandsUsed.materials),
@@ -1832,6 +1905,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           hardware: Array.from(brandsUsed.hardware),
         },
         brands: allBrands,
+        ratesByItemKey: {},
         timestamp: Date.now(),
       };
 
@@ -1842,9 +1916,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ ok: true, snapshotSaved: true });
     } catch (error) {
-      console.error("Error saving snapshot:", error);
-      res.status(500).json({ message: "Failed to save snapshot" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to save snapshot", error });
+  }
   });
 
   // Change Order routes
@@ -1861,9 +1934,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(changeOrdersList);
     } catch (error) {
-      console.error("Error fetching change orders:", error);
-      res.status(500).json({ message: "Failed to fetch change orders" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch change orders", error });
+  }
   });
 
   app.get("/api/quotations/:quotationId/change-orders", isAuthenticated, async (req: any, res) => {
@@ -1874,7 +1946,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify quotation belongs to user
       const quotation = await storage.getQuotation(quotationId);
       if (!quotation || quotation.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const changeOrdersList = await db.query.changeOrders.findMany({
@@ -1886,9 +1958,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(changeOrdersList);
     } catch (error) {
-      console.error("Error fetching change orders:", error);
-      res.status(500).json({ message: "Failed to fetch change orders" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch change orders", error });
+  }
   });
 
   app.get("/api/change-orders/:id", isAuthenticated, async (req: any, res) => {
@@ -1903,19 +1974,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!changeOrder) {
-        return res.status(404).json({ message: "Change order not found" });
+        return sendErrorResponse(res, { status: 404, message: "Change order not found" });
       }
 
       // Ensure user owns this change order
       if (changeOrder.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       res.json(changeOrder);
     } catch (error) {
-      console.error("Error fetching change order:", error);
-      res.status(500).json({ message: "Failed to fetch change order" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch change order", error });
+  }
   });
 
   app.post("/api/change-orders", isAuthenticated, async (req: any, res) => {
@@ -1926,7 +1996,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify quotation exists and belongs to user
       const quotation = await storage.getQuotation(validated.quotationId);
       if (!quotation || quotation.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Generate Change Order ID (TRE_CO_YYMMDD_XXXX)
@@ -1943,9 +2013,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(newChangeOrder);
     } catch (error) {
-      console.error("Error creating change order:", error);
-      res.status(500).json({ message: "Failed to create change order" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to create change order", error });
+  }
   });
 
   app.patch("/api/change-orders/:id", isAuthenticated, async (req: any, res) => {
@@ -1956,11 +2025,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!changeOrder) {
-        return res.status(404).json({ message: "Change order not found" });
+        return sendErrorResponse(res, { status: 404, message: "Change order not found" });
       }
 
       if (changeOrder.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const [updated] = await db
@@ -1971,9 +2040,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(updated);
     } catch (error) {
-      console.error("Error updating change order:", error);
-      res.status(500).json({ message: "Failed to update change order" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to update change order", error });
+  }
   });
 
   app.delete("/api/change-orders/:id", isAuthenticated, async (req: any, res) => {
@@ -1984,19 +2052,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!changeOrder) {
-        return res.status(404).json({ message: "Change order not found" });
+        return sendErrorResponse(res, { status: 404, message: "Change order not found" });
       }
 
       if (changeOrder.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       await db.delete(changeOrders).where(eq(changeOrders.id, req.params.id));
       res.json({ ok: true });
     } catch (error) {
-      console.error("Error deleting change order:", error);
-      res.status(500).json({ message: "Failed to delete change order" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete change order", error });
+  }
   });
 
   // Change Order Items routes
@@ -2011,7 +2078,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!changeOrder || changeOrder.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const validated = insertChangeOrderItemSchema.parse(req.body);
@@ -2025,9 +2092,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(newItem);
     } catch (error) {
-      console.error("Error creating change order item:", error);
-      res.status(500).json({ message: "Failed to create change order item" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to create change order item", error });
+  }
   });
 
   app.patch("/api/change-order-items/:id", isAuthenticated, async (req: any, res) => {
@@ -2039,7 +2105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!item || item.changeOrder.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const [updated] = await db
@@ -2050,9 +2116,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(updated);
     } catch (error) {
-      console.error("Error updating change order item:", error);
-      res.status(500).json({ message: "Failed to update change order item" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to update change order item", error });
+  }
   });
 
   app.delete("/api/change-order-items/:id", isAuthenticated, async (req: any, res) => {
@@ -2064,15 +2129,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!item || item.changeOrder.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       await db.delete(changeOrderItems).where(eq(changeOrderItems.id, req.params.id));
       res.json({ ok: true });
     } catch (error) {
-      console.error("Error deleting change order item:", error);
-      res.status(500).json({ message: "Failed to delete change order item" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete change order item", error });
+  }
   });
 
   // Project routes
@@ -2103,14 +2167,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(newProject);
     } catch (error) {
-      console.error("Error creating project:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Validation error", 
-          errors: error.errors 
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
         });
       }
-      res.status(500).json({ message: "Failed to create project" });
+      sendErrorResponse(res, { status: 500, message: "Failed to create project", error });
     }
   });
 
@@ -2127,9 +2192,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(projectsList);
     } catch (error) {
-      console.error("Error fetching projects:", error);
-      res.status(500).json({ message: "Failed to fetch projects" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch projects", error });
+  }
   });
 
   app.get("/api/projects/:id", isAuthenticated, async (req: any, res) => {
@@ -2144,18 +2208,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!project) {
-        return res.status(404).json({ message: "Project not found" });
+        return sendErrorResponse(res, { status: 404, message: "Project not found" });
       }
 
       if (project.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       res.json(project);
     } catch (error) {
-      console.error("Error fetching project:", error);
-      res.status(500).json({ message: "Failed to fetch project" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch project", error });
+  }
   });
 
   app.get("/api/quotations/:quotationId/project", isAuthenticated, async (req: any, res) => {
@@ -2171,18 +2234,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!project) {
-        return res.status(404).json({ message: "Project not found" });
+        return sendErrorResponse(res, { status: 404, message: "Project not found" });
       }
 
       if (project.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       res.json(project);
     } catch (error) {
-      console.error("Error fetching project:", error);
-      res.status(500).json({ message: "Failed to fetch project" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch project", error });
+  }
   });
 
   app.patch("/api/projects/:id", isAuthenticated, async (req: any, res) => {
@@ -2193,11 +2255,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!project) {
-        return res.status(404).json({ message: "Project not found" });
+        return sendErrorResponse(res, { status: 404, message: "Project not found" });
       }
 
       if (project.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const [updated] = await db
@@ -2208,9 +2270,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(updated);
     } catch (error) {
-      console.error("Error updating project:", error);
-      res.status(500).json({ message: "Failed to update project" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to update project", error });
+  }
   });
 
   // Project Expenses routes
@@ -2225,7 +2286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!project || project.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const validated = insertProjectExpenseSchema.parse(req.body);
@@ -2269,9 +2330,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(newExpense);
     } catch (error) {
-      console.error("Error creating expense:", error);
-      res.status(500).json({ message: "Failed to create expense" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to create expense", error });
+  }
   });
 
   app.patch("/api/project-expenses/:id", isAuthenticated, async (req: any, res) => {
@@ -2283,7 +2343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!expense || expense.project.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Handle paymentDate conversion for update
@@ -2328,9 +2388,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(updated);
     } catch (error) {
-      console.error("Error updating expense:", error);
-      res.status(500).json({ message: "Failed to update expense" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to update expense", error });
+  }
   });
 
   app.delete("/api/project-expenses/:id", isAuthenticated, async (req: any, res) => {
@@ -2342,7 +2401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!expense || expense.project.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       const projectId = expense.projectId;
@@ -2371,9 +2430,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ ok: true });
     } catch (error) {
-      console.error("Error deleting expense:", error);
-      res.status(500).json({ message: "Failed to delete expense" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete expense", error });
+  }
   });
 
   // Business Expenses routes (overhead/monthly costs)
@@ -2389,9 +2447,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(expenses);
     } catch (error) {
-      console.error("Error fetching business expenses:", error);
-      res.status(500).json({ message: "Failed to fetch business expenses" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch business expenses", error });
+  }
   });
 
   app.post("/api/business-expenses", isAuthenticated, async (req: any, res) => {
@@ -2415,9 +2472,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const [newExpense] = await db.insert(businessExpenses).values(expenseData).returning();
       res.json(newExpense);
     } catch (error) {
-      console.error("Error creating business expense:", error);
-      res.status(500).json({ message: "Failed to create business expense" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to create business expense", error });
+  }
   });
 
   app.patch("/api/business-expenses/:id", isAuthenticated, async (req: any, res) => {
@@ -2428,7 +2484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!expense || expense.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Handle paymentDate conversion for update
@@ -2451,9 +2507,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(updated);
     } catch (error) {
-      console.error("Error updating business expense:", error);
-      res.status(500).json({ message: "Failed to update business expense" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to update business expense", error });
+  }
   });
 
   app.delete("/api/business-expenses/:id", isAuthenticated, async (req: any, res) => {
@@ -2464,15 +2519,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!expense || expense.userId !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       await db.delete(businessExpenses).where(eq(businessExpenses.id, req.params.id));
       res.json({ ok: true });
     } catch (error) {
-      console.error("Error deleting business expense:", error);
-      res.status(500).json({ message: "Failed to delete business expense" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete business expense", error });
+  }
   });
 
   // Get business expenses stats and summary
@@ -2529,9 +2583,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         count: allExpenses.length,
       });
     } catch (error) {
-      console.error("Error fetching business expenses stats:", error);
-      res.status(500).json({ message: "Failed to fetch stats" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch stats", error });
+  }
   });
 
   // Analytics & Business Insights Routes
@@ -2556,7 +2609,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       const totalRevenue = acceptedQuotations.reduce(
-        (sum, q) => sum + (q.grandTotal || 0) / 100,
+        (sum, q) => sum + ((q.totals?.finalTotal ?? 0) / 100),
         0,
       );
       const conversionRate =
@@ -2583,7 +2636,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const qDate = new Date(q.updatedAt);
               const qMonthKey = `${qDate.getFullYear()}-${String(qDate.getMonth() + 1).padStart(2, "0")}`;
               if (qMonthKey === monthKey) {
-                acc.revenue += (q.grandTotal || 0) / 100;
+                acc.revenue += (q.totals?.finalTotal ?? 0) / 100;
                 acc.count += 1;
               }
             }
@@ -2615,9 +2668,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         monthlyRevenue,
       });
     } catch (error) {
-      console.error("Error fetching dashboard analytics:", error);
-      res.status(500).json({ message: "Failed to fetch dashboard analytics" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch dashboard analytics", error });
+  }
   });
 
   // P4-2: Quotation Analytics
@@ -2635,7 +2687,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           acc[status] = { count: 0, value: 0 };
         }
         acc[status].count += 1;
-        acc[status].value += (q.grandTotal || 0) / 100;
+        acc[status].value += (q.totals?.finalTotal ?? 0) / 100;
         return acc;
       }, {});
 
@@ -2646,7 +2698,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           acc[category] = { count: 0, totalValue: 0, accepted: 0 };
         }
         acc[category].count += 1;
-        acc[category].totalValue += (q.grandTotal || 0) / 100;
+        acc[category].totalValue += (q.totals?.finalTotal ?? 0) / 100;
         if (q.status === "accepted" || q.status === "approved") {
           acc[category].accepted += 1;
         }
@@ -2660,7 +2712,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           acc[buildType] = { count: 0, totalValue: 0 };
         }
         acc[buildType].count += 1;
-        acc[buildType].totalValue += (q.grandTotal || 0) / 100;
+        acc[buildType].totalValue += (q.totals?.finalTotal ?? 0) / 100;
         return acc;
       }, {});
 
@@ -2674,7 +2726,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       allQuotations.forEach((q) => {
-        const value = (q.grandTotal || 0) / 100;
+        const value = (q.totals?.finalTotal ?? 0) / 100;
         if (value < 100000) valueRanges["0-1L"]++;
         else if (value < 300000) valueRanges["1-3L"]++;
         else if (value < 500000) valueRanges["3-5L"]++;
@@ -2689,9 +2741,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         valueRanges,
       });
     } catch (error) {
-      console.error("Error fetching quotation analytics:", error);
-      res.status(500).json({ message: "Failed to fetch quotation analytics" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch quotation analytics", error });
+  }
   });
 
   // P4-3: Financial Reports
@@ -2708,7 +2759,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const totalRevenue = acceptedQuotations.reduce(
-        (sum, q) => sum + (q.grandTotal || 0) / 100,
+        (sum, q) => sum + ((q.totals?.finalTotal ?? 0) / 100),
         0,
       );
 
@@ -2754,7 +2805,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const qDate = new Date(q.updatedAt);
             const qMonthKey = `${qDate.getFullYear()}-${String(qDate.getMonth() + 1).padStart(2, "0")}`;
             if (qMonthKey === monthKey) {
-              return sum + (q.grandTotal || 0) / 100;
+              return sum + ((q.totals?.finalTotal ?? 0) / 100);
             }
           }
           return sum;
@@ -2800,9 +2851,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expenseByCategory,
       });
     } catch (error) {
-      console.error("Error fetching financial analytics:", error);
-      res.status(500).json({ message: "Failed to fetch financial analytics" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch financial analytics", error });
+  }
   });
 
   // P4-4: Material & Product Analytics
@@ -2887,9 +2937,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalItems: allInteriorItems.length,
       });
     } catch (error) {
-      console.error("Error fetching material analytics:", error);
-      res.status(500).json({ message: "Failed to fetch material analytics" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch material analytics", error });
+  }
   });
 
   // Admin routes

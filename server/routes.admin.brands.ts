@@ -4,6 +4,7 @@ import { brands, insertBrandSchema } from "@shared/schema";
 import { eq, sql, and, or, like } from "drizzle-orm";
 import { z } from "zod";
 import { getAdminUser, logAudit, createBrandSummary } from "./lib/audit";
+import { sendErrorResponse } from "./utils/apiError";
 
 export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
   // GET /api/admin/brands - List brands with optional filters
@@ -41,9 +42,8 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
 
       res.json(result);
     } catch (error) {
-      console.error("Error fetching brands:", error);
-      res.status(500).json({ message: "Failed to fetch brands" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch brands", error });
+  }
   });
 
   // POST /api/admin/brands - Create new brand
@@ -63,7 +63,8 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
         );
 
       if (existing) {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message: `Brand '${validatedData.name}' already exists for type '${validatedData.type}'`,
         });
       }
@@ -98,10 +99,14 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
       res.status(201).json(newBrand);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error creating brand:", error);
-      res.status(500).json({ message: "Failed to create brand" });
+      sendErrorResponse(res, { status: 500, message: "Failed to create brand", error });
     }
   });
 
@@ -121,7 +126,7 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
 
       const [existingBrand] = await db.select().from(brands).where(eq(brands.id, id));
       if (!existingBrand) {
-        return res.status(404).json({ message: "Brand not found" });
+        return sendErrorResponse(res, { status: 404, message: "Brand not found" });
       }
 
       // Check for duplicate name within same type if name is being updated
@@ -138,7 +143,8 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
           );
 
         if (duplicate) {
-          return res.status(400).json({
+          return sendErrorResponse(res, {
+            status: 400,
             message: `Brand '${updateData.name}' already exists for type '${existingBrand.type}'`,
           });
         }
@@ -168,10 +174,14 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
       res.json(updatedBrand);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error updating brand:", error);
-      res.status(500).json({ message: "Failed to update brand" });
+      sendErrorResponse(res, { status: 500, message: "Failed to update brand", error });
     }
   });
 
@@ -182,7 +192,7 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
 
       const [existingBrand] = await db.select().from(brands).where(eq(brands.id, id));
       if (!existingBrand) {
-        return res.status(404).json({ message: "Brand not found" });
+        return sendErrorResponse(res, { status: 404, message: "Brand not found" });
       }
 
       // Unset all other defaults of the same type
@@ -200,9 +210,8 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
 
       res.json(updatedBrand);
     } catch (error) {
-      console.error("Error setting default brand:", error);
-      res.status(500).json({ message: "Failed to set default brand" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to set default brand", error });
+  }
   });
 
   // PATCH /api/admin/brands/:id/active - Toggle active status
@@ -213,12 +222,13 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
 
       const [existingBrand] = await db.select().from(brands).where(eq(brands.id, id));
       if (!existingBrand) {
-        return res.status(404).json({ message: "Brand not found" });
+        return sendErrorResponse(res, { status: 404, message: "Brand not found" });
       }
 
       // Prevent deactivating the default brand
       if (existingBrand.isDefault && !isActive) {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message:
             "Cannot deactivate the default brand. Please set another brand as default first.",
         });
@@ -236,10 +246,18 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
       res.json(updatedBrand);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error toggling brand active status:", error);
-      res.status(500).json({ message: "Failed to toggle brand active status" });
+      sendErrorResponse(res, {
+        status: 500,
+        message: "Failed to toggle brand active status",
+        error,
+      });
     }
   });
 
@@ -250,12 +268,13 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
 
       const [existingBrand] = await db.select().from(brands).where(eq(brands.id, id));
       if (!existingBrand) {
-        return res.status(404).json({ message: "Brand not found" });
+        return sendErrorResponse(res, { status: 404, message: "Brand not found" });
       }
 
       // Prevent deleting the default brand
       if (existingBrand.isDefault) {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message: "Cannot delete the default brand. Please set another brand as default first.",
         });
       }
@@ -284,8 +303,7 @@ export function registerAdminBrandsRoutes(app: Express, isAuthenticated: any) {
 
       res.json({ message: "Brand deleted successfully" });
     } catch (error) {
-      console.error("Error deleting brand:", error);
-      res.status(500).json({ message: "Failed to delete brand" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete brand", error });
+  }
   });
 }

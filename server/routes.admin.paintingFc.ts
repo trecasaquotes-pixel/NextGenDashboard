@@ -14,6 +14,7 @@ import {
   createPaintingPackSummary,
   createFcCatalogSummary,
 } from "./lib/audit";
+import { sendErrorResponse } from "./utils/apiError";
 
 export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any) {
   // ============================================================
@@ -56,9 +57,8 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
 
       res.json(result);
     } catch (error) {
-      console.error("Error fetching painting packs:", error);
-      res.status(500).json({ message: "Failed to fetch painting packs" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch painting packs", error });
+  }
   });
 
   // POST /api/admin/painting-packs - Create new painting pack
@@ -79,7 +79,8 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
         .where(sql`LOWER(${paintingPacks.name}) = LOWER(${validatedData.name})`);
 
       if (existing) {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message: `Painting pack '${validatedData.name}' already exists`,
         });
       }
@@ -108,10 +109,14 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
       res.status(201).json(newPack);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error creating painting pack:", error);
-      res.status(500).json({ message: "Failed to create painting pack" });
+      sendErrorResponse(res, { status: 500, message: "Failed to create painting pack", error });
     }
   });
 
@@ -140,7 +145,7 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
 
       const [existingPack] = await db.select().from(paintingPacks).where(eq(paintingPacks.id, id));
       if (!existingPack) {
-        return res.status(404).json({ message: "Painting pack not found" });
+        return sendErrorResponse(res, { status: 404, message: "Painting pack not found" });
       }
 
       // Check for duplicate name if name is being updated
@@ -156,7 +161,8 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
           );
 
         if (duplicate) {
-          return res.status(400).json({
+          return sendErrorResponse(res, {
+            status: 400,
             message: `Painting pack '${updateData.name}' already exists`,
           });
         }
@@ -194,10 +200,14 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
       res.json(updatedPack);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error updating painting pack:", error);
-      res.status(500).json({ message: "Failed to update painting pack" });
+      sendErrorResponse(res, { status: 500, message: "Failed to update painting pack", error });
     }
   });
 
@@ -209,7 +219,7 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
 
       const [existingPack] = await db.select().from(paintingPacks).where(eq(paintingPacks.id, id));
       if (!existingPack) {
-        return res.status(404).json({ message: "Painting pack not found" });
+        return sendErrorResponse(res, { status: 404, message: "Painting pack not found" });
       }
 
       const [updatedPack] = await db
@@ -221,10 +231,18 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
       res.json(updatedPack);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error toggling painting pack active status:", error);
-      res.status(500).json({ message: "Failed to update painting pack" });
+      sendErrorResponse(res, {
+        status: 500,
+        message: "Failed to update painting pack",
+        error,
+      });
     }
   });
 
@@ -235,7 +253,7 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
 
       const [existingPack] = await db.select().from(paintingPacks).where(eq(paintingPacks.id, id));
       if (!existingPack) {
-        return res.status(404).json({ message: "Painting pack not found" });
+        return sendErrorResponse(res, { status: 404, message: "Painting pack not found" });
       }
 
       const [deletedPack] = await db
@@ -258,9 +276,8 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
 
       res.json({ message: "Painting pack deleted successfully" });
     } catch (error) {
-      console.error("Error deleting painting pack:", error);
-      res.status(500).json({ message: "Failed to delete painting pack" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete painting pack", error });
+  }
   });
 
   // ============================================================
@@ -299,9 +316,8 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
 
       res.json(result);
     } catch (error) {
-      console.error("Error fetching FC catalog:", error);
-      res.status(500).json({ message: "Failed to fetch FC catalog" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch FC catalog", error });
+  }
   });
 
   // POST /api/admin/fc-catalog - Create new FC catalog item
@@ -316,14 +332,16 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
         .where(eq(fcCatalog.key, validatedData.key));
 
       if (existing) {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message: `FC catalog item with key '${validatedData.key}' already exists`,
         });
       }
 
       // Enforce unit guardrails
       if (validatedData.key === "fc_paint" && validatedData.unit !== "LSUM") {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message: "FC Paint must use LSUM unit",
         });
       }
@@ -332,7 +350,8 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
         ["fc_lights", "fc_fan_hook", "fc_cove_led"].includes(validatedData.key) &&
         validatedData.unit !== "COUNT"
       ) {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message: "FC Lights, Fan Hook, and Cove LED must use COUNT unit",
         });
       }
@@ -342,7 +361,8 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
         validatedData.unit === "COUNT" &&
         (!validatedData.ratePerUnit || validatedData.ratePerUnit < 0)
       ) {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message: "COUNT unit requires ratePerUnit >= 0",
         });
       }
@@ -369,10 +389,14 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
       res.status(201).json(newItem);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error creating FC catalog item:", error);
-      res.status(500).json({ message: "Failed to create FC catalog item" });
+      sendErrorResponse(res, { status: 500, message: "Failed to create FC catalog item", error });
     }
   });
 
@@ -392,13 +416,14 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
 
       const [existingItem] = await db.select().from(fcCatalog).where(eq(fcCatalog.id, id));
       if (!existingItem) {
-        return res.status(404).json({ message: "FC catalog item not found" });
+        return sendErrorResponse(res, { status: 404, message: "FC catalog item not found" });
       }
 
       // Enforce unit guardrails if unit is being changed
       const finalUnit = updateData.unit || existingItem.unit;
       if (existingItem.key === "fc_paint" && finalUnit !== "LSUM") {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message: "FC Paint must use LSUM unit",
         });
       }
@@ -407,7 +432,8 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
         ["fc_lights", "fc_fan_hook", "fc_cove_led"].includes(existingItem.key) &&
         finalUnit !== "COUNT"
       ) {
-        return res.status(400).json({
+        return sendErrorResponse(res, {
+          status: 400,
           message: "FC Lights, Fan Hook, and Cove LED must use COUNT unit",
         });
       }
@@ -436,10 +462,14 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
       res.json(updatedItem);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error updating FC catalog item:", error);
-      res.status(500).json({ message: "Failed to update FC catalog item" });
+      sendErrorResponse(res, { status: 500, message: "Failed to update FC catalog item", error });
     }
   });
 
@@ -451,7 +481,7 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
 
       const [existingItem] = await db.select().from(fcCatalog).where(eq(fcCatalog.id, id));
       if (!existingItem) {
-        return res.status(404).json({ message: "FC catalog item not found" });
+        return sendErrorResponse(res, { status: 404, message: "FC catalog item not found" });
       }
 
       const [updatedItem] = await db
@@ -463,10 +493,14 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
       res.json(updatedItem);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error toggling FC catalog active status:", error);
-      res.status(500).json({ message: "Failed to update FC catalog item" });
+      sendErrorResponse(res, { status: 500, message: "Failed to update FC catalog item", error });
     }
   });
 
@@ -477,7 +511,7 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
 
       const [existingItem] = await db.select().from(fcCatalog).where(eq(fcCatalog.id, id));
       if (!existingItem) {
-        return res.status(404).json({ message: "FC catalog item not found" });
+        return sendErrorResponse(res, { status: 404, message: "FC catalog item not found" });
       }
 
       const [deletedItem] = await db
@@ -500,8 +534,7 @@ export function registerAdminPaintingFcRoutes(app: Express, isAuthenticated: any
 
       res.json({ message: "FC catalog item deleted successfully" });
     } catch (error) {
-      console.error("Error deleting FC catalog item:", error);
-      res.status(500).json({ message: "Failed to delete FC catalog item" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to delete FC catalog item", error });
+  }
   });
 }

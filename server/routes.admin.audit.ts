@@ -3,6 +3,7 @@ import { db } from "./db";
 import { auditLog } from "@shared/schema";
 import { eq, and, or, like, gte, lte, desc } from "drizzle-orm";
 import { z } from "zod";
+import { sendErrorResponse } from "./utils/apiError";
 
 export function registerAdminAuditRoutes(app: Express, isAuthenticated: any) {
   // GET /api/admin/audit - List audit logs with filters and pagination
@@ -89,10 +90,14 @@ export function registerAdminAuditRoutes(app: Express, isAuthenticated: any) {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid query parameters", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Invalid query parameters",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error fetching audit logs:", error);
-      res.status(500).json({ message: "Failed to fetch audit logs" });
+      sendErrorResponse(res, { status: 500, message: "Failed to fetch audit logs", error });
     }
   });
 
@@ -104,13 +109,12 @@ export function registerAdminAuditRoutes(app: Express, isAuthenticated: any) {
       const [entry] = await db.select().from(auditLog).where(eq(auditLog.id, id));
 
       if (!entry) {
-        return res.status(404).json({ message: "Audit entry not found" });
+        return sendErrorResponse(res, { status: 404, message: "Audit entry not found" });
       }
 
       res.json(entry);
     } catch (error) {
-      console.error("Error fetching audit entry:", error);
-      res.status(500).json({ message: "Failed to fetch audit entry" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch audit entry", error });
+  }
   });
 }

@@ -32,9 +32,9 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
   const [clientName, setClientName] = useState("");
   const { toast } = useToast();
 
-  const { data: agreement } = useQuery<Agreement>({
-    queryKey: `/api/quotations/${quotationId}/agreement`,
-    enabled: !!quotationId && !!approvedAt,
+  const { data: agreement } = useQuery<Agreement | null>({
+    queryKey: ["/api/quotations", { id: quotationId }, "agreement"],
+    enabled: Boolean(quotationId && approvedAt),
   });
 
   const signMutation = useMutation({
@@ -50,7 +50,9 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
         title: "Agreement Signed",
         description: "Client signature has been recorded",
       });
-      queryClient.invalidateQueries({ queryKey: `/api/quotations/${quotationId}/agreement` });
+      queryClient.invalidateQueries({
+        queryKey: ["/api/quotations", { id: quotationId }, "agreement"],
+      });
       setShowSignDialog(false);
       setClientName("");
     },
@@ -68,6 +70,9 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
   const approvalDate = new Date(approvedAt).toLocaleDateString();
   const grandTotal = agreement ? agreement.grandTotal / 100 : 0;
   const gstAmount = agreement ? agreement.gstAmount / 100 : 0;
+  const signedDate = agreement?.signedAt
+    ? new Date(agreement.signedAt).toLocaleDateString()
+    : null;
 
   return (
     <>
@@ -120,7 +125,7 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
               <p className="text-sm text-green-800 dark:text-green-200">
                 <FileSignature className="inline h-4 w-4 mr-1" />
                 Signed by <span className="font-medium">{agreement.signedByClient}</span> on{" "}
-                {new Date(agreement.signedAt!).toLocaleDateString()}
+                {signedDate}
               </p>
             </div>
           )}

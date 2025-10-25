@@ -1,10 +1,12 @@
-import puppeteer from "puppeteer";
 import type { Page } from "puppeteer";
 import type { Quotation } from "@shared/schema";
 import { generateRenderToken } from "./render-token";
 import { PDFDocument, rgb } from "pdf-lib";
 import { readFileSync } from "fs";
 import path from "path";
+import { withPage } from "./browserManager";
+import { enqueuePdf } from "./taskQueue";
+import { logger } from "../utils/logger";
 
 /**
  * Generate PDF with optional universal header/footer templates
@@ -21,7 +23,7 @@ function getLogoBase64(): string {
       const logoBuffer = readFileSync(logoPath);
       cachedLogoBase64 = logoBuffer.toString("base64");
     } catch (error) {
-      console.error("Failed to load logo:", error);
+      logger.error("Failed to load logo", { traceId: "pdf-assets", error });
       cachedLogoBase64 = "";
     }
   }
@@ -55,7 +57,7 @@ async function getFooterLines(): Promise<{ line1: string; line2: string }> {
     footerCacheTime = now;
     return cachedFooterLines;
   } catch (error) {
-    console.error("Error fetching footer from global rules:", error);
+    logger.error("Error fetching footer from global rules", { traceId: "pdf-footer", error });
     // Return fallback values
     return {
       line1: "TRECASA Design Studio | Luxury Interiors | Architecture | Build",
@@ -144,76 +146,55 @@ export async function generateQuotationPDF(
   includePageNumbers: boolean = true,
   excludeTerms: boolean = false,
 ): Promise<Buffer> {
-  let browser;
+  const traceId = `pdf-${quotation.quoteId}-${type}`;
 
   try {
-    // Launch browser with minimal options
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-      ],
-    });
+    return await withPage(async (page) => {
+      await page.setViewport({
+        width: 1200,
+        height: 1600,
+        deviceScaleFactor: 2,
+      });
 
-    const page = await browser.newPage();
+      const token = generateRenderToken(quotation.id);
 
-    // Set viewport for consistent rendering
-    await page.setViewport({
-      width: 1200,
-      height: 1600,
-      deviceScaleFactor: 2,
-    });
+      let url: string;
+      if (type === "agreement") {
+        url = `${baseUrl}/render/quotation/${quotation.id}/agreement?token=${encodeURIComponent(token)}`;
+      } else {
+        const section = type === "interiors" ? "interiors" : "false-ceiling";
+        const excludeTermsParam = excludeTerms ? "&excludeTerms=true" : "";
+        url = `${baseUrl}/render/quotation/${quotation.id}/print?section=${section}&token=${encodeURIComponent(token)}${excludeTermsParam}`;
+      }
 
-    // Generate render token for authentication
-    const token = generateRenderToken(quotation.id);
+      logger.info(`[PDF Generator] Navigating to ${url}`, { traceId });
+      await page.goto(url, {
+        waitUntil: "networkidle0",
+        timeout: 30000,
+      });
 
-    // Navigate to the appropriate render page with section parameter
-    let url: string;
-    if (type === "agreement") {
-      url = `${baseUrl}/render/quotation/${quotation.id}/agreement?token=${encodeURIComponent(token)}`;
-    } else {
-      // Pass section parameter for interiors or false-ceiling
-      const section = type === "interiors" ? "interiors" : "false-ceiling";
-      const excludeTermsParam = excludeTerms ? "&excludeTerms=true" : "";
-      url = `${baseUrl}/render/quotation/${quotation.id}/print?section=${section}&token=${encodeURIComponent(token)}${excludeTermsParam}`;
-    }
+      await page.waitForSelector("[data-pdf-ready]", { timeout: 5000 }).catch(() => {
+        logger.warn("[PDF Generator] PDF ready marker not found, proceeding", { traceId });
+      });
 
-    console.log(`[PDF Generator] Navigating to ${url}`);
-    await page.goto(url, {
-      waitUntil: "networkidle0",
-      timeout: 30000,
-    });
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Wait for content to be fully rendered
-    await page.waitForSelector("[data-pdf-ready]", { timeout: 5000 }).catch(() => {
-      console.log("[PDF Generator] Warning: PDF ready marker not found, proceeding anyway");
-    });
+      let selector: string;
+      if (type === "interiors") {
+        selector = "#print-interiors-root";
+      } else if (type === "false-ceiling") {
+        selector = "#print-fc-root";
+      } else {
+        selector = "#print-agreement-root";
+      }
 
-    // Additional wait to ensure everything is loaded
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      const elementExists = await page.$(selector);
+      if (!elementExists) {
+        throw new Error(`Element ${selector} not found on page`);
+      }
 
-    // Select the appropriate element to print based on type
-    let selector: string;
-    if (type === "interiors") {
-      selector = "#print-interiors-root";
-    } else if (type === "false-ceiling") {
-      selector = "#print-fc-root";
-    } else {
-      selector = "#print-agreement-root";
-    }
-
-    // Check if element exists
-    const elementExists = await page.$(selector);
-    if (!elementExists) {
-      throw new Error(`Element ${selector} not found on page`);
-    }
-
-    // Inject PDF-optimized CSS with Google Fonts and professional specifications
-    await page.addStyleTag({
-      content: `
+      await page.addStyleTag({
+        content: `
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Montserrat:wght@400;500;600&display=swap');
         
         @page {
@@ -563,34 +544,31 @@ export async function generateQuotationPDF(
       `,
     });
 
-    // Determine title text for header
-    let titleText: string;
-    if (type === "interiors") {
-      titleText = "Interiors Quotation";
-    } else if (type === "false-ceiling") {
-      titleText = "False Ceiling Quotation";
-    } else {
-      titleText = "Service Agreement & Annexures";
-    }
+      let titleText: string;
+      if (type === "interiors") {
+        titleText = "Interiors Quotation";
+      } else if (type === "false-ceiling") {
+        titleText = "False Ceiling Quotation";
+      } else {
+        titleText = "Service Agreement & Annexures";
+      }
 
-    // Generate PDF using new emitPdf with displayHeaderFooter
-    // All PDFs now use Puppeteer's displayHeaderFooter for consistency
-    const useHeaderFooter = true;
-    console.log(
-      `[PDF Generator] Generating PDF for ${type} with title: ${titleText}, includePageNumbers: ${includePageNumbers}, useHeaderFooter: ${useHeaderFooter}`,
-    );
-    const pdfBuffer = await emitPdf(page, titleText, includePageNumbers, useHeaderFooter);
-    console.log(`[PDF Generator] PDF generated successfully, size: ${pdfBuffer.length} bytes`);
-    return pdfBuffer;
+      const useHeaderFooter = true;
+      logger.info(
+        `[PDF Generator] Generating PDF for ${type} with title: ${titleText}, includePageNumbers: ${includePageNumbers}, useHeaderFooter: ${useHeaderFooter}`,
+        { traceId },
+      );
+      const pdfBuffer = await emitPdf(page, titleText, includePageNumbers, useHeaderFooter);
+      logger.info(`[PDF Generator] PDF generated successfully`, {
+        traceId,
+        bytes: pdfBuffer.length,
+      });
+      return pdfBuffer;
+    });
   } catch (error) {
-    console.error(`[PDF Generator] Error generating ${type} PDF:`, error);
-    throw new Error(
-      `Failed to generate ${type} PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
-    );
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
+    logger.error(`[PDF Generator] Error generating ${type} PDF`, { traceId, error });
+    const reason = error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`Failed to generate ${type} PDF: ${reason}`);
   }
 }
 
@@ -608,13 +586,46 @@ export async function generateAllQuotationPDFs(
   falseCeiling: Buffer;
   agreement: Buffer;
 }> {
-  console.log(`[PDF Generator] Generating all PDFs for quotation ${quotation.quoteId}`);
+  const traceId = `pdf-pack-${quotation.quoteId}`;
+  const start = Date.now();
+  logger.info(`[PDF Generator] Generating all PDFs for quotation ${quotation.quoteId}`, {
+    traceId,
+    job: "pdf_pack",
+    action: "start",
+    quoteId: quotation.quoteId,
+  });
 
   try {
-    // Generate all three PDFs sequentially to avoid resource issues
-    const interiors = await generateQuotationPDF(quotation, "interiors", baseUrl);
-    const falseCeiling = await generateQuotationPDF(quotation, "false-ceiling", baseUrl);
-    const agreement = await generateQuotationPDF(quotation, "agreement", baseUrl);
+    const [interiors, falseCeiling] = await Promise.all([
+      enqueuePdf(() => generateQuotationPDF(quotation, "interiors", baseUrl, false, true)),
+      enqueuePdf(() => generateQuotationPDF(quotation, "false-ceiling", baseUrl, false, true)),
+    ]);
+    const agreement = await enqueuePdf(() => generateQuotationPDF(quotation, "agreement", baseUrl, false));
+
+    const [interiorsDoc, falseCeilingDoc, agreementDoc] = await Promise.all([
+      PDFDocument.load(interiors),
+      PDFDocument.load(falseCeiling),
+      PDFDocument.load(agreement),
+    ]);
+
+    const interiorsPages = interiorsDoc.getPageCount();
+    const falseCeilingPages = falseCeilingDoc.getPageCount();
+    const agreementPages = agreementDoc.getPageCount();
+    const totalPages = interiorsPages + falseCeilingPages + agreementPages;
+
+    logger.info(`[PDF Generator] Completed PDF generation for ${quotation.quoteId}`, {
+      traceId,
+      job: "pdf_pack",
+      action: "done",
+      quoteId: quotation.quoteId,
+      ms: Date.now() - start,
+      pages: {
+        interiors: interiorsPages,
+        falseCeiling: falseCeilingPages,
+        agreement: agreementPages,
+        total: totalPages,
+      },
+    });
 
     return {
       interiors,
@@ -622,7 +633,7 @@ export async function generateAllQuotationPDFs(
       agreement,
     };
   } catch (error) {
-    console.error("[PDF Generator] Error generating all PDFs:", error);
+    logger.error("[PDF Generator] Error generating all PDFs", { traceId, error });
     throw error;
   }
 }

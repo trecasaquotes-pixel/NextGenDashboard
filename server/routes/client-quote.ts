@@ -6,6 +6,8 @@ import { eq } from "drizzle-orm";
 import { createClientToken, verifyClientToken } from "../lib/client-token";
 import { generateAllQuotationPDFs } from "../lib/pdf-generator";
 import { generateRenderToken } from "../lib/render-token";
+import { sendErrorResponse } from "../utils/apiError";
+import { logger } from "../utils/logger";
 import path from "path";
 import fs from "fs/promises";
 
@@ -102,9 +104,8 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
 
       res.json(response);
     } catch (error) {
-      console.error("Error fetching client quote info:", error);
-      res.status(500).json({ message: "Failed to fetch quote info" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch quote info", error });
+  }
   });
 
   // POST /api/client-quote/:quoteId/accept?token=...
@@ -181,7 +182,10 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
             await fs.writeFile(agreementPath, pdfs.agreement);
           }
         } catch (pdfError) {
-          console.error("PDF generation failed (non-fatal):", pdfError);
+          logger.warn("PDF generation failed (non-fatal)", {
+            traceId: res.locals.traceId,
+            error: pdfError,
+          });
         }
       }
 
@@ -224,9 +228,8 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
         agreementUrl: `${baseUrl}/api/quotations/${quoteId}/pdf/agreement?token=${agreementRenderToken}`,
       });
     } catch (error) {
-      console.error("Error accepting quote:", error);
-      res.status(500).json({ message: "Failed to accept quote" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to accept quote", error });
+  }
   });
 
   // POST /api/client-quote/:quoteId/request-link (Admin only)
@@ -278,8 +281,7 @@ export function registerClientQuoteRoutes(app: Express, isAuthenticated: any) {
 
       res.json({ shareUrl, expiresAt: clientTokenExpiresAt });
     } catch (error) {
-      console.error("Error generating client link:", error);
-      res.status(500).json({ message: "Failed to generate link" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to generate link", error });
+  }
   });
 }

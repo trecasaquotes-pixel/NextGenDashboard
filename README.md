@@ -1,5 +1,7 @@
 # TRECASA - Interior Design Quotation Application
 
+![CI Status](https://github.com/trecasaquotes-pixel/NextGenDashboard/actions/workflows/ci.yml/badge.svg)
+
 A comprehensive web application designed for interior designers to efficiently create, manage, and export detailed quotations with professional branding and PDF generation capabilities.
 
 ## Features
@@ -24,6 +26,10 @@ A comprehensive web application designed for interior designers to efficiently c
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Replit Auth (OpenID Connect)
 - **PDF Generation**: html2pdf.js (client-side), Puppeteer (server-side)
+
+## Documentation
+
+- [Deployment & Maintenance Guide (v1.0.0)](docs/maintenance.md)
 
 ## Getting Started
 
