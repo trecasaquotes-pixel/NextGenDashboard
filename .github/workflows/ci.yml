@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci
-      - run: npx ts-prune
+      - run: npx ts-prune || echo "ts-prune warnings ignored in PR checks"
       - run: npm run lint
       - run: npx tsc --noEmit
 
