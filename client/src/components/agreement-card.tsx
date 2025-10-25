@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Download, FileSignature, CheckCircle2 } from "lucide-react";
 import { formatINR } from "@shared/formatters";
-import type { Agreement } from "@shared/schema";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,14 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
+interface AgreementDTO {
+  id: string;
+  grandTotal?: number | null;
+  gstAmount?: number | null;
+  signedByClient?: string | null;
+  signedAt?: number | null;
+}
+
 
 interface AgreementCardProps {
   quotationId: string;
@@ -32,9 +39,25 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
   const [clientName, setClientName] = useState("");
   const { toast } = useToast();
 
-  const { data: agreement } = useQuery<Agreement>({
-    queryKey: `/api/quotations/${quotationId}/agreement`,
-    enabled: !!quotationId && !!approvedAt,
+  const { data: agreement } = useQuery<AgreementDTO | null>({
+    queryKey: ["agreement", quotationId],
+    enabled: Boolean(quotationId && approvedAt),
+    queryFn: async () => {
+      if (!quotationId) return null;
+      const res = await fetch(`/api/quotations/${quotationId}/agreement`, {
+        credentials: "include",
+      });
+
+      if (res.status === 404) {
+        return null;
+      }
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch agreement: ${res.status} ${res.statusText}`);
+      }
+
+      return (await res.json()) as AgreementDTO;
+    },
   });
 
   const signMutation = useMutation({
@@ -50,7 +73,9 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
         title: "Agreement Signed",
         description: "Client signature has been recorded",
       });
-      queryClient.invalidateQueries({ queryKey: `/api/quotations/${quotationId}/agreement` });
+      queryClient.invalidateQueries({
+        queryKey: ["agreement", quotationId],
+      });
       setShowSignDialog(false);
       setClientName("");
     },
@@ -66,8 +91,11 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
   if (!approvedAt) return null;
 
   const approvalDate = new Date(approvedAt).toLocaleDateString();
-  const grandTotal = agreement ? agreement.grandTotal / 100 : 0;
-  const gstAmount = agreement ? agreement.gstAmount / 100 : 0;
+  const grandTotal = ((agreement?.grandTotal ?? 0) as number) / 100;
+  const gstAmount = ((agreement?.gstAmount ?? 0) as number) / 100;
+  const signedDate = agreement?.signedAt
+    ? new Date(agreement.signedAt).toLocaleDateString()
+    : null;
 
   return (
     <>
@@ -120,7 +148,7 @@ export function AgreementCard({ quotationId, approvedAt, approvedBy }: Agreement
               <p className="text-sm text-green-800 dark:text-green-200">
                 <FileSignature className="inline h-4 w-4 mr-1" />
                 Signed by <span className="font-medium">{agreement.signedByClient}</span> on{" "}
-                {new Date(agreement.signedAt!).toLocaleDateString()}
+                {signedDate}
               </p>
             </div>
           )}

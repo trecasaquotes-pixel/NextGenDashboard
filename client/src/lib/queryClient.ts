@@ -1,5 +1,64 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+type QueryKeySegment = string | number | boolean;
+
+function appendSearchParam(search: URLSearchParams, key: string, value: unknown) {
+  if (value === undefined || value === null) return;
+  if (Array.isArray(value)) {
+    value.forEach((entry) => appendSearchParam(search, key, entry));
+    return;
+  }
+
+  search.append(key, String(value));
+}
+
+function buildUrlFromQueryKey(queryKey: readonly unknown[]): string {
+  if (queryKey.length === 0) {
+    throw new Error("Query key must contain at least one entry");
+  }
+
+  if (queryKey.length === 1 && typeof queryKey[0] === "string") {
+    return queryKey[0];
+  }
+
+  const [base, ...rest] = queryKey;
+
+  if (typeof base !== "string") {
+    throw new Error("Query key must start with a string URL");
+  }
+
+  let url = base;
+  const search = new URLSearchParams();
+
+  for (const segment of rest) {
+    if (segment === undefined || segment === null) continue;
+
+    if (typeof segment === "object" && !Array.isArray(segment)) {
+      for (const [key, value] of Object.entries(segment)) {
+        appendSearchParam(search, key, value);
+      }
+      continue;
+    }
+
+    const value = segment as QueryKeySegment | QueryKeySegment[];
+    if (Array.isArray(value)) {
+      value.forEach((entry) => {
+        url += `/${encodeURIComponent(String(entry))}`;
+      });
+    } else {
+      url += `/${encodeURIComponent(String(value))}`;
+    }
+  }
+
+  const queryString = search.toString();
+  if (queryString) {
+    url += url.includes("?") ? "&" : "?";
+    url += queryString;
+  }
+
+  return url;
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -37,7 +96,8 @@ type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn: <T>(options: { on401: UnauthorizedBehavior }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const url = queryKey.join("/") as string;
+    const normalizedKey = Array.isArray(queryKey) ? queryKey : [queryKey];
+    const url = buildUrlFromQueryKey(normalizedKey);
     const finalUrl = addRenderToken(url);
 
     const res = await fetch(finalUrl, {

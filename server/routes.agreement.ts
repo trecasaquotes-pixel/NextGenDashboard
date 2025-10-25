@@ -2,7 +2,15 @@ import type { Express } from "express";
 import { storage } from "./storage";
 import { isAuthenticated } from "./replitAuth";
 import { z } from "zod";
-import { formatCurrency } from "@shared/formatters";
+import { sendErrorResponse } from "./utils/apiError";
+import { logger } from "./utils/logger";
+
+const formatCurrency = (v: number) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(v);
 
 /**
  * Agreement Pack API Routes
@@ -50,12 +58,12 @@ export function registerAgreementRoutes(app: Express) {
     try {
       const quotation = await storage.getQuotation(req.params.quoteId);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       // Ensure user owns this quotation
       if (quotation.userId !== req.user?.claims?.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Fetch items
@@ -192,10 +200,14 @@ export function registerAgreementRoutes(app: Express) {
       ];
       
       const scheduleTemplate = customizations?.paymentSchedule || defaultPaymentSchedule;
-      const paymentSchedule = scheduleTemplate.map(item => ({
-        ...item,
-        amount: Math.round(finalTotal * (item.percent / 100)),
-      }));
+      const paymentSchedule = scheduleTemplate.map((item) => {
+        const amount = Math.round(finalTotal * (item.percent / 100));
+        return {
+          ...item,
+          amount,
+          formattedAmount: formatCurrency(amount),
+        };
+      });
 
       // Check if FC scope exists (has any items with non-zero totals)
       const hasFCScope = fcItems.some(item => parseFloat(item.totalPrice || "0") > 0);
@@ -233,10 +245,18 @@ export function registerAgreementRoutes(app: Express) {
             type: discountType,
             value: discountValue,
             amount: discountAmount,
+            formattedAmount: formatCurrency(discountAmount),
           },
           gstRate,
           gstAmount,
           finalTotal,
+          formatted: {
+            interiorsSubtotal: formatCurrency(interiorsSubtotal),
+            fcSubtotal: formatCurrency(fcSubtotal),
+            grandSubtotal: formatCurrency(grandSubtotal),
+            gstAmount: formatCurrency(gstAmount),
+            finalTotal: formatCurrency(finalTotal),
+          },
         },
         materials: {
           coreMaterials: materials,
@@ -255,9 +275,8 @@ export function registerAgreementRoutes(app: Express) {
 
       res.json(agreementData);
     } catch (error) {
-      console.error("Error fetching agreement:", error);
-      res.status(500).json({ message: "Failed to fetch agreement" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch agreement", error });
+  }
   });
 
   /**
@@ -270,20 +289,21 @@ export function registerAgreementRoutes(app: Express) {
 
       const quotation = await storage.getQuotation(req.params.quoteId);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       // Ensure user owns this quotation
       if (quotation.userId !== req.user?.claims?.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Validate payment schedule percentages sum to 100 if provided
       if (body.paymentSchedule) {
         const total = body.paymentSchedule.reduce((sum, item) => sum + item.percent, 0);
         if (Math.abs(total - 100) > 0.01) {
-          return res.status(400).json({ 
-            message: `Payment schedule percentages must sum to 100% (currently ${total}%)` 
+          return sendErrorResponse(res, {
+            status: 400,
+            message: `Payment schedule percentages must sum to 100% (currently ${total}%)`,
           });
         }
       }
@@ -295,11 +315,15 @@ export function registerAgreementRoutes(app: Express) {
 
       res.json({ success: true, customizations: body });
     } catch (error) {
-      console.error("Error saving agreement customizations:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid request", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Invalid request",
+          details: error.errors,
+          error,
+        });
       }
-      res.status(500).json({ message: "Failed to save agreement customizations" });
+      sendErrorResponse(res, { status: 500, message: "Failed to save agreement customizations", error });
     }
   });
 
@@ -313,12 +337,12 @@ export function registerAgreementRoutes(app: Express) {
 
       const quotation = await storage.getQuotation(req.params.quoteId);
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return sendErrorResponse(res, { status: 404, message: "Quotation not found" });
       }
 
       // Ensure user owns this quotation
       if (quotation.userId !== req.user?.claims?.sub) {
-        return res.status(403).json({ message: "Forbidden" });
+        return sendErrorResponse(res, { status: 403, message: "Forbidden" });
       }
 
       // Update signoff
@@ -346,11 +370,15 @@ export function registerAgreementRoutes(app: Express) {
 
       res.json({ success: true, signoff: currentSignoff });
     } catch (error) {
-      console.error("Error signing agreement:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid request", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Invalid request",
+          details: error.errors,
+          error,
+        });
       }
-      res.status(500).json({ message: "Failed to sign agreement" });
+      sendErrorResponse(res, { status: 500, message: "Failed to sign agreement", error });
     }
   });
 }

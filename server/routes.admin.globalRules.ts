@@ -4,6 +4,7 @@ import { globalRules, insertGlobalRulesSchema } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getAdminUser, logAudit, createGlobalRulesSummary } from "./lib/audit";
+import { sendErrorResponse } from "./utils/apiError";
 
 export function registerAdminGlobalRulesRoutes(app: Express, isAuthenticated: any) {
   // GET /api/admin/global-rules - Get global rules configuration
@@ -36,9 +37,8 @@ export function registerAdminGlobalRulesRoutes(app: Express, isAuthenticated: an
 
       res.json(rules);
     } catch (error) {
-      console.error("Error fetching global rules:", error);
-      res.status(500).json({ message: "Failed to fetch global rules" });
-    }
+    sendErrorResponse(res, { status: 500, message: "Failed to fetch global rules", error });
+  }
   });
 
   // PUT /api/admin/global-rules - Update global rules (upsert)
@@ -62,12 +62,14 @@ export function registerAdminGlobalRulesRoutes(app: Express, isAuthenticated: an
 
           if (Math.abs(total - 100) > 0.01) {
             // Allow small floating point errors
-            return res.status(400).json({
+            return sendErrorResponse(res, {
+              status: 400,
               message: `Payment schedule must sum to 100% (currently ${total}%)`,
             });
           }
         } catch (e) {
-          return res.status(400).json({
+          return sendErrorResponse(res, {
+            status: 400,
             message: "Invalid payment schedule JSON format",
           });
         }
@@ -79,16 +81,18 @@ export function registerAdminGlobalRulesRoutes(app: Express, isAuthenticated: an
           const factors = JSON.parse(bodyData.cityFactorsJson);
           for (const item of factors) {
             if (!item.city || typeof item.city !== "string") {
-              return res.status(400).json({ message: "Each city factor must have a city name" });
+              return sendErrorResponse(res, { status: 400, message: "Each city factor must have a city name" });
             }
             if (typeof item.factor !== "number" || item.factor < 0.8 || item.factor > 1.3) {
-              return res.status(400).json({
+              return sendErrorResponse(res, {
+                status: 400,
                 message: `City factor must be between 0.8 and 1.3 (got ${item.factor} for ${item.city})`,
               });
             }
           }
         } catch (e) {
-          return res.status(400).json({
+          return sendErrorResponse(res, {
+            status: 400,
             message: "Invalid city factors JSON format",
           });
         }
@@ -147,10 +151,14 @@ export function registerAdminGlobalRulesRoutes(app: Express, isAuthenticated: an
       res.json(result);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        return sendErrorResponse(res, {
+          status: 400,
+          message: "Validation error",
+          details: error.errors,
+          error,
+        });
       }
-      console.error("Error updating global rules:", error);
-      res.status(500).json({ message: "Failed to update global rules" });
+      sendErrorResponse(res, { status: 500, message: "Failed to update global rules", error });
     }
   });
 }

@@ -1,5 +1,6 @@
 import { IStorage } from "../storage";
 import type { Quotation, InteriorItem, FalseCeilingItem, OtherItem } from "@shared/schema";
+import { logger } from "../utils/logger";
 
 interface SnapshotData {
   quotation: Quotation;
@@ -23,7 +24,7 @@ export async function createVersionSnapshot(
     // Get current quotation data
     const quotation = await storage.getQuotation(quotationId);
     if (!quotation) {
-      console.error("Quotation not found for version snapshot:", quotationId);
+      logger.error("Quotation not found for version snapshot", { quotationId });
       return;
     }
 
@@ -52,12 +53,12 @@ export async function createVersionSnapshot(
       versionNumber,
       changeType,
       changeSummary,
-      snapshot,
+      snapshot: snapshot as any,
     });
 
-    console.log(`Created version ${versionNumber} for quotation ${quotationId}: ${changeSummary}`);
+    logger.info(`Created version ${versionNumber} for quotation ${quotationId}: ${changeSummary}`);
   } catch (error) {
-    console.error("Error creating version snapshot:", error);
+    logger.error("Error creating version snapshot", { error });
     // Don't throw - version history should not block main operations
   }
 }

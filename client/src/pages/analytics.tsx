@@ -33,13 +33,97 @@ import { AppFooter } from "@/components/app-footer";
 
 const COLORS = ["#154734", "#C7A948", "#2D6A4F", "#74C69D", "#B7E4C7", "#95D5B2"];
 
+interface DashboardOverviewResponse {
+  overview: {
+    totalQuotations: number;
+    activeQuotations: number;
+    acceptedQuotations: number;
+    totalRevenue: number;
+    conversionRate: number;
+    avgQuoteValue: number;
+  };
+  statusDistribution: Record<string, number>;
+  monthlyRevenue: Array<{ month: string; revenue: number; count: number }>;
+}
+
+interface QuotationAnalyticsResponse {
+  valueByStatus: Record<string, { count: number; value: number }>;
+  categoryAnalysis: Record<string, { count: number; totalValue: number; accepted: number }>;
+  buildTypeAnalysis: Record<string, { count: number; totalValue: number }>;
+  valueRanges: Record<string, number>;
+}
+
+interface FinancialAnalyticsResponse {
+  summary: {
+    totalRevenue: number;
+    totalExpenses: number;
+    projectExpenses: number;
+    businessExpenses: number;
+    netProfit: number;
+    profitMargin: number;
+  };
+  monthlyFinancials: Array<{ month: string; revenue: number; expenses: number; profit: number }>;
+  expenseByCategory: Record<string, number>;
+}
+
+interface MaterialAnalyticsResponse {
+  topMaterials: Array<{ name: string; count: number }>;
+  topFinishes: Array<{ name: string; count: number }>;
+  topHardware: Array<{ name: string; count: number }>;
+  roomAnalysis: Array<{ name: string; count: number }>;
+  calcTypeDistribution: Record<string, number>;
+  totalItems: number;
+}
+
+const EMPTY_DASHBOARD: DashboardOverviewResponse = {
+  overview: {
+    totalQuotations: 0,
+    activeQuotations: 0,
+    acceptedQuotations: 0,
+    totalRevenue: 0,
+    conversionRate: 0,
+    avgQuoteValue: 0,
+  },
+  statusDistribution: {},
+  monthlyRevenue: [],
+};
+
+const EMPTY_QUOTATION_ANALYTICS: QuotationAnalyticsResponse = {
+  valueByStatus: {},
+  categoryAnalysis: {},
+  buildTypeAnalysis: {},
+  valueRanges: {},
+};
+
+const EMPTY_FINANCIAL_ANALYTICS: FinancialAnalyticsResponse = {
+  summary: {
+    totalRevenue: 0,
+    totalExpenses: 0,
+    projectExpenses: 0,
+    businessExpenses: 0,
+    netProfit: 0,
+    profitMargin: 0,
+  },
+  monthlyFinancials: [],
+  expenseByCategory: {},
+};
+
+const EMPTY_MATERIAL_ANALYTICS: MaterialAnalyticsResponse = {
+  topMaterials: [],
+  topFinishes: [],
+  topHardware: [],
+  roomAnalysis: [],
+  calcTypeDistribution: {},
+  totalItems: 0,
+};
+
 export default function Analytics() {
   // P4-1: Dashboard Overview
   const {
     data: dashboardData,
     isLoading: dashboardLoading,
     error: dashboardError,
-  } = useQuery({
+  } = useQuery<DashboardOverviewResponse>({
     queryKey: ["/api/analytics/dashboard"],
   });
 
@@ -48,7 +132,7 @@ export default function Analytics() {
     data: quotationData,
     isLoading: quotationLoading,
     error: quotationError,
-  } = useQuery({
+  } = useQuery<QuotationAnalyticsResponse>({
     queryKey: ["/api/analytics/quotations"],
   });
 
@@ -57,7 +141,7 @@ export default function Analytics() {
     data: financialData,
     isLoading: financialLoading,
     error: financialError,
-  } = useQuery({
+  } = useQuery<FinancialAnalyticsResponse>({
     queryKey: ["/api/analytics/financials"],
   });
 
@@ -66,9 +150,14 @@ export default function Analytics() {
     data: materialData,
     isLoading: materialLoading,
     error: materialError,
-  } = useQuery({
+  } = useQuery<MaterialAnalyticsResponse>({
     queryKey: ["/api/analytics/materials"],
   });
+
+  const dashboardMetrics = dashboardData ?? EMPTY_DASHBOARD;
+  const quotationMetrics = quotationData ?? EMPTY_QUOTATION_ANALYTICS;
+  const financialMetrics = financialData ?? EMPTY_FINANCIAL_ANALYTICS;
+  const materialMetrics = materialData ?? EMPTY_MATERIAL_ANALYTICS;
 
   // Format currency
   const formatCurrency = (value: number) => {
@@ -151,10 +240,10 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        {formatCurrency(dashboardData.overview.totalRevenue)}
+                        {formatCurrency(dashboardMetrics.overview.totalRevenue)}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        From {dashboardData.overview.acceptedQuotations} accepted quotes
+                        From {dashboardMetrics.overview.acceptedQuotations} accepted quotes
                       </p>
                     </CardContent>
                   </Card>
@@ -166,10 +255,10 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        {dashboardData.overview.activeQuotations}
+                        {dashboardMetrics.overview.activeQuotations}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Out of {dashboardData.overview.totalQuotations} total
+                        Out of {dashboardMetrics.overview.totalQuotations} total
                       </p>
                     </CardContent>
                   </Card>
@@ -181,7 +270,7 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        {dashboardData.overview.conversionRate}%
+                        {dashboardMetrics.overview.conversionRate}%
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">Quote acceptance rate</p>
                     </CardContent>
@@ -194,7 +283,7 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        {formatCurrency(dashboardData.overview.avgQuoteValue)}
+                        {formatCurrency(dashboardMetrics.overview.avgQuoteValue)}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
                         Average per accepted quote
@@ -211,7 +300,7 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={dashboardData.monthlyRevenue}>
+                        <LineChart data={dashboardMetrics.monthlyRevenue}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis
                             dataKey="month"
@@ -247,7 +336,7 @@ export default function Analytics() {
                       <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                           <Pie
-                            data={Object.entries(dashboardData.statusDistribution).map(
+                            data={Object.entries(dashboardMetrics.statusDistribution).map(
                               ([status, count]) => ({
                                 name: status.charAt(0).toUpperCase() + status.slice(1),
                                 value: count,
@@ -261,7 +350,7 @@ export default function Analytics() {
                             fill="#8884d8"
                             dataKey="value"
                           >
-                            {Object.keys(dashboardData.statusDistribution).map((_, index) => (
+                            {Object.keys(dashboardMetrics.statusDistribution).map((_, index) => (
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
@@ -314,7 +403,7 @@ export default function Analytics() {
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
                         <BarChart
-                          data={Object.entries(quotationData.valueByStatus).map(
+                          data={Object.entries(quotationMetrics.valueByStatus).map(
                             ([status, data]: [string, any]) => ({
                               status: status.charAt(0).toUpperCase() + status.slice(1),
                               value: data.value,
@@ -343,7 +432,7 @@ export default function Analytics() {
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
                         <BarChart
-                          data={Object.entries(quotationData.valueRanges).map(([range, count]) => ({
+                          data={Object.entries(quotationMetrics.valueRanges).map(([range, count]) => ({
                             range,
                             count,
                           }))}
@@ -367,7 +456,7 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {Object.entries(quotationData.categoryAnalysis).map(
+                        {Object.entries(quotationMetrics.categoryAnalysis).map(
                           ([category, data]: [string, any]) => (
                             <div key={category} className="flex items-center justify-between">
                               <div className="flex-1">
@@ -398,7 +487,7 @@ export default function Analytics() {
                       <ResponsiveContainer width="100%" height={250}>
                         <PieChart>
                           <Pie
-                            data={Object.entries(quotationData.buildTypeAnalysis).map(
+                            data={Object.entries(quotationMetrics.buildTypeAnalysis).map(
                               ([type, data]: [string, any]) => ({
                                 name: type.charAt(0).toUpperCase() + type.slice(1),
                                 value: data.totalValue,
@@ -412,7 +501,7 @@ export default function Analytics() {
                             fill="#8884d8"
                             dataKey="value"
                           >
-                            {Object.keys(quotationData.buildTypeAnalysis).map((_, index) => (
+                            {Object.keys(quotationMetrics.buildTypeAnalysis).map((_, index) => (
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
@@ -465,7 +554,7 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        {formatCurrency(financialData.summary.totalRevenue)}
+                        {formatCurrency(financialMetrics.summary.totalRevenue)}
                       </div>
                     </CardContent>
                   </Card>
@@ -477,10 +566,10 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        {formatCurrency(financialData.summary.totalExpenses)}
+                        {formatCurrency(financialMetrics.summary.totalExpenses)}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Project: {formatCurrency(financialData.summary.projectExpenses)}
+                        Project: {formatCurrency(financialMetrics.summary.projectExpenses)}
                       </p>
                     </CardContent>
                   </Card>
@@ -492,9 +581,9 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <div
-                        className={`text-2xl font-bold ${financialData.summary.netProfit >= 0 ? "text-green-600" : "text-red-600"}`}
+                        className={`text-2xl font-bold ${financialMetrics.summary.netProfit >= 0 ? "text-green-600" : "text-red-600"}`}
                       >
-                        {formatCurrency(financialData.summary.netProfit)}
+                        {formatCurrency(financialMetrics.summary.netProfit)}
                       </div>
                     </CardContent>
                   </Card>
@@ -506,9 +595,9 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <div
-                        className={`text-2xl font-bold ${financialData.summary.profitMargin >= 0 ? "text-green-600" : "text-red-600"}`}
+                        className={`text-2xl font-bold ${financialMetrics.summary.profitMargin >= 0 ? "text-green-600" : "text-red-600"}`}
                       >
-                        {financialData.summary.profitMargin}%
+                        {financialMetrics.summary.profitMargin}%
                       </div>
                     </CardContent>
                   </Card>
@@ -522,7 +611,7 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={financialData.monthlyFinancials}>
+                        <LineChart data={financialMetrics.monthlyFinancials}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis
                             dataKey="month"
@@ -573,7 +662,7 @@ export default function Analytics() {
                       <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                           <Pie
-                            data={Object.entries(financialData.expenseByCategory).map(
+                            data={Object.entries(financialMetrics.expenseByCategory).map(
                               ([category, amount]) => ({
                                 name: category,
                                 value: amount,
@@ -587,7 +676,7 @@ export default function Analytics() {
                             fill="#8884d8"
                             dataKey="value"
                           >
-                            {Object.keys(financialData.expenseByCategory).map((_, index) => (
+                            {Object.keys(financialMetrics.expenseByCategory).map((_, index) => (
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
@@ -640,7 +729,7 @@ export default function Analytics() {
                       <Package className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{materialData.totalItems}</div>
+                      <div className="text-2xl font-bold">{materialMetrics.totalItems}</div>
                       <p className="text-xs text-muted-foreground mt-1">Across all quotations</p>
                     </CardContent>
                   </Card>
@@ -652,10 +741,10 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-lg font-bold">
-                        {materialData.topMaterials[0]?.name || "N/A"}
+                        {materialMetrics.topMaterials[0]?.name || "N/A"}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Used {materialData.topMaterials[0]?.count || 0} times
+                        Used {materialMetrics.topMaterials[0]?.count || 0} times
                       </p>
                     </CardContent>
                   </Card>
@@ -667,10 +756,10 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-lg font-bold">
-                        {materialData.topFinishes[0]?.name || "N/A"}
+                        {materialMetrics.topFinishes[0]?.name || "N/A"}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Used {materialData.topFinishes[0]?.count || 0} times
+                        Used {materialMetrics.topFinishes[0]?.count || 0} times
                       </p>
                     </CardContent>
                   </Card>
@@ -684,7 +773,7 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={materialData.topMaterials.slice(0, 8)} layout="vertical">
+                        <BarChart data={materialMetrics.topMaterials.slice(0, 8)} layout="vertical">
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" style={{ fontSize: "12px" }} />
                           <YAxis
@@ -707,7 +796,7 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={materialData.topFinishes.slice(0, 8)} layout="vertical">
+                        <BarChart data={materialMetrics.topFinishes.slice(0, 8)} layout="vertical">
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" style={{ fontSize: "12px" }} />
                           <YAxis
@@ -732,7 +821,7 @@ export default function Analytics() {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={materialData.roomAnalysis.slice(0, 10)}>
+                        <BarChart data={materialMetrics.roomAnalysis.slice(0, 10)}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="name" style={{ fontSize: "12px" }} />
                           <YAxis style={{ fontSize: "12px" }} />
@@ -752,7 +841,7 @@ export default function Analytics() {
                       <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                           <Pie
-                            data={Object.entries(materialData.calcTypeDistribution).map(
+                            data={Object.entries(materialMetrics.calcTypeDistribution).map(
                               ([type, count]) => ({
                                 name: type,
                                 value: count,
@@ -766,7 +855,7 @@ export default function Analytics() {
                             fill="#8884d8"
                             dataKey="value"
                           >
-                            {Object.keys(materialData.calcTypeDistribution).map((_, index) => (
+                            {Object.keys(materialMetrics.calcTypeDistribution).map((_, index) => (
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>

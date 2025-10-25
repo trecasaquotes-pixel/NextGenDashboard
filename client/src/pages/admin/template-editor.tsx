@@ -107,7 +107,8 @@ export default function TemplateEditorPage() {
   });
 
   const createRoomMutation = useMutation({
-    mutationFn: (data: { roomName: string; sortOrder: number }) => createTemplateRoom(id!, data),
+    mutationFn: (data: { roomName: string; sortOrder: number; isFcRoom?: boolean }) =>
+      createTemplateRoom(id!, { ...data, isFcRoom: false }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/templates", id] });
       setIsAddRoomDialogOpen(false);
